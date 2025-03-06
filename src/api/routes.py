@@ -1,3 +1,4 @@
+
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
@@ -6,20 +7,67 @@ from api.models import db, User, Hoteles
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 
+
 api = Blueprint('api', __name__)
 
-# Allow CORS requests to this API
-CORS(api)
-
-
-@api.route('/hello', methods=['POST', 'GET'])
-def handle_hello():
-
-    response_body = {
-        "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
+@api.route("/hello", methods=["GET"])
+def get_hello():
+    dictionary = {
+        "message": "Hello, world!"
     }
+    return jsonify(dictionary)
 
-    return jsonify(response_body), 200
+
+@api.route('/user', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    if not users:
+        return jsonify(message="No users found"), 404
+    all_users = list(map(lambda x: x.serialize(), users))
+    return jsonify(message="Users", users=all_users), 200
+
+
+
+@api.route('/user/<int:id>', methods=['GET'])
+def get_user_by_id(id):
+
+    user = User.query.get(id)
+
+    if not user:
+        return jsonify(message="User not found"), 404
+    
+    return jsonify(message="User", user=user.serialize()), 200
+
+
+@api.route('/user/<int:id>', methods=['PUT'])
+def update_user(id):
+    user = User.query.get(id)
+    
+    if not user:
+        return jsonify(message="User not found"), 404
+
+    data = request.get_json()
+
+    if 'theme' in data:
+        user.theme = data['theme']
+
+    db.session.commit()
+
+    return jsonify(message="User updated successfully", user=user.serialize()), 200
+
+
+@api.route('/user/<int:id>', methods=['DELETE'])
+def delete_user(id):
+    user = User.query.get(id)
+    
+    if not user:
+        return jsonify(message="User not found"), 404
+    
+    db.session.delete(user)
+    db.session.commit()
+
+    return jsonify(message="User deleted successfully"), 200
+
 
 @api.route('/hoteles', methods=['GET'])
 def obtener_hoteles():
@@ -71,3 +119,4 @@ def actualizar_hoteles(id):
     db.session.commit()
 
     return jsonify(hotel.serialize()), 200
+
