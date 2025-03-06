@@ -12,7 +12,7 @@ api = Blueprint('api', __name__)
 CORS(api)
 
 
-@api.route('/hello', methods=['POST', 'GET'])
+@api.route('/api/hello', methods=['POST', 'GET'])
 def handle_hello():
 
     response_body = {
@@ -21,13 +21,13 @@ def handle_hello():
 
     return jsonify(response_body), 200
 
-@api.route('/hoteles', methods=['GET'])
+@api.route('/api/hoteles', methods=['GET'])
 def obtener_hoteles():
     hoteles = Hoteles.query.all()  # Obtener todos los hotel
     hoteles_serialize = [hotel.serialize() for hotel in hoteles]  # Serializar cada hotel
     return jsonify(hoteles_serialize), 200  # Retornar los datos serializados como JSON
 
-@api.route('/hoteles', methods=['POST'])
+@api.route('/api/hoteles', methods=['POST'])
 def crear_hoteles():
         data = request.get_json()
         #crear hoteles
@@ -44,7 +44,7 @@ def crear_hoteles():
     
         return jsonify(nuevo_hotel.serialize()), 200
 
-@api.route("/hoteles/<int:id>", methods=["DELETE"])
+@api.route("/api/hoteles/<int:id>", methods=["DELETE"])
 def delete_hoteles(id):
     hotel = Hoteles.query.get(id)
     
@@ -56,7 +56,7 @@ def delete_hoteles(id):
 
     return jsonify({"message" : "Hotel eliminado"}), 200
 
-@api.route("/hoteles/<int:id>", methods=["PUT"])
+@api.route("/api/hoteles/<int:id>", methods=["PUT"])
 def actualizar_hoteles(id):
     hotel = Hoteles.query.get(id)
     
