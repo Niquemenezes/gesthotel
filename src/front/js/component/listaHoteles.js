@@ -6,7 +6,7 @@ const ListaHoteles = () => {
      
     //obtener Hoteles
     useEffect(() => {
-        fetch("https://cautious-disco-97wwvj6gr4c6pr-3001.app.github.dev/api/hoteles",)
+        fetch(process.env.BACKEND_URL+ "/api/hoteles",)
             .then((response) => {
                 if (response.ok) return response.json();
                 throw new Error("Error al obtener los hoteles");
@@ -21,7 +21,7 @@ const ListaHoteles = () => {
             headers: { "Content-Type": "application/json" },
         };
     
-        fetch(`https://cautious-disco-97wwvj6gr4c6pr-3001.app.github.dev/api/hoteles/${id}`, requestOptions)
+        fetch(process.env.BACKEND_URL+ `/api/hoteles/${id}`, requestOptions)
             .then((response) => {
                 if (response.ok) {
                     setHoteles(hoteles.filter(hotel => hotel.id !== id));
