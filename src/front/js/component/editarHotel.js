@@ -11,7 +11,7 @@ const EditarHotel = () => {
     //carga los datos del estudiante cuando se monte el componente
    
     useEffect(() => {
-        fetch(`https://cautious-disco-97wwvj6gr4c6pr-3001.app.github.dev/api/hoteles/${id}`,)
+        fetch(process.env.BACKEND_URL+ `/api/hoteles/${id}`,)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("Error al obtener los datos del hotel");
@@ -28,7 +28,7 @@ const EditarHotel = () => {
         e.preventDefault();
         
     //editar un hotel
-       fetch(`https://cautious-disco-97wwvj6gr4c6pr-3001.app.github.dev/api/hoteles/${id}`, {
+       fetch(process.env.BACKEND_URL+ `/api/hoteles/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({nombre, email})

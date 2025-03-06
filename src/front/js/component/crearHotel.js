@@ -15,7 +15,7 @@ const CrearHotel = () => {
         }
 
     //Crear y enviar solicitud POST para agregar el nuevo hotel
-        fetch("https://cautious-disco-97wwvj6gr4c6pr-3001.app.github.dev/api/hoteles", {
+        fetch(process.env.BACKEND_URL+ "/api/hoteles", {
                 method: "POST",
                 headers: {"Content-type": "application/json"},
                 body: JSON.stringify({nombre, email}),
