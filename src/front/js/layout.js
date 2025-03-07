@@ -6,18 +6,21 @@ import { BackendURL } from "./component/backendURL";
 import { Home } from "./pages/home";
 import { Demo } from "./pages/demo";
 import { Single } from "./pages/single";
+import { Listas } from "./pages/listas";
 import injectContext from "./store/appContext";
 
-import { Navbar } from "./component/navbar";
-import { Footer } from "./component/footer";
+import Navbar from "./component/navbar";
+import EditarCategoria from "./component/editarCategoria";
+import CrearCategoria from "./component/crearCategoria";
 
-//create your first component
 const Layout = () => {
-    //the basename is used when your project is published in a subdirectory and not in the root of the domain
-    // you can set the basename on the .env file located at the root of this project, E.g: BASENAME=/react-hello-webapp/
+    // Basename: Usado si el proyecto está en un subdirectorio, configurado en .env
     const basename = process.env.BASENAME || "";
 
-    if(!process.env.BACKEND_URL || process.env.BACKEND_URL == "") return <BackendURL/ >;
+    // Si la variable de entorno BACKEND_URL no está configurada, muestra un mensaje de error
+    if (!process.env.BACKEND_URL || process.env.BACKEND_URL === "") {
+        return <BackendURL />;
+    }
 
     return (
         <div>
@@ -25,12 +28,13 @@ const Layout = () => {
                 <ScrollToTop>
                     <Navbar />
                     <Routes>
-                        <Route element={<Home />} path="/" />
-                        <Route element={<Demo />} path="/demo" />
-                        <Route element={<Single />} path="/single/:theid" />
-                        <Route element={<h1>Not found!</h1>} />
+                        <Route path="/" element={<Listas />} />
+                        <Route path="/editarCategoria/:id" element={<EditarCategoria />} />
+                        <Route path="/crearCategoria" element={<CrearCategoria />} />
+                        <Route path="/single/:theid" element={<Single />} />
+                        {/* Ruta para manejar 404 (página no encontrada) */}
+                        <Route path="*" element={<h1 className="text-center mt-5">Página no encontrada</h1>} />
                     </Routes>
-                    <Footer />
                 </ScrollToTop>
             </BrowserRouter>
         </div>

@@ -22,6 +22,7 @@ module.exports = merge(common, {
     mode: 'development',
     devtool: 'cheap-module-source-map',
     devServer: {
+        webSocketServer: false,
         port,
         hot: true,
         allowedHosts: "all",
