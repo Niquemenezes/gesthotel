@@ -3,7 +3,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Hoteles
+from api.models import db, User, Hoteles, Theme
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 
@@ -28,45 +28,65 @@ def get_users():
 
 
 
-@api.route('/user/<int:id>', methods=['GET'])
-def get_user_by_id(id):
+@api.route('/theme', methods=['GET'])
+def get_themes():
+    themes = Theme.query.all()
+    if not themes:
+        return jsonify(message="No themes found"), 404
+    all_themes = list(map(lambda x: x.serialize(), themes))
+    return jsonify(message="Themes", themes=all_themes), 200
 
-    user = User.query.get(id)
+@api.route('/theme/<int:id>', methods=['GET'])
+def get_theme_by_id(id):
+    theme = Theme.query.get(id)
+    if not theme:
+        return jsonify(message="Theme not found"), 404
+    return jsonify(message="Theme", theme=theme.serialize()), 200
 
-    if not user:
-        return jsonify(message="User not found"), 404
+@api.route('/theme', methods=['POST'])
+def add_new_theme():
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({"msg": "Body missing"}), 400
+    if "nombre" not in body:
+        return jsonify({"msg": "nombre missing"}), 400
     
-    return jsonify(message="User", user=user.serialize()), 200
-
-
-@api.route('/user/<int:id>', methods=['PUT'])
-def update_user(id):
-    user = User.query.get(id)
+    new_theme = Theme()
+    new_theme.nombre = body['nombre']
     
-    if not user:
-        return jsonify(message="User not found"), 404
+    try:
+        with db.session.begin():
+            db.session.add(new_theme)
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"msg": f"Error creating theme: {str(e)}"}), 500
+    
+    return jsonify({'msg': f'Theme {body["nombre"]} has been created', 'theme': new_theme.serialize()}), 201
 
+@api.route('/theme/<int:id>', methods=['PUT'])
+def update_theme(id):
+    theme = Theme.query.get(id)
+    if not theme:
+        return jsonify(message="Theme not found"), 404
+    
     data = request.get_json()
-
-    if 'theme' in data:
-        user.theme = data['theme']
-
-    db.session.commit()
-
-    return jsonify(message="User updated successfully", user=user.serialize()), 200
-
-
-@api.route('/user/<int:id>', methods=['DELETE'])
-def delete_user(id):
-    user = User.query.get(id)
+    if 'nombre' in data:
+        theme.nombre = data['nombre']
     
-    if not user:
-        return jsonify(message="User not found"), 404
-    
-    db.session.delete(user)
     db.session.commit()
+    
+    return jsonify(message="Theme updated successfully", theme=theme.serialize()), 200
 
-    return jsonify(message="User deleted successfully"), 200
+@api.route('/theme/<int:id>', methods=['DELETE'])
+def delete_theme(id):
+    theme = Theme.query.get(id)
+    if not theme:
+        return jsonify(message="Theme not found"), 404
+    
+    db.session.delete(theme)
+    db.session.commit()
+    
+    return jsonify(message="Theme deleted successfully"), 200
 
 
 @api.route('/hoteles', methods=['GET'])

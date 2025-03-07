@@ -1,10 +1,10 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "../../styles/theme.css";
 import 'font-awesome/css/font-awesome.min.css';
 
 const ThemeForm = () => {
-    const [theme, setTheme] = useState('');
+    const [nombre, setNombre] = useState('');
     const [message, setMessage] = useState('');
     const [themesList, setThemesList] = useState([]);
     const [editMode, setEditMode] = useState(false);
@@ -19,10 +19,10 @@ const ThemeForm = () => {
 
     const fetchThemes = async () => {
         try {
-            const response = await fetch(`${backendUrl}api/user`);
+            const response = await fetch(`${backendUrl}api/theme`);
             const data = await response.json();
             if (response.ok) {
-                setThemesList(data.users);
+                setThemesList(data.themes);
             } else {
                 setMessage('Failed to load themes.');
             }
@@ -35,18 +35,18 @@ const ThemeForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!theme) {
+        if (!nombre) {
             setMessage('Theme name is required!');
             return;
         }
 
         const url = editMode
-            ? `${backendUrl}/api/user/${selectedThemeId}`
-            : `${backendUrl}/api/user`;
+            ? `${backendUrl}/api/theme/${selectedThemeId}`
+            : `${backendUrl}/api/theme`;
 
         const method = editMode ? 'PUT' : 'POST';
         const body = JSON.stringify({
-            theme,
+            nombre,
         });
 
         try {
@@ -61,13 +61,14 @@ const ThemeForm = () => {
             const data = await response.json();
 
             if (response.ok) {
-                setTheme('');
+                setNombre('');
                 setEditMode(false);
                 setSelectedThemeId(null);
                 fetchThemes();
+                setMessage('Theme updated successfully.');
+            } else {
+                setMessage('Error creating or updating theme.');
             }
-
-            setMessage('Theme updated successfully.');
         } catch (error) {
             setMessage('Error creating or updating theme.');
             console.error('Error making request:', error);
@@ -81,7 +82,7 @@ const ThemeForm = () => {
             return;
         }
 
-        const url = `${backendUrl}/api/user/${themeId}`;
+        const url = `${backendUrl}/api/theme/${themeId}`;
         try {
             const response = await fetch(url, { method: 'DELETE' });
             const data = await response.json();
@@ -107,14 +108,14 @@ const ThemeForm = () => {
     const handleEdit = (themeId) => {
         const themeToEdit = themesList.find((theme) => theme.id === themeId);
         if (themeToEdit) {
-            setTheme(themeToEdit.theme);
+            setNombre(themeToEdit.nombre);
             setSelectedThemeId(themeId);
             setEditMode(true);
         }
     };
 
     const handleCancel = () => {
-        setTheme('');
+        setNombre('');
         setEditMode(false);
         setSelectedThemeId(null);
     };
@@ -135,8 +136,8 @@ const ThemeForm = () => {
                                 type="text"
                                 id="theme"
                                 className="form-control custom-input"
-                                value={theme}
-                                onChange={(e) => setTheme(e.target.value)}
+                                value={nombre}
+                                onChange={(e) => setNombre(e.target.value)}
                                 required
                                 style={{ fontSize: '24px' }}
                             />
@@ -168,7 +169,7 @@ const ThemeForm = () => {
                     {themesList.length > 0 ? (
                         themesList.map((theme) => (
                             <li key={theme.id} className="list-group-item d-flex justify-content-between align-items-center  mb-2">
-                                <span className="theme-text">{theme.theme}</span>
+                                <span className="theme-text">{theme.nombre}</span>
                                 <div className="col-2 d-flex justify-content-between">
                                     <i
                                         className="fa fa-pencil"
