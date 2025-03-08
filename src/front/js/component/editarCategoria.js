@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Context } from "../store/appContext";
 
 const EditarCategoria = () => {
     const [nombre, setNombre] = useState("");
-    const [cargando, setCargando] = useState(true);
+    const [cargando, setCargando] = useState(false);
     const [error, setError] = useState(null);
     const { id } = useParams(); // Obtener el ID de la categoría desde la URL
     const navigate = useNavigate();
-
+    const { store } = useContext(Context);
     // Función para obtener la URL del backend de forma segura
     const getBackendUrl = () => {
         const baseUrl = process.env.BACKEND_URL;
@@ -21,25 +22,8 @@ const EditarCategoria = () => {
 
     // Cargar los datos de la categoría al montar el componente
     useEffect(() => {
-        const cargarCategoria = async () => {
-            const apiUrl = getBackendUrl();
-            if (!apiUrl) return;
-
-            try {
-                const response = await fetch(`${apiUrl}api/categorias/${id}`);
-                if (!response.ok) {
-                    throw new Error("Error al cargar la categoría");
-                }
-                const data = await response.json();
-                setNombre(data.nombre);
-            } catch (error) {
-                setError(error.message);
-            } finally {
-                setCargando(false);
-            }
-        };
-
-        cargarCategoria();
+       const nameCategory= store.categories.find(item=>item.id==id)
+        setNombre(nameCategory.nombre) 
     }, [id]);
 
     // Manejar la actualización de la categoría
@@ -52,7 +36,7 @@ const EditarCategoria = () => {
         if (!apiUrl) return;
 
         try {
-            const response = await fetch(`${apiUrl}api/categorias/${id}`, {
+            const response = await fetch(`${apiUrl}api/categories/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ nombre: nombre.trim() }),
@@ -64,7 +48,7 @@ const EditarCategoria = () => {
             }
 
             alert("Categoría actualizada correctamente.");
-            navigate("/"); // Redirigir a la página principal
+            navigate("/listaCategoria"); // Redirigir a la página principal
         } catch (error) {
             setError(error.message);
         } finally {

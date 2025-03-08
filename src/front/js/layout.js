@@ -6,12 +6,13 @@ import { BackendURL } from "./component/backendURL";
 import { Home } from "./pages/home";
 import { Demo } from "./pages/demo";
 import { Single } from "./pages/single";
-import { Listas } from "./pages/listas";
+import { ListaCat } from "./pages/listaCat";
 import injectContext from "./store/appContext";
 
 import Navbar from "./component/navbar";
 import EditarCategoria from "./component/editarCategoria";
 import CrearCategoria from "./component/crearCategoria";
+import ListaCategoria from "./component/listaCategoria";
 
 const Layout = () => {
     // Basename: Usado si el proyecto está en un subdirectorio, configurado en .env
@@ -28,9 +29,11 @@ const Layout = () => {
                 <ScrollToTop>
                     <Navbar />
                     <Routes>
-                        <Route path="/" element={<Listas />} />
-                        <Route path="/editarCategoria/:id" element={<EditarCategoria />} />
+                        <Route path="/" element={<Home />} />
+                        <Route path="/listaCat" element={<ListaCat />} />
+                        <Route path="/editar/:id" element={<EditarCategoria />} />
                         <Route path="/crearCategoria" element={<CrearCategoria />} />
+                        <Route path="/listaCategoria" element={<ListaCategoria />} />
                         <Route path="/single/:theid" element={<Single />} />
                         {/* Ruta para manejar 404 (página no encontrada) */}
                         <Route path="*" element={<h1 className="text-center mt-5">Página no encontrada</h1>} />

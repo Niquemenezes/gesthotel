@@ -1,12 +1,13 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Context } from "../store/appContext";
 
-const ListaCategorias = () => {
+const ListaCategoria = () => {
     const [categories, setCategories] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
     const [eliminando, setEliminando] = useState(null); // ID de la categoría que se está eliminando
-
+    const { store, actions } = useContext(Context);
     // Función para obtener la URL del backend de forma segura
     const getBackendUrl = () => {
         const baseUrl = process.env.BACKEND_URL;
@@ -28,16 +29,20 @@ const ListaCategorias = () => {
             setError(null);
 
             try {
-                const response = await fetch(`${apiUrl}api/categorias`);
+                const response = await fetch(`${apiUrl}api/categories`,{
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
+                })
                 if (!response.ok) {
                     throw new Error("Error al cargar las categorías");
                 }
                 const data = await response.json();
                 setCategories(data);
+                actions.setCategories(data)
             } catch (error) {
                 setError(error.message);
             } finally {
-                setCargando(false);
+                setCargando(true);
             }
         };
 
@@ -54,7 +59,7 @@ const ListaCategorias = () => {
         setEliminando(id);
 
         try {
-            const response = await fetch(`${apiUrl}api/categorias/${id}`, {
+            const response = await fetch(`${apiUrl}api/categories/${id}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
             });
@@ -72,25 +77,17 @@ const ListaCategorias = () => {
             setEliminando(null);
         }
     }, []);
-
+    
     return (
         <div className="container">
             <h2 className="text-center my-3">Lista de Categorías</h2>
-
-            {cargando && <div className="text-center">Cargando categorías...</div>}
-            {error && <div className="alert alert-danger text-center">{error}</div>}
-
-            {!cargando && categories.length === 0 && (
-                <div className="text-center text-muted">No hay categorías disponibles</div>
-            )}
-
-            {!cargando && categories.length > 0 && (
+            {(
                 <>
                     <div className="row bg-light p-2 fw-bold border-bottom">
                         <div className="col">Nombre</div>
                         <div className="col text-center">Acciones</div>
                     </div>
-                    {categories.map((category) => (
+                    {categories?.map((category) => (
                         <div key={category.id} className="row p-2 border-bottom align-items-center">
                             <div className="col">{category.nombre}</div>
                             <div className="col d-flex justify-content-center">
@@ -113,4 +110,4 @@ const ListaCategorias = () => {
     );
 };
 
-export default ListaCategorias;
+export default ListaCategoria;

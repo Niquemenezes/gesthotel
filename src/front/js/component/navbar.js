@@ -5,8 +5,8 @@ const Navbar = () => {
     return (
         <nav className="navbar navbar-dark bg-dark">
             <div className="container">
-                <Link to="/" className="navbar-brand">Lista de Categorias</Link>
-                <Link to="/crear" className="btn btn-primary">Crear Categoria</Link>
+                <Link to="/listaCategoria" className="btn btn-primary">Lista de Categorias</Link>
+                <Link to="/crearCategoria" className="btn btn-primary">Crear Categoria</Link>
             </div>
         </nav>
     );

@@ -6,7 +6,7 @@ const CrearCategoria = () => {
     const [cargando, setCargando] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
-    
+
     // Usamos useRef para mantener una referencia al estado de si el componente está montado o no
     const isMounted = useRef(true); // Esto se utilizará para evitar actualizaciones en un componente desmontado
 
@@ -46,9 +46,12 @@ const CrearCategoria = () => {
         setError(null);
 
         try {
-            const response = await fetch(`${apiUrl}api/categorias`, {
+            const response = await fetch(`${apiUrl}api/categories`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
                 body: JSON.stringify({ nombre: nombreTrim }),
             });
 
@@ -59,21 +62,21 @@ const CrearCategoria = () => {
 
             // Verifica que el contenido sea JSON
             const data = await response.json();
-            
-            if (isMounted.current) {
-                alert("Categoría creada exitosamente.");
-                navigate("/");
-            }
+            setNombre("")
+
+            alert("Categoría creada exitosamente.");
+            navigate("/listaCat");
+
         } catch (error) {
             // Verifica si el componente está montado antes de actualizar el estado
-            if (isMounted.current) {
-                setError(error.message);
-            }
+
+            setError(error.message);
+
         } finally {
             // Asegúrate de que el componente esté montado antes de actualizar el estado
-            if (isMounted.current) {
-                setCargando(false);
-            }
+
+            setCargando(false);
+
         }
     };
 

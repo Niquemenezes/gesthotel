@@ -5,12 +5,12 @@ This module takes care of starting the API Server, loading the DB, and adding th
 import os
 from flask import Flask, jsonify, send_from_directory
 from flask_migrate import Migrate
-from flask_cors import CORS
 from api.utils import APIException, generate_sitemap
 from api.models import db
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+from flask_cors import CORS
 
 # Configuration
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
@@ -19,9 +19,14 @@ db_url = os.getenv("DATABASE_URL")
 
 # Initialize the Flask app
 app = Flask(__name__)
-CORS(app)
 app.url_map.strict_slashes = False
+cors = CORS(app, resources={r"/api/*": {"origins": "https://solid-giggle-pjg7wxpj6wxv36xjw-3000.app.github.dev"}})
+@app.route('/api/categorias')
+def categorias():
+    return jsonify(message="Categorías")
 
+if __name__ == '__main__':
+    app.run(debug=True, port=3001)
 # Database configuration
 if db_url:
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
