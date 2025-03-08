@@ -5,7 +5,6 @@ import ScrollToTop from "./component/scrollToTop";
 import { BackendURL } from "./component/backendURL";
 import ThemeForm from './pages/theme';
 import { Home } from "./pages/home";
-import { Hoteles } from "./pages/hotel";
 import { Demo } from "./pages/demo";
 import { Single } from "./pages/single";
 import injectContext from "./store/appContext";
@@ -13,6 +12,7 @@ import { Navbar } from "./component/navbar";
 import { Footer } from "./component/footer";
 import EditarHotel from "./component/editarHotel";
 import CrearHotel from "./component/crearHotel";
+import ListaHoteles from "./component/listaHoteles";
 
 
 
@@ -27,9 +27,10 @@ const Layout = () => {
                 <ScrollToTop>
                     <Navbar />
                     <Routes>
-                        <Route element={<Hoteles />} path="/" />
-                        <Route element={<EditarHotel />} path="/editar/:id"/> 
-                        <Route element={<CrearHotel/>} path="/crear"/>
+                        <Route element={<Home />} path="/" />
+                        <Route element={<ListaHoteles/>} path="/listaHoteles"/> 
+                        <Route element={<EditarHotel/>} path="/editar/:id"/>
+                        <Route element={<CrearHotel/>} path="/crearHotel"/>
                         <Route element={<Demo />} path="/demo" />
                         <Route element={<Single />} path="/single/:theid" />
                         <Route element={<ThemeForm />} path="/theme" />
