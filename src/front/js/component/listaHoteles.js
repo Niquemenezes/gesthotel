@@ -35,6 +35,9 @@ const ListaHoteles = () => {
     return (
         <div className="container">
             <h2 className="text-center my-3">Lista de Hoteles</h2>
+            <div className="d-flex justify-content-center align-items-center" >
+                <Link to="/crearHotel" className="btn btn-primary">Crear Hotel</Link>
+            </div>
             <div className="row bg-light p-2 fw-bold border-bottom">
                 <div className="col">Nombre</div>
                 <div className="col">Email</div>

@@ -39,7 +39,7 @@ const EditarHotel = () => {
             }
             return response.json();
         })
-        .then(() => navigate("/")) //redigirir a la pagina de inicio despues de guardar
+        .then(() => navigate("/listaHoteles")) //redigirir a la pagina de inicio despues de guardar
     };
    
     return (
