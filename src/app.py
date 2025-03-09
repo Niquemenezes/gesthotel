@@ -17,14 +17,12 @@ ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../public/')
 db_url = os.getenv("DATABASE_URL")
 
+
 # Initialize the Flask app
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
-cors = CORS(app, resources={r"/api/*": {"origins": "https://musical-space-dollop-69vrq759gp49fr57w-3001.app.github.dev"}})
-@app.route('/api/categorias')
-def categorias():
-    return jsonify(message="Categorías")
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=3001)

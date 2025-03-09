@@ -44,7 +44,6 @@ const CrearCategoria = () => {
 
         setCargando(true);
         setError(null);
-
         try {
             const response = await fetch(`${apiUrl}api/categories`, {
                 method: "POST",
@@ -56,28 +55,20 @@ const CrearCategoria = () => {
             });
 
             if (!response.ok) {
-                const errorData = await response.text(); // Leemos como texto en caso de error HTML
-                throw new Error(errorData || "Error al crear la categoría.");
+                throw new Error(`HTTP Error: ${response.status}`);
             }
-
-            // Verifica que el contenido sea JSON
-            const data = await response.json();
-            setNombre("")
-
+            const data = await response.json(); // Esto asume que la respuesta es JSON
+            console.log("Categoría creada:", data);
+            setNombre(""); // Limpiar el campo de nombre
             alert("Categoría creada exitosamente.");
             navigate("/listaCat");
-
         } catch (error) {
-            // Verifica si el componente está montado antes de actualizar el estado
-
-            setError(error.message);
-
+            console.error("Error al crear la categoría:", error);
+            setError(error.message || "Error desconocido al crear la categoría.");
         } finally {
-            // Asegúrate de que el componente esté montado antes de actualizar el estado
-
             setCargando(false);
-
         }
+
     };
 
     return (

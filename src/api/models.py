@@ -30,6 +30,11 @@ class Category(db.Model):
     def __repr__(self):
         return f'<Category {self.nombre}>'
             # do not serialize the password, its a security breach
+    def serialize(self):
+        return {
+            "id": self.id,
+            "nombre": self.nombre,
+        }
         
 
 class Hoteles(db.Model):

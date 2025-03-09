@@ -3,9 +3,10 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Category
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
+from api.models import db, User, Hoteles, Theme, Category
+
 
 # Blueprint para los endpoints de la API
 api = Blueprint('api', __name__)
@@ -82,19 +83,6 @@ def actualizar_category(id):
     db.session.commit()
 
     return jsonify(category.serialize()), 200  # Código 200 para solicitud exitosa
-from api.models import db, User, Hoteles, Theme
-from api.utils import generate_sitemap, APIException
-from flask_cors import CORS
-
-
-api = Blueprint('api', __name__)
-
-@api.route("/hello", methods=["GET"])
-def get_hello():
-    dictionary = {
-        "message": "Hello, world!"
-    }
-    return jsonify(dictionary)
 
 
 @api.route('/user', methods=['GET'])
@@ -104,7 +92,6 @@ def get_users():
         return jsonify(message="No users found"), 404
     all_users = list(map(lambda x: x.serialize(), users))
     return jsonify(message="Users", users=all_users), 200
-
 
 
 @api.route('/theme', methods=['GET'])

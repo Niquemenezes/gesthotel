@@ -48,7 +48,7 @@ const ListaHoteles = () => {
                     <div className="col">{hotel.nombre}</div>
                     <div className="col">{hotel.email}</div>
                     <div className="col d-flex justify-content-center">
-                    <Link to={`/editar/${hotel.id}`}>
+                    <Link to={`/editar-hotel/${hotel.id}`}>
                         <button className="btn btn-warning me-5">Editar</button>
                     </Link>
                         <button className="btn btn-danger" onClick={()=> eliminarHotel(hotel.id)}>Eliminar</button>

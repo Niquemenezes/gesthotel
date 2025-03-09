@@ -5,10 +5,10 @@ import { useNavigate, useParams } from "react-router-dom";
 const EditarHotel = () => {
     const [nombre, setNombre] = useState("");
     const [email,setEmail] = useState("");
-    const {id} = useParams(); //obtener el ID del estudiante desde la URL
+    const {id} = useParams(); //obtener el ID del hotel desde la URL
     const navigate = useNavigate();
 
-    //carga los datos del estudiante cuando se monte el componente
+    //carga los datos del hotel cuando se monte el componente
    
     useEffect(() => {
         fetch(process.env.BACKEND_URL+ `/api/hoteles/${id}`,)

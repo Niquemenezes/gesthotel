@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "../../styles/theme.css";
-import 'font-awesome/css/font-awesome.min.css';
+
 
 const ThemeForm = () => {
     const [nombre, setNombre] = useState('');
