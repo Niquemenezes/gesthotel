@@ -22,9 +22,18 @@ const EditarCategoria = () => {
 
     // Cargar los datos de la categoría al montar el componente
     useEffect(() => {
-       const nameCategory= store.categories.find(item=>item.id==id)
-        setNombre(nameCategory.nombre) 
-    }, [id]);
+        if (store && store.categories) {
+            const nameCategory = store.categories.find(item => item.id == id);
+            if (nameCategory) {
+                setNombre(nameCategory.nombre);
+            } else {
+                setError("Categoría no encontrada.");
+            }
+        } else {
+            setError("No se encontraron categorías.");
+        }
+    }, [id, store]);
+    
 
     // Manejar la actualización de la categoría
     const handleSubmit = async (e) => {

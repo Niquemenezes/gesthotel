@@ -20,7 +20,8 @@ db_url = os.getenv("DATABASE_URL")
 # Initialize the Flask app
 app = Flask(__name__)
 app.url_map.strict_slashes = False
-cors = CORS(app, resources={r"/api/*": {"origins": "https://solid-giggle-pjg7wxpj6wxv36xjw-3000.app.github.dev"}})
+
+cors = CORS(app, resources={r"/api/*": {"origins": "https://musical-space-dollop-69vrq759gp49fr57w-3001.app.github.dev"}})
 @app.route('/api/categorias')
 def categorias():
     return jsonify(message="Categorías")

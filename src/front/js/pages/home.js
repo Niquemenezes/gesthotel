@@ -1,12 +1,12 @@
-import React, { Suspense } from "react";
 import React, { useContext } from "react";
 import { Context } from "../store/appContext";
 import { Link } from "react-router-dom";
 import rigoImageUrl from "../../img/rigo-baby.jpg";
 import "../../styles/home.css";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 
 export const Home = () => {
+    const { store, actions } = useContext(Context);
     return (
 
         <div className="text-center mt-5">
@@ -19,7 +19,7 @@ export const Home = () => {
 		  	</div>
             <div><Link to="/theme">Go to Theme Form</Link></div>
             <div><Link to="/listaHoteles">Go to Hoteles</Link></div>
-            <div><Link to="/listaCat">Go to Theme Form</Link></div>
+            <div><Link to="/listaCat">Go to Category Form</Link></div>
            
         </div>
 
