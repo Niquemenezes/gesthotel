@@ -34,8 +34,9 @@ class Category(db.Model):
 
 class Hoteles(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(120), nullable=False)
-    email = db.Column(db.String(80), nullable=False)
+    nombre = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(80), nullable=False)
     
     def __repr__(self):
         return f'<Hoteles {self.nombre}>'
@@ -45,6 +46,7 @@ class Hoteles(db.Model):
             "id": self.id,
             "nombre": self.nombre,
             "email": self.email,
+            "password": self.password
         }
     
 class Theme(db.Model):

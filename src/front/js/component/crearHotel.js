@@ -4,12 +4,13 @@ import { useNavigate } from "react-router-dom";
 const CrearHotel = () => {
     const[nombre, setNombre] = useState("");
     const[email, setEmail] = useState("");
+    const[password, setPassword] = useState("");
     const navigate = useNavigate();
 
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if(!nombre || !email){
+        if(!nombre || !email || !password){
             alert("Todos los campos son obligatorios.");
             return;
         }
@@ -18,7 +19,7 @@ const CrearHotel = () => {
         fetch(process.env.BACKEND_URL+ "/api/hoteles", {
                 method: "POST",
                 headers: {"Content-type": "application/json"},
-                body: JSON.stringify({nombre, email}),
+                body: JSON.stringify({nombre, email, password}),
             })
             .then ((response) => {
                 if (!response.ok) {
@@ -26,7 +27,7 @@ const CrearHotel = () => {
                 }
                 return response.json();
             })
-            .then(() => { navigate("/"); })//redirige a la pagina principal despues de crear el nuevo hotel
+            .then(() => { navigate("/listaHoteles"); })//redirige a la pagina principal despues de crear el nuevo hotel
     };
 
     return (
@@ -35,11 +36,14 @@ const CrearHotel = () => {
             <h1 className="text-center mb-4">Crear Hotel</h1>
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                    <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} className="form-control" placeholder="Nombre" />
+                    <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} className="form-control" placeholder="Nombre" required />
                 </div>
                 <div className="mb-3">
-                    <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} className="form-control" placeholder="email"/>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="form-control" placeholder="email" required/>
                 </div>
+                <div className="mb-3">
+                        <input type="password"  value={password} onChange={(e) => setPassword(e.target.value)} className="form-control" placeholder="Contraseña" required/>
+                    </div>
                 <div className="d-flex justify-content-center">
                     <button type="submit" className="btn btn-primary w-100">
                         Crear Hotel
