@@ -73,7 +73,11 @@
 		]
 	},
 	"dependencies": {
+<<<<<<< HEAD
 		"cors": "^2.8.5",
+=======
+		"font-awesome": "^4.7.0",
+>>>>>>> develop
 		"prop-types": "^15.6.1",
 		"react": "^16.8.4",
 		"react-dom": "^16.8.4",

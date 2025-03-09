@@ -1,9 +1,11 @@
+// src/layout.js
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ScrollToTop from "./component/scrollToTop";
 import { BackendURL } from "./component/backendURL";
-
+import ThemeForm from './pages/theme';
 import { Home } from "./pages/home";
+import { Hoteles } from "./pages/hotel";
 import { Demo } from "./pages/demo";
 import { Single } from "./pages/single";
 import { ListaCat } from "./pages/listaCat";
@@ -13,7 +15,8 @@ import Navbar from "./component/navbar";
 import EditarCategoria from "./component/editarCategoria";
 import CrearCategoria from "./component/crearCategoria";
 import ListaCategoria from "./component/listaCategoria";
-
+import EditarHotel from "./component/editarHotel";
+import CrearHotel from "./component/crearHotel";
 const Layout = () => {
     // Basename: Usado si el proyecto está en un subdirectorio, configurado en .env
     const basename = process.env.BASENAME || "";
@@ -22,7 +25,6 @@ const Layout = () => {
     if (!process.env.BACKEND_URL || process.env.BACKEND_URL === "") {
         return <BackendURL />;
     }
-
     return (
         <div>
             <BrowserRouter basename={basename}>
@@ -37,6 +39,13 @@ const Layout = () => {
                         <Route path="/single/:theid" element={<Single />} />
                         {/* Ruta para manejar 404 (página no encontrada) */}
                         <Route path="*" element={<h1 className="text-center mt-5">Página no encontrada</h1>} />
+                        <Route element={<Hoteles />} path="/" />
+                        <Route element={<EditarHotel />} path="/editar/:id"/> 
+                        <Route element={<CrearHotel/>} path="/crear"/>
+                        <Route element={<Demo />} path="/demo" />
+                        <Route element={<Single />} path="/single/:theid" />
+                        <Route element={<ThemeForm />} path="/theme" />
+                        <Route element={<h1>Not found!</h1>} />
                     </Routes>
                 </ScrollToTop>
             </BrowserRouter>
@@ -44,4 +53,4 @@ const Layout = () => {
     );
 };
 
-export default injectContext(Layout);
+export default injectContext (Layout);

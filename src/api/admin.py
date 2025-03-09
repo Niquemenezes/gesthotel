@@ -1,5 +1,6 @@
 import os
 from flask_admin import Admin
+from .models import db, User, Hoteles, Theme
 from flask_admin.contrib.sqla import ModelView
 from .models import db, User, Category
 
@@ -17,6 +18,10 @@ def setup_admin(app):
     
     # Agregamos el modelo de Categorías al admin
     admin.add_view(ModelView(Category, db.session, name='Categorías'))
+    # Add your models here, for example this is how we add a the User model to the admin
+    admin.add_view(ModelView(User, db.session))
+    admin.add_view(ModelView(Hoteles, db.session))
+    admin.add_view(ModelView(Theme, db.session))
 
     # Aquí puedes agregar más modelos a la interfaz de administración si lo necesitas
     # admin.add_view(ModelView(YourModelName, db.session, name='YourModelName'))
