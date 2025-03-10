@@ -5,7 +5,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from api.models import db, User, Hoteles, Theme, Category, HotelTheme, Branches
+from api.models import db, User, Hoteles, Theme, Category, HotelTheme, Branches, Maintenance
 
 
 # Blueprint para los endpoints de la API
@@ -341,3 +341,59 @@ def delete_hoteltheme(id):
     db.session.delete(hoteltheme)
     db.session.commit()
     return jsonify({"message": "HotelTheme deleted"}), 200
+
+# Rutas para Maintenance
+
+# Ruta para obtener todos los trabajadores de mantenimiento
+@api.route('/maintenance', methods=['GET'])
+def get_maintenance():
+    maintenance = Maintenance.query.all()
+    
+    return jsonify([maint.serialize() for maint in maintenance])
+
+# Ruta para obtener un trabajador de mantenimiento por ID
+@api.route('/maintenance/<int:id>', methods=['GET'])
+def get_maint(id):
+    maint = Maintenance.query.get_or_404(id)
+    
+    return jsonify(maint.serialize())
+
+# Ruta para crear un nuevo trabajador de mantenimiento
+@api.route('/maintenance', methods=['POST'])
+def create_maintenance():
+    data = request.get_json()
+    nuevo_maint = Maintenance(
+        nombre=data['nombre'],
+        email=data['email'],
+        password=data['password'],
+        hotel_id=data['hotel_id']
+    )
+    
+    db.session.add(nuevo_maint)
+    db.session.commit()
+    
+    return jsonify(nuevo_maint.serialize()), 201
+
+# Ruta para actualizar un trabajador de mantenimiento
+@api.route('/maintenance/<int:id>', methods=['PUT'])
+def update_maintenance(id):
+    maint = Maintenance.query.get_or_404(id)
+    data = request.get_json()
+    maint.nombre = data['nombre']
+    maint.email = data['email']
+    maint.password = data['password']
+    maint.hotel_id = data['hotel_id']
+   
+    db.session.commit()
+   
+    return jsonify(maint.serialize())
+
+# Ruta para eliminar un trabajador de mantenimiento
+@api.route('/maintenance/<int:id>', methods=['DELETE'])
+def delete_maintenance(id):
+    maint = Maintenance.query.get_or_404(id)
+    
+    db.session.delete(maint)
+    db.session.commit()
+    
+    return jsonify({"message": "Trabajador de mantenimiento eliminado con éxito"}), 200

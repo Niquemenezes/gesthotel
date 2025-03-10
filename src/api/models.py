@@ -108,3 +108,23 @@ class Branches(db.Model):
             "latitud": self.latitud,
             "hotel_id": self.hotel_id
         }
+class Maintenance(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(80), nullable=False)
+    hotel_id = db.Column(db.Integer, db.ForeignKey('hoteles.id'), nullable=True)
+    
+    hotel = db.relationship('Hoteles')
+
+    def __repr__(self):
+        return f'<Maintenance {self.nombre}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "nombre": self.nombre,
+            "email": self.email,
+            "password": self.password,
+            "hotel_id": self.hotel_id
+        }
