@@ -140,7 +140,7 @@ class HouseKeeper(db.Model):
     branches = db.relationship('Branches', backref='housekeeper')
 
     def __repr__(self):
-        return f'<HouseKeeper {self.id}>
+        return f'<HouseKeeper {self.id}>'
 
     def serialize(self):
         return {
