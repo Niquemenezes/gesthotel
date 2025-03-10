@@ -5,6 +5,7 @@ import ScrollToTop from "./component/scrollToTop";
 import { BackendURL } from "./component/backendURL";
 import ThemeForm from './pages/theme';
 import HotelTheme from './pages/hotelTheme';
+import HouseKeeper from './pages/houseKeeper';
 import { Home } from "./pages/home";
 import { Demo } from "./pages/demo";
 import { Single } from "./pages/single";
@@ -48,6 +49,7 @@ const Layout = () => {
                         <Route element={<HotelTheme />} path="/hotelTheme" />
                         <Route element={<Branches />} path="/listaBranches" />
                         <Route element={<Maintenance/>} path="/listaMaintenance" />
+                        <Route element={<HouseKeeper />} path="/houseKeeper" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
                 </ScrollToTop>

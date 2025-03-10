@@ -119,6 +119,28 @@ class Maintenance(db.Model):
 
     def __repr__(self):
         return f'<Maintenance {self.nombre}>'
+      
+    def serialize(self):
+      return {
+          "id": self.id,
+          "nombre": self.nombre,
+          "email": self.email,
+          "password": self.password,
+          "hotel_id": self.hotel_id
+        }
+      
+class HouseKeeper(db.Model):
+    __tablename__ = 'housekeeper'
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(80), unique=False, nullable=False)
+    id_branche = db.Column(db.Integer, db.ForeignKey('branches.id'), nullable=True)
+
+    branches = db.relationship('Branches', backref='housekeeper')
+
+    def __repr__(self):
+        return f'<HouseKeeper {self.id}>
 
     def serialize(self):
         return {
@@ -126,5 +148,5 @@ class Maintenance(db.Model):
             "nombre": self.nombre,
             "email": self.email,
             "password": self.password,
-            "hotel_id": self.hotel_id
+            "id_branche": self.id_branche
         }
