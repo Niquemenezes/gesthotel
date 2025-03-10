@@ -14,9 +14,8 @@ import Navbar from "./component/navbar";
 import EditarCategoria from "./component/editarCategoria";
 import CrearCategoria from "./component/crearCategoria";
 import ListaCategoria from "./component/listaCategoria";
-import EditarHotel from "./component/editarHotel";
-import CrearHotel from "./component/crearHotel";
-import ListaHoteles from "./component/listaHoteles";
+import Hoteles from "./component/listaHoteles";
+import Branches from "./component/listaBranches";
 
 
 
@@ -34,18 +33,18 @@ const Layout = () => {
                 <ScrollToTop>
                     <Navbar />
                     <Routes>
-
-                        <Route path="/" element={<Home />} />
-                        <Route path="/listaCat" element={<ListaCat />} />
-                        <Route path="/editar/:id" element={<EditarCategoria />} />
-                        <Route path="/crearCategoria" element={<CrearCategoria />} />
-                        <Route path="/listaCategoria" element={<ListaCategoria />} />
-                        <Route path="/single/:theid" element={<Single />} />
-                        <Route element={<ListaHoteles/>} path="/listaHoteles"/> 
-                        <Route element={<EditarHotel/>} path="/editar-hotel/:id"/>
-                        <Route element={<CrearHotel/>} path="/crearHotel"/>
-                        <Route element={<Demo />} path="/demo" />
+                        <Route element={<Home />} path="/"/>
+                        <Route element={<ListaCat />} path="/listaCat"/>
+                        <Route element={<EditarCategoria />} path="/editar/:id" />
+                        <Route element={<CrearCategoria />} path="/crearCategoria" />
+                        <Route element={<ListaCategoria />} path="/listaCategoria" />
+                        <Route element={<Single />} path="/single/:theid" />
+                        <Route element={<Hoteles />} path="/hoteles"   />
+                        <Route element={<Hoteles />} path="/listaHoteles"   />
+                        <Route element={<Demo />} path="/demo"/>
                         <Route element={<ThemeForm />} path="/theme" />
+                        <Route element={<Branches />} path="/listaBranches" />
+                        <Route element={<Branches />} path="/listaBranches" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
                 </ScrollToTop>

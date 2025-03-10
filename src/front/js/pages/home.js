@@ -20,7 +20,7 @@ export const Home = () => {
             <div><Link to="/theme">Go to Theme Form</Link></div>
             <div><Link to="/listaHoteles">Go to Hoteles</Link></div>
             <div><Link to="/listaCat">Go to Category Form</Link></div>
-           
+            <div><Link to="/listaBranches">Go to Branches</Link></div>
         </div>
 
     );
