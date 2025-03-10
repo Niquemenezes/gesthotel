@@ -5,7 +5,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from api.models import db, User, Hoteles, Theme, Category, Branches
+from api.models import db, User, Hoteles, Theme, Category, HotelTheme, Branches
 
 
 # Blueprint para los endpoints de la API
@@ -289,3 +289,55 @@ def delete_branch(id):
     
     return jsonify({"message": "Branch eliminado"}), 200
 
+@api.route('/hoteltheme', methods=['POST'])
+def create_hoteltheme():
+    body = request.get_json()
+    if not body or not body.get('id_hoteles') or not body.get('id_theme'):
+        return jsonify({"message": "id_hoteles and id_theme are required"}), 400
+    hotel = Hoteles.query.get(body.get('id_hoteles'))
+    theme = Theme.query.get(body.get('id_theme'))
+    if not hotel or not theme:
+        return jsonify({"message": "Hotel or Theme not found"}), 404
+    new_hoteltheme = HotelTheme(
+        id_hoteles=body.get('id_hoteles'),
+        id_theme=body.get('id_theme')
+    )
+    db.session.add(new_hoteltheme)
+    db.session.commit()
+    return jsonify(new_hoteltheme.serialize()), 201
+
+@api.route('/hoteltheme', methods=['GET'])
+def get_hotelthemes():
+    hotelthemes = HotelTheme.query.all()
+    return jsonify([hoteltheme.serialize() for hoteltheme in hotelthemes]), 200
+
+@api.route('/hoteltheme/<int:id>', methods=['GET'])
+def get_hoteltheme(id):
+    hoteltheme = HotelTheme.query.get(id)
+    if not hoteltheme:
+        return jsonify({"message": "HotelTheme not found"}), 404
+    return jsonify(hoteltheme.serialize()), 200
+
+@api.route('/hoteltheme/<int:id>', methods=['PUT'])
+def update_hoteltheme(id):
+    hoteltheme = HotelTheme.query.get(id)
+    if not hoteltheme:
+        return jsonify({"message": "HotelTheme not found"}), 404
+    body = request.get_json()
+    hotel = Hoteles.query.get(body.get('id_hoteles', hoteltheme.id_hoteles))
+    theme = Theme.query.get(body.get('id_theme', hoteltheme.id_theme))
+    if not hotel or not theme:
+        return jsonify({"message": "Hotel or Theme not found"}), 404
+    hoteltheme.id_hoteles = body.get('id_hoteles', hoteltheme.id_hoteles)
+    hoteltheme.id_theme = body.get('id_theme', hoteltheme.id_theme)
+    db.session.commit()
+    return jsonify(hoteltheme.serialize()), 200
+
+@api.route('/hoteltheme/<int:id>', methods=['DELETE'])
+def delete_hoteltheme(id):
+    hoteltheme = HotelTheme.query.get(id)
+    if not hoteltheme:
+        return jsonify({"message": "HotelTheme not found"}), 404
+    db.session.delete(hoteltheme)
+    db.session.commit()
+    return jsonify({"message": "HotelTheme deleted"}), 200

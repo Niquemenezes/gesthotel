@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ScrollToTop from "./component/scrollToTop";
 import { BackendURL } from "./component/backendURL";
 import ThemeForm from './pages/theme';
+import HotelTheme from './pages/hotelTheme';
 import { Home } from "./pages/home";
 import { Demo } from "./pages/demo";
 import { Single } from "./pages/single";
@@ -43,7 +44,7 @@ const Layout = () => {
                         <Route element={<Hoteles />} path="/listaHoteles"   />
                         <Route element={<Demo />} path="/demo"/>
                         <Route element={<ThemeForm />} path="/theme" />
-                        <Route element={<Branches />} path="/listaBranches" />
+                        <Route element={<HotelTheme />} path="/hotelTheme" />
                         <Route element={<Branches />} path="/listaBranches" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
