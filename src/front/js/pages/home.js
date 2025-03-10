@@ -22,6 +22,7 @@ export const Home = () => {
             <div><Link to="/listaCat">Go to Category Form</Link></div>
             <div><Link to="/hoteltheme">Go to Hotel Theme Form</Link></div>
             <div><Link to="/listaBranches">Go to Branches</Link></div>
+            <div><Link to="/ListaMaintenance"> Go to Maintenance</Link></div>
             <div><Link to="/houseKeeper">Go to HouseKeeper Form</Link></div>
         </div>
 

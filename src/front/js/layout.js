@@ -18,6 +18,7 @@ import CrearCategoria from "./component/crearCategoria";
 import ListaCategoria from "./component/listaCategoria";
 import Hoteles from "./component/listaHoteles";
 import Branches from "./component/listaBranches";
+import Maintenance from "./component/listaMaintenance";
 
 
 
@@ -47,6 +48,7 @@ const Layout = () => {
                         <Route element={<ThemeForm />} path="/theme" />
                         <Route element={<HotelTheme />} path="/hotelTheme" />
                         <Route element={<Branches />} path="/listaBranches" />
+                        <Route element={<Maintenance/>} path="/listaMaintenance" />
                         <Route element={<HouseKeeper />} path="/houseKeeper" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
