@@ -5,7 +5,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from api.models import db, User, Hoteles, Theme, Category
+from api.models import db, User, Hoteles, Theme, Category, Branches
 
 
 # Blueprint para los endpoints de la API
@@ -21,6 +21,152 @@ def handle_hello():
         "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
     }
     return jsonify(response_body), 200
+
+@api.route('/user', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    if not users:
+        return jsonify(message="No users found"), 404
+    all_users = list(map(lambda x: x.serialize(), users))
+    return jsonify(message="Users", users=all_users), 200
+
+
+# rutas para hoteles
+
+@api.route('/hoteles', methods=['GET'])
+def obtener_hoteles():
+    hoteles = Hoteles.query.all()  # Obtener todos los hotel
+    hoteles_serialize = [hotel.serialize() for hotel in hoteles]  # Serializar cada hotel
+    return jsonify(hoteles_serialize), 200  # Retornar los datos serializados como JSON
+
+@api.route("/hoteles/<int:id>", methods=["GET"])
+def obtener_hotel_por_id(id):
+    hotel = Hoteles.query.get(id)
+    
+    if not hotel:
+        return jsonify({"error": "Hotel no encontrado"}), 404
+   
+    return jsonify(hotel.serialize()), 200
+
+@api.route('/hoteles', methods=['POST'])
+def crear_hoteles():
+    data = request.get_json()
+    #crear hoteles
+    if "password" not in data or not data["password"]:
+        return jsonify({"error": "Password is requires"}), 400
+    if "email" not in data or not data["email"]:
+        return jsonify({"error": "Email is required"}), 400
+
+    # Validar que el email contenga "@"
+    if "@" not in data["email"]:
+        return jsonify({"error": "Email must contain '@'"}), 400
+    
+    existing_hotel = Hoteles.query.filter_by(nombre=data["nombre"]).first()
+    if existing_hotel:
+        return jsonify({"error": "Hotel con este nombre ya existe"}), 400
+    
+    # Verificar si el email ya está registrado
+    existing_email = Hoteles.query.filter_by(email=data["email"]).first()
+    if existing_email:
+        return jsonify({"error": "Email is already in use"}), 400
+        
+    nuevo_hotel =Hoteles(
+        nombre=data["nombre"],
+        email=data["email"],
+            password=data["password"]
+    )
+   
+    db.session.add(nuevo_hotel)
+    db.session.commit()
+        
+    return jsonify(nuevo_hotel.serialize()), 200
+
+@api.route("/hoteles/<int:id>", methods=["DELETE"])
+def delete_hoteles(id):
+    hotel = Hoteles.query.get(id)
+    
+    if not hotel:
+        return jsonify({"error": "Hotel no encontrado"}), 400
+    
+    db.session.delete(hotel)
+    db.session.commit()
+    
+    return jsonify({"message" : "Hotel eliminado"}), 200
+
+@api.route("/hoteles/<int:id>", methods=["PUT"])
+def actualizar_hoteles(id):
+    hotel = Hoteles.query.get(id)
+    
+    if not hotel:
+        return jsonify({"error": "Hotel no encontrado"}), 400
+    
+    data = request.get_json()
+    hotel.nombre = data.get("nombre", hotel.nombre)
+    hotel.email = data.get("email", hotel.email)
+   
+    db.session.commit()
+   
+    return jsonify(hotel.serialize()), 200
+
+@api.route('/theme', methods=['GET'])
+def get_themes():
+    themes = Theme.query.all()
+    if not themes:
+        return jsonify(message="No themes found"), 404
+    all_themes = list(map(lambda x: x.serialize(), themes))
+    return jsonify(message="Themes", themes=all_themes), 200
+
+@api.route('/theme/<int:id>', methods=['GET'])
+def get_theme_by_id(id):
+    theme = Theme.query.get(id)
+    if not theme:
+        return jsonify(message="Theme not found"), 404
+    return jsonify(message="Theme", theme=theme.serialize()), 200
+
+@api.route('/theme', methods=['POST'])
+def add_new_theme():
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({"msg": "Body missing"}), 400
+    if "nombre" not in body:
+        return jsonify({"msg": "nombre missing"}), 400
+    
+    new_theme = Theme()
+    new_theme.nombre = body['nombre']
+    
+    try:
+        with db.session.begin():
+            db.session.add(new_theme)
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"msg": f"Error creating theme: {str(e)}"}), 500
+    
+    return jsonify({'msg': f'Theme {body["nombre"]} has been created', 'theme': new_theme.serialize()}), 201
+
+@api.route('/theme/<int:id>', methods=['PUT'])
+def update_theme(id):
+    theme = Theme.query.get(id)
+    if not theme:
+        return jsonify(message="Theme not found"), 404
+    
+    data = request.get_json()
+    if 'nombre' in data:
+        theme.nombre = data['nombre']
+    
+    db.session.commit()
+    
+    return jsonify(message="Theme updated successfully", theme=theme.serialize()), 200
+
+@api.route('/theme/<int:id>', methods=['DELETE'])
+def delete_theme(id):
+    theme = Theme.query.get(id)
+    if not theme:
+        return jsonify(message="Theme not found"), 404
+    
+    db.session.delete(theme)
+    db.session.commit()
+    
+    return jsonify(message="Theme deleted successfully"), 200
 
 # Obtener todas las categorías
 @api.route('/categories', methods=['GET'])
@@ -84,149 +230,62 @@ def actualizar_category(id):
 
     return jsonify(category.serialize()), 200  # Código 200 para solicitud exitosa
 
+# route para Branches
+# Obtener todos los branches
+@api.route('/branches', methods=['GET'])
+def obtener_branches():
+    branches = Branches.query.all()  # Obtener todos los branches
+    branches_serialize = [branch.serialize() for branch in branches]  # Serializar cada branch
+   
+    return jsonify(branches_serialize), 200  # Retornar los datos serializados como JSON
 
-@api.route('/user', methods=['GET'])
-def get_users():
-    users = User.query.all()
-    if not users:
-        return jsonify(message="No users found"), 404
-    all_users = list(map(lambda x: x.serialize(), users))
-    return jsonify(message="Users", users=all_users), 200
+# Obtener un branch por ID
+@api.route('/branches/<int:id>', methods=['GET'])
+def get_branch(id):
+    branch = Branches.query.get_or_404(id)
+   
+    return jsonify(branch.serialize()), 200  # Aquí se añade la respuesta JSON
 
-
-@api.route('/theme', methods=['GET'])
-def get_themes():
-    themes = Theme.query.all()
-    if not themes:
-        return jsonify(message="No themes found"), 404
-    all_themes = list(map(lambda x: x.serialize(), themes))
-    return jsonify(message="Themes", themes=all_themes), 200
-
-@api.route('/theme/<int:id>', methods=['GET'])
-def get_theme_by_id(id):
-    theme = Theme.query.get(id)
-    if not theme:
-        return jsonify(message="Theme not found"), 404
-    return jsonify(message="Theme", theme=theme.serialize()), 200
-
-@api.route('/theme', methods=['POST'])
-def add_new_theme():
-    body = request.get_json(silent=True)
-    if body is None:
-        return jsonify({"msg": "Body missing"}), 400
-    if "nombre" not in body:
-        return jsonify({"msg": "nombre missing"}), 400
-    
-    new_theme = Theme()
-    new_theme.nombre = body['nombre']
-    
-    try:
-        with db.session.begin():
-            db.session.add(new_theme)
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"msg": f"Error creating theme: {str(e)}"}), 500
-    
-    return jsonify({'msg': f'Theme {body["nombre"]} has been created', 'theme': new_theme.serialize()}), 201
-
-@api.route('/theme/<int:id>', methods=['PUT'])
-def update_theme(id):
-    theme = Theme.query.get(id)
-    if not theme:
-        return jsonify(message="Theme not found"), 404
-    
+# Crear un nuevo branch
+@api.route('/branches', methods=['POST'])
+def crear_branch():
     data = request.get_json()
-    if 'nombre' in data:
-        theme.nombre = data['nombre']
-    
+   
+    nuevo_branch = Branches(
+        nombre=data["nombre"],
+        direccion=data["direccion"],
+        longitud=data["longitud"],
+        latitud=data["latitud"],
+        hotel_id=data["hotel_id"]
+    )
+
+    db.session.add(nuevo_branch)
     db.session.commit()
     
-    return jsonify(message="Theme updated successfully", theme=theme.serialize()), 200
+    return jsonify(nuevo_branch.serialize()), 201
 
-@api.route('/theme/<int:id>', methods=['DELETE'])
-def delete_theme(id):
-    theme = Theme.query.get(id)
-    if not theme:
-        return jsonify(message="Theme not found"), 404
-    
-    db.session.delete(theme)
-    db.session.commit()
-    
-    return jsonify(message="Theme deleted successfully"), 200
-
-
-@api.route('/hoteles', methods=['GET'])
-def obtener_hoteles():
-    hoteles = Hoteles.query.all()  # Obtener todos los hotel
-    hoteles_serialize = [hotel.serialize() for hotel in hoteles]  # Serializar cada hotel
-    return jsonify(hoteles_serialize), 200  # Retornar los datos serializados como JSON
-
-@api.route("/hoteles/<int:id>", methods=["GET"])
-def obtener_hotel_por_id(id):
-    hotel = Hoteles.query.get(id)
-    
-    if not hotel:
-        return jsonify({"error": "Hotel no encontrado"}), 404
-    
-    return jsonify(hotel.serialize()), 200
-
-@api.route('/hoteles', methods=['POST'])
-def crear_hoteles():
-        data = request.get_json()
-        #crear hoteles
-        if "password" not in data or not data["password"]:
-            return jsonify({"error": "Password is requires"}), 400
-        if "email" not in data or not data["email"]:
-            return jsonify({"error": "Email is required"}), 400
-    
-        # Validar que el email contenga "@"
-        if "@" not in data["email"]:
-            return jsonify({"error": "Email must contain '@'"}), 400
-        
-        existing_hotel = Hoteles.query.filter_by(nombre=data["nombre"]).first()
-        if existing_hotel:
-            return jsonify({"error": "Hotel con este nombre ya existe"}), 400
-        
-        # Verificar si el email ya está registrado
-        existing_email = Hoteles.query.filter_by(email=data["email"]).first()
-        if existing_email:
-            return jsonify({"error": "Email is already in use"}), 400
-            
-        nuevo_hotel =Hoteles(
-            nombre=data["nombre"],
-            email=data["email"],
-             password=data["password"]
-        )
-        db.session.add(nuevo_hotel)
-        db.session.commit()
-    
-        return jsonify(nuevo_hotel.serialize()), 200
-
-@api.route("/hoteles/<int:id>", methods=["DELETE"])
-def delete_hoteles(id):
-    hotel = Hoteles.query.get(id)
-    
-    if not hotel:
-        return jsonify({"error": "Hotel no encontrado"}), 400
-
-    db.session.delete(hotel)
-    db.session.commit()
-
-    return jsonify({"message" : "Hotel eliminado"}), 200
-
-@api.route("/hoteles/<int:id>", methods=["PUT"])
-def actualizar_hoteles(id):
-    hotel = Hoteles.query.get(id)
-    
-    if not hotel:
-        return jsonify({"error": "Hotel no encontrado"}), 400
-
+# Actualizar un branch existente
+@api.route('/branches/<int:id>', methods=['PUT'])
+def actualizar_branch(id):
+    branch = Branches.query.get_or_404(id)
     data = request.get_json()
-
-    hotel.nombre = data.get("nombre", hotel.nombre)
-    hotel.email = data.get("email", hotel.email)
-
+    branch.nombre = data.get("nombre", branch.nombre)
+    branch.direccion = data.get("direccion", branch.direccion)
+    branch.longitud = data.get("longitud", branch.longitud)
+    branch.latitud = data.get("latitud", branch.latitud)
+    branch.hotel_id = data.get("hotel_id", branch.hotel_id)
+    
     db.session.commit()
 
-    return jsonify(hotel.serialize()), 200
+    return jsonify(branch.serialize()), 200
+
+# Eliminar un branch
+@api.route('/branches/<int:id>', methods=['DELETE'])
+def delete_branch(id):
+    branch = Branches.query.get_or_404(id)
+
+    db.session.delete(branch)
+    db.session.commit()
+    
+    return jsonify({"message": "Branch eliminado"}), 200
 
