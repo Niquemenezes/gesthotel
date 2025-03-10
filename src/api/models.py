@@ -22,20 +22,7 @@ class User(db.Model):
             # No se debe serializar la contraseña por razones de seguridad
         }
 
-# Definición del modelo Category
-class Category(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(120), nullable=False)
-
-    def __repr__(self):
-        return f'<Category {self.nombre}>'
-            # do not serialize the password, its a security breach
-    def serialize(self):
-        return {
-            "id": self.id,
-            "nombre": self.nombre,
-        }
-        
+     
 
 class Hoteles(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -84,4 +71,40 @@ class HotelTheme(db.Model):
             "id": self.id,
             "id_hoteles": self.id_hoteles,
             "id_theme": self.id_theme
+        }
+# Definición del modelo Category
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(120), nullable=False)
+
+    def __repr__(self):
+        return f'<Category {self.nombre}>'
+            # do not serialize the password, its a security breach
+    def serialize(self):
+        return {
+            "id": self.id,
+            "nombre": self.nombre,
+        }
+    
+class Branches(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(120), nullable=False)
+    direccion = db.Column(db.String(120), nullable=False)
+    longitud = db.Column(db.Float, nullable=False)
+    latitud = db.Column(db.Float, nullable=False)
+    hotel_id = db.Column(db.Integer, db.ForeignKey('hoteles.id'), nullable=False)
+
+    hotel = db.relationship("Hoteles")
+    
+    def __repr__(self):
+        return f'<Branches {self.nombre}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "nombre": self.nombre,
+            "direccion": self.direccion,
+            "longitud": self.longitud,
+            "latitud": self.latitud,
+            "hotel_id": self.hotel_id
         }
