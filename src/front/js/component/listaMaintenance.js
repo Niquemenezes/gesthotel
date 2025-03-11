@@ -56,7 +56,7 @@ const Maintenance = () => {
       .then((maintenance) => {
         if (maintenanceSeleccionado) {
           // Si es edición, actualiza la lista de mantenimientos
-          setMaintenance(maintenance.map((m) => (m.id === maintenance.id ? maintenance : m)));
+          setMaintenance((prevMaintenance) => prevMaintenance.map((m) => (m.id === maintenance.id ? maintenance : m)));
         } else {
           // Si es creación, añade el nuevo mantenimiento a la lista
           setMaintenance((prevMaintenance) => [...prevMaintenance, maintenance]);
