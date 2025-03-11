@@ -6,11 +6,15 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from api.models import db, User, Hoteles, Theme, Category, HotelTheme, Branches, Maintenance, HouseKeeper
+import datetime
+import jwt
 
 
 # Blueprint para los endpoints de la API
 api = Blueprint('api', __name__)
 app = Flask(__name__)
+
+SECRET_KEY = "your_secret_key"
 # Permitir solicitudes CORS a esta API
 CORS(api)
 
@@ -465,3 +469,21 @@ def delete_housekeeper(id):
     db.session.commit()
 
     return jsonify({"message": "Housekeeper deleted successfully"}), 200
+
+@api.route('/loginHouseKeeper', methods=['POST'])
+def login_housekeeper():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    if not email or not password:
+        return jsonify({"error": "Missing email or password"}), 400
+    housekeeper = HouseKeeper.query.filter_by(email=email).first()
+    if not housekeeper:
+        return jsonify({"error": "Invalid housekeeper credentials"}), 401
+    if housekeeper.password != password:
+        return jsonify({"error": "Invalid password credentials"}), 401
+    token = jwt.encode({
+        'housekeeper_id': housekeeper.id,
+        'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=5)
+    }, SECRET_KEY, algorithm='HS256')
+    return jsonify({'token': token}), 200

@@ -20,6 +20,10 @@ import Hoteles from "./component/listaHoteles";
 import Branches from "./component/listaBranches";
 import Maintenance from "./component/listaMaintenance";
 
+import LoginHouseKeeper from "./pages/loginHouseKeeper";
+import SignupHouseKeeper from "./pages/signupHouseKeeper";
+import PrivateHouseKeeper from './pages/privateHouseKeeper';
+import ProtectedPrivateHouseKeeper from './pages/ProtectedPrivateHouseKeeper';
 
 
 const Layout = () => {
@@ -50,6 +54,9 @@ const Layout = () => {
                         <Route element={<Branches />} path="/listaBranches" />
                         <Route element={<Maintenance/>} path="/listaMaintenance" />
                         <Route element={<HouseKeeper />} path="/houseKeeper" />
+                        <Route element={<LoginHouseKeeper />} path="/loginHouseKeeper" />
+                        <Route element={<SignupHouseKeeper />} path="/signupHouseKeeper" />
+                        <Route element={<ProtectedPrivateHouseKeeper><PrivateHouseKeeper /></ProtectedPrivateHouseKeeper>} path="/privateHouseKeeper" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
                 </ScrollToTop>
