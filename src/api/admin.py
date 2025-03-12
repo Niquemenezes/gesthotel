@@ -1,6 +1,6 @@
 import os
 from flask_admin import Admin
-from .models import db, User, Hoteles, Theme, Category, HotelTheme, Branches, Room
+from .models import db, User, Hoteles, Theme, Category, HotelTheme, Branches, Maintenance, HouseKeeper, HouseKeeperTask, Room, MaintenanceTask
 from flask_admin.contrib.sqla import ModelView
 
 def setup_admin(app):
@@ -16,6 +16,10 @@ def setup_admin(app):
     admin.add_view(ModelView(HotelTheme, db.session))
     admin.add_view(ModelView(Category, db.session))
     admin.add_view(ModelView(Branches, db.session))
+    admin.add_view(ModelView(Maintenance, db.session))
+    admin.add_view(ModelView(HouseKeeper, db.session))
+    admin.add_view(ModelView(HouseKeeperTask, db.session))
+    admin.add_view(ModelView(MaintenanceTask, db.session))
     admin.add_view(ModelView(Room, db.session))
     # Aquí puedes agregar más modelos a la interfaz de administración si lo necesitas
     # admin.add_view(ModelView(YourModelName, db.session, name='YourModelName'))

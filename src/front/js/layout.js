@@ -5,6 +5,7 @@ import ScrollToTop from "./component/scrollToTop";
 import { BackendURL } from "./component/backendURL";
 import ThemeForm from './pages/theme';
 import HotelTheme from './pages/hotelTheme';
+import HouseKeeper from './pages/houseKeeper';
 import { Home } from "./pages/home";
 import { Demo } from "./pages/demo";
 import { Single } from "./pages/single";
@@ -20,7 +21,13 @@ import Branches from "./component/listaBranches";
 import EditarRoom from "./component/editarRoom";
 import CrearRoom from "./component/crearRoom";
 import ListaRoom from "./component/listaRoom";
-
+import Maintenance from "./component/listaMaintenance";
+import LoginHouseKeeper from "./pages/loginHouseKeeper";
+import SignupHouseKeeper from "./pages/signupHouseKeeper";
+import PrivateHouseKeeper from './pages/privateHouseKeeper';
+import ProtectedPrivateHouseKeeper from './pages/ProtectedPrivateHouseKeeper';
+import HouseKeeperTask from './pages/HouseKeeperTask';
+import MaintenanceTask from './pages/maintenanceTask';
 
 const Layout = () => {
     // Basename: Usado si el proyecto está en un subdirectorio, configurado en .env
@@ -52,7 +59,13 @@ const Layout = () => {
                         <Route element={<EditarRoom />} path="/editarRoom/:id" />
                         <Route element={<CrearRoom />} path="/crearRoom" />
                         <Route element={<ListaRoom />} path="/listaRoom" />
-
+                        <Route element={<Maintenance/>} path="/listaMaintenance" />
+                        <Route element={<HouseKeeper />} path="/houseKeeper" />
+                        <Route element={<LoginHouseKeeper />} path="/loginHouseKeeper" />
+                        <Route element={<SignupHouseKeeper />} path="/signupHouseKeeper" />
+                        <Route element={<ProtectedPrivateHouseKeeper><PrivateHouseKeeper /></ProtectedPrivateHouseKeeper>} path="/privateHouseKeeper" />
+                        <Route element={<HouseKeeperTask />} path="/HouseKeeperTask" />
+                        <Route element={<MaintenanceTask />} path="/maintenanceTask" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
                 </ScrollToTop>
