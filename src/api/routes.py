@@ -5,7 +5,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from api.models import db, User, Hoteles, Theme, Category, HotelTheme, Branches, Maintenance, HouseKeeper, HouseKeeperTask, Room
+from api.models import db, User, Hoteles, Theme, Category, HotelTheme, Branches, Maintenance, HouseKeeper, HouseKeeperTask, MaintenanceTask, Room
 import datetime
 import jwt
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -584,6 +584,95 @@ def delete_housekeeper_task(id):
 
     return jsonify({"message": "HouseKeeperTask deleted successfully"}), 200
 
+@api.route('/maintenancetasks', methods=['GET'])
+def get_all_maintenance_tasks():
+    """Obtener todas las tareas de mantenimiento"""
+    maintenance_tasks = MaintenanceTask.query.all()
+    return jsonify([task.serialize() for task in maintenance_tasks]), 200
+
+@api.route('/maintenancetasks/<int:id>', methods=['GET'])
+def get_maintenance_task(id):
+    """Obtener una tarea de mantenimiento específica por ID"""
+    maintenance_task = MaintenanceTask.query.get(id)
+    if not maintenance_task:
+        return jsonify({"message": "Tarea de mantenimiento no encontrada"}), 404
+    return jsonify(maintenance_task.serialize()), 200
+
+@api.route('/maintenancetasks', methods=['POST'])
+def create_maintenance_task():
+    """Crear una nueva tarea de mantenimiento"""
+    data = request.get_json()
+
+    try:
+        nombre = data.get('nombre')
+        photo = data.get('photo')
+        condition = data.get('condition')
+        room_id = data.get('room_id')
+        maintenance_id = data.get('maintenance_id')
+        housekeeper_id = data.get('housekeeper_id')
+        category_id = data.get('category_id')
+
+        new_task = MaintenanceTask(
+            nombre=nombre,
+            photo=photo,
+            condition=condition,
+            room_id=room_id,
+            maintenance_id=maintenance_id,
+            housekeeper_id=housekeeper_id,
+            category_id=category_id
+        )
+
+        db.session.add(new_task)
+        db.session.commit()
+
+        return jsonify(new_task.serialize()), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Error al crear la tarea de mantenimiento", "error": str(e)}), 400
+
+@api.route('/maintenancetasks/<int:id>', methods=['PUT'])
+def update_maintenance_task(id):
+    """Actualizar una tarea de mantenimiento existente"""
+    maintenance_task = MaintenanceTask.query.get(id)
+
+    if not maintenance_task:
+        return jsonify({"message": "Tarea de mantenimiento no encontrada"}), 404
+
+    data = request.get_json()
+
+    try:
+        maintenance_task.nombre = data.get('nombre', maintenance_task.nombre)
+        maintenance_task.photo = data.get('photo', maintenance_task.photo)
+        maintenance_task.condition = data.get('condition', maintenance_task.condition)
+        maintenance_task.room_id = data.get('room_id', maintenance_task.room_id)
+        maintenance_task.maintenance_id = data.get('maintenance_id', maintenance_task.maintenance_id)
+        maintenance_task.housekeeper_id = data.get('housekeeper_id', maintenance_task.housekeeper_id)
+        maintenance_task.category_id = data.get('category_id', maintenance_task.category_id)
+
+        db.session.commit()
+
+        return jsonify(maintenance_task.serialize()), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Error al actualizar la tarea de mantenimiento", "error": str(e)}), 400
+
+@api.route('/maintenancetasks/<int:id>', methods=['DELETE'])
+def delete_maintenance_task(id):
+    """Eliminar una tarea de mantenimiento"""
+    maintenance_task = MaintenanceTask.query.get(id)
+
+    if not maintenance_task:
+        return jsonify({"message": "Tarea de mantenimiento no encontrada"}), 404
+
+    try:
+        db.session.delete(maintenance_task)
+        db.session.commit()
+        return jsonify({"message": "Tarea de mantenimiento eliminada exitosamente"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Error al eliminar la tarea de mantenimiento", "error": str(e)}), 400
 
 @api.route('/rooms', methods=['GET'])
 def get_all_rooms():

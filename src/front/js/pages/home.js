@@ -33,6 +33,8 @@ export const Home = () => {
             <div>
 				<Link to="/authhotel">Go to login Hotel Form</Link>
 			</div>
+
+            <div><Link to="/maintenanceTask">Go to Maintenance Task Form</Link></div>
         </div>
 
     );

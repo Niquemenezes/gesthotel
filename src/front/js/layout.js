@@ -32,8 +32,7 @@ import SignupHotel from "./pages/signupHotel";
 import PrivateHotel from "./pages/privateHotel";
 import AuthHotel from "./component/authhotel";
 
-
-
+import MaintenanceTask from './pages/maintenanceTask';
 
 const Layout = () => {
     // Basename: Usado si el proyecto está en un subdirectorio, configurado en .env
@@ -71,7 +70,7 @@ const Layout = () => {
                         <Route element={<SignupHotel />} path="/signupHotel" />
                         <Route element={<LoginHotel />} path="/loginHotel" />
                         <Route element={<AuthHotel />} path="/authhotel" />
-
+                        <Route element={<MaintenanceTask />} path="/maintenanceTask" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
                 </ScrollToTop>
