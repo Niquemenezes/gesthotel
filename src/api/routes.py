@@ -8,11 +8,17 @@ from flask_cors import CORS
 from api.models import db, User, Hoteles, Theme, Category, HotelTheme, Branches, Maintenance, HouseKeeper, HouseKeeperTask, Room
 import datetime
 import jwt
+from werkzeug.security import check_password_hash, generate_password_hash
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager
+from flask_jwt_extended import create_access_token
 
 
 # Blueprint para los endpoints de la API
 api = Blueprint('api', __name__)
 app = Flask(__name__)
+app.config['JWT_SECRET_KEY'] = 'tu_clave_secreta'  # Cambia esto por una clave secreta segura
+jwt = JWTManager(app)
 
 SECRET_KEY = "your_secret_key"
 # Permitir solicitudes CORS a esta API
@@ -583,3 +589,53 @@ def delete_housekeeper_task(id):
 def get_all_rooms():
     rooms = Room.query.all()
     return jsonify([room.serialize() for room in rooms]), 200
+
+# crear un login de hotel
+
+@api.route("/loginhotel", methods=["POST"])
+def loginhotel():
+    email = request.json.get("email", None)
+    password = request.json.get("password", None)
+    
+    hotel = Hoteles.query.filter_by(email=email).first()
+    
+     # Si no se encuentra el hotel
+    if hotel is None:
+        return jsonify({"msg": "Correo no encontrado"}), 401
+
+    # Verificar la contraseña (deberías usar hashing para contraseñas en producción)
+    if password != hotel.password:
+        return jsonify({"msg": "Correo o contraseña incorrectos"}), 401
+    
+    access_token = create_access_token(identity=email)
+    return jsonify(access_token=access_token), 200
+
+# crear signup de hotel
+@api.route("/signuphotel", methods=["POST"])
+def signuphotel():
+     # Obtener los datos de la solicitud de registro
+    body = request.get_json()
+
+    # Verificar si el correo ya está registrado
+    hotel = Hoteles.query.filter_by(email=body["email"]).first()
+    
+    if hotel:
+        return jsonify({"msg": "Ya se encuentra un hotel con ese correo"}), 401
+
+    # Crear un nuevo hotel
+    hotel = Hoteles(email=body["email"], password=body["password"], nombre=body["nombre"])
+    db.session.add(hotel)
+    db.session.commit()
+
+    # Responder con mensaje de éxito
+    response_body = {
+        "msg": "Hotel creado exitosamente"
+    }
+    return jsonify(response_body), 200
+
+# pagina privada de hotel         
+@api.route("/privatehotel", methods=["GET"])
+@jwt_required()
+def privatehotel():
+    current_user = get_jwt_identity() #obtiene la identidad del usuario desde el token
+    return jsonify(logget_in_as=current_user), 200
