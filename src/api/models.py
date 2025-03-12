@@ -22,8 +22,6 @@ class User(db.Model):
             # No se debe serializar la contraseña por razones de seguridad
         }
 
-     
-
 class Hoteles(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), unique=True, nullable=False)
@@ -194,3 +192,34 @@ class Room(db.Model):
             "nombre": self.nombre,
         }
     
+class MaintenanceTask(db.Model):
+    __tablename__ = 'maintenancetask'
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(120), unique=True, nullable=False)
+    photo = db.Column(db.String(255), nullable=True)
+    condition = db.Column(db.String(120), nullable=True)
+    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
+    maintenance_id = db.Column(db.Integer, db.ForeignKey('maintenance.id'), nullable=False)
+    housekeeper_id = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+
+    # Relaciones
+    room = db.relationship('Room')
+    maintenance = db.relationship('Maintenance')
+    housekeeper = db.relationship('HouseKeeper')
+    category = db.relationship('Category')
+
+    def __repr__(self):
+        return f'<MaintenanceTask {self.nombre}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "nombre": self.nombre,
+            "photo": self.photo,
+            "condition": self.condition,
+            "room": self.room.serialize() if self.room else None,  # Detalles de la habitación
+            "maintenance": self.maintenance.serialize() if self.maintenance else None,  # Detalles del mantenimiento
+            "housekeeper": self.housekeeper.serialize() if self.housekeeper else None,  # Detalles del housekeeper
+            "category": self.category.serialize() if self.category else None,  # Detalles de la categoría
+        }

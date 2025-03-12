@@ -26,6 +26,7 @@ export const Home = () => {
             <div><Link to="/houseKeeper">Go to HouseKeeper Form</Link></div>
             <div><Link to="/loginHouseKeeper">Go to login housekeeper Form</Link></div>
             <div><Link to="/HouseKeeperTask">Go to House Keeper Task Form</Link></div>
+            <div><Link to="/maintenanceTask">Go to Maintenance Task Form</Link></div>
         </div>
 
     );
