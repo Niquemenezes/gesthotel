@@ -27,6 +27,12 @@ import SignupHouseKeeper from "./pages/signupHouseKeeper";
 import PrivateHouseKeeper from './pages/privateHouseKeeper';
 import ProtectedPrivateHouseKeeper from './pages/ProtectedPrivateHouseKeeper';
 import HouseKeeperTask from './pages/HouseKeeperTask';
+
+import LoginHotel from "./pages/loginHotel";
+import SignupHotel from "./pages/signupHotel";
+import PrivateHotel from "./pages/privateHotel";
+import AuthHotel from "./component/authhotel";
+
 import MaintenanceTask from './pages/maintenanceTask';
 
 const Layout = () => {
@@ -65,6 +71,10 @@ const Layout = () => {
                         <Route element={<SignupHouseKeeper />} path="/signupHouseKeeper" />
                         <Route element={<ProtectedPrivateHouseKeeper><PrivateHouseKeeper /></ProtectedPrivateHouseKeeper>} path="/privateHouseKeeper" />
                         <Route element={<HouseKeeperTask />} path="/HouseKeeperTask" />
+                        <Route element={<PrivateHotel />} path="/privateHotel" />
+                        <Route element={<SignupHotel />} path="/signupHotel" />
+                        <Route element={<LoginHotel />} path="/loginHotel" />
+                        <Route element={<AuthHotel />} path="/authhotel" />
                         <Route element={<MaintenanceTask />} path="/maintenanceTask" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
