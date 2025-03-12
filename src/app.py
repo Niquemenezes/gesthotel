@@ -1,7 +1,3 @@
-"""
-This module takes care of starting the API Server, loading the DB, and adding the endpoints.
-"""
-
 import os
 from flask import Flask, jsonify, send_from_directory
 from flask_migrate import Migrate
@@ -11,21 +7,20 @@ from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 
 # Configuration
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../public/')
 db_url = os.getenv("DATABASE_URL")
 
-
 # Initialize the Flask app
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
+# Initialize JWT Manager (should be after app initialization)
+jwt = JWTManager(app)
 
-
-if __name__ == '__main__':
-    app.run(debug=True, port=3001)
 # Database configuration
 if db_url:
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
@@ -70,7 +65,7 @@ def serve_any_other_file(path):
 def home():
     return "API funcionando correctamente"
 
-# Run the app
+# Run the app (only once)
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)

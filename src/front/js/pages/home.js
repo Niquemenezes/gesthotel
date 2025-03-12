@@ -7,6 +7,10 @@ import "../../styles/home.css";
 
 export const Home = () => {
     const { store, actions } = useContext(Context);
+     // Verifica si el store está disponible antes de renderizar
+     if (!store) {
+        return <div>Loading...</div>;  // O algo más adecuado si store no está listo
+    }
     return (
 
         <div className="text-center mt-5">
@@ -26,6 +30,10 @@ export const Home = () => {
             <div><Link to="/houseKeeper">Go to HouseKeeper Form</Link></div>
             <div><Link to="/loginHouseKeeper">Go to login housekeeper Form</Link></div>
             <div><Link to="/HouseKeeperTask">Go to House Keeper Task Form</Link></div>
+            <div>
+				<Link to="/authhotel">Go to login Hotel Form</Link>
+			</div>
+
             <div><Link to="/maintenanceTask">Go to Maintenance Task Form</Link></div>
         </div>
 
