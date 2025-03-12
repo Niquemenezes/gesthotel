@@ -108,3 +108,19 @@ class Branches(db.Model):
             "latitud": self.latitud,
             "hotel_id": self.hotel_id
         }
+class Room(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(120), nullable=False)
+    branch_id = db.Column(db.Integer, db.ForeignKey('branches.id'),nullable=False)
+    branch = db.relationship("Branches")
+
+    def __repr__(self):
+        return f'<Room {self.nombre}>'
+            # do not serialize the password, its a security breach
+    def serialize(self):
+        return {
+            "id": self.id,
+            "nombre": self.nombre,
+            "branch_id": self.branch_id
+        }
+    

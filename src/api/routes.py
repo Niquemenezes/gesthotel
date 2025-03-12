@@ -5,7 +5,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from api.models import db, User, Hoteles, Theme, Category, HotelTheme, Branches
+from api.models import db, User, Hoteles, Theme, Category, HotelTheme, Branches, Room
 
 
 # Blueprint para los endpoints de la API
@@ -341,3 +341,72 @@ def delete_hoteltheme(id):
     db.session.delete(hoteltheme)
     db.session.commit()
     return jsonify({"message": "HotelTheme deleted"}), 200
+
+# Obtener todas las habitaciones
+@api.route('/rooms', methods=['GET'])
+def obtener_rooms():
+    rooms = Room.query.all()  # Obtener todas las habitaciones
+    room_serialize = [room.serialize() for room in rooms]  # Serializar cada habitacion
+    return jsonify(room_serialize), 200  # Retornar los datos serializados como JSON
+
+# Crear una nueva habitacion
+@api.route('/rooms', methods=['POST'])
+def crear_room():
+    data = request.get_json()
+
+    # Validación: Verificar que se reciba el nombre
+    if not data.get("nombre"):
+        return jsonify({"error": "El nombre de la habitación es obligatorio"}), 400
+
+    # Verificar si la habitacion ya existe
+    existing_room = Room.query.filter_by(nombre=data["nombre"]).first()
+    if existing_room:
+        return jsonify({"error": "Habitación con este nombre ya existe"}), 400
+    # Crear nueva habitacion
+    nuevo_room = Room(
+        nombre=data["nombre"],
+        branch_id=data["branchId"]
+    )
+    db.session.add(nuevo_room)
+    db.session.commit()
+
+    return jsonify(nuevo_room.serialize()), 201  # Usar código 201 para creación exitosa
+
+# Eliminar una habitación por ID
+@api.route("/rooms/<int:id>", methods=["DELETE"])
+def delete_room(id):
+    room = Room.query.get(id)
+
+    if not room:
+        return jsonify({"error": "Habitación no encontrada"}), 404  # Código 404 para no encontrado
+
+    db.session.delete(room)
+    db.session.commit()
+
+    return jsonify({"message": "Habitación eliminada"}), 200
+
+# Actualizar una habitación por ID
+@api.route("/rooms/<int:id>", methods=["PUT"])
+def actualizar_room(id):
+    room = Room.query.get(id)
+
+    if not room:
+        return jsonify({"error": "Habitación no encontrada"}), 404  # Código 404 para no encontrado
+
+    data = request.get_json()
+
+    # Validación para el nombre
+    if not data.get("nombre"):
+        return jsonify({"error": "El nombre de la habitación es obligatorio"}), 400
+
+    room.nombre = data.get("nombre", room.nombre)  # Actualizar el nombre
+    db.session.commit()
+
+    return jsonify(room.serialize()), 200  # Código 200 para solicitud exitosa
+
+@api.route('/rooms/<int:id>', methods=['GET'])
+def obtener_rooms_id(id):
+    room = Room.query.get(id)
+    if not room:
+        return jsonify({"message": "RoomTheme not found"}), 404
+    return jsonify(room.serialize()), 200
