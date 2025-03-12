@@ -106,6 +106,17 @@ class Branches(db.Model):
             "latitud": self.latitud,
             "hotel_id": self.hotel_id
         }
+      
+class Room(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(120), nullable=False)
+    branch_id = db.Column(db.Integer, db.ForeignKey('branches.id'),nullable=False)
+    branch = db.relationship("Branches")
+
+    def __repr__(self):
+        return f'<Room {self.nombre}>'
+            # do not serialize the password, its a security breach
+        
 class Maintenance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
@@ -178,20 +189,6 @@ class HouseKeeperTask(db.Model):
             "id_housekeeper": self.id_housekeeper,
         }
     
-class Room(db.Model):
-    __tablename__ = 'room'
-    id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(120), unique=True, nullable=False)
-
-    def __repr__(self):
-        return f'<Room {self.nombre}>'
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "nombre": self.nombre,
-        }
-    
 class MaintenanceTask(db.Model):
     __tablename__ = 'maintenancetask'
     id = db.Column(db.Integer, primary_key=True)
@@ -216,6 +213,9 @@ class MaintenanceTask(db.Model):
         return {
             "id": self.id,
             "nombre": self.nombre,
+            "branch_id": self.branch_id
+        }
+    
             "photo": self.photo,
             "condition": self.condition,
             "room": self.room.serialize() if self.room else None,  # Detalles de la habitación
