@@ -26,7 +26,7 @@ import PrivateHouseKeeper from './pages/privateHouseKeeper';
 import ProtectedPrivateHouseKeeper from './pages/ProtectedPrivateHouseKeeper';
 
 import HouseKeeperTask from './pages/HouseKeeperTask';
-
+import MaintenanceTask from './pages/maintenanceTask';
 
 const Layout = () => {
     // Basename: Usado si el proyecto está en un subdirectorio, configurado en .env
@@ -60,6 +60,7 @@ const Layout = () => {
                         <Route element={<SignupHouseKeeper />} path="/signupHouseKeeper" />
                         <Route element={<ProtectedPrivateHouseKeeper><PrivateHouseKeeper /></ProtectedPrivateHouseKeeper>} path="/privateHouseKeeper" />
                         <Route element={<HouseKeeperTask />} path="/HouseKeeperTask" />
+                        <Route element={<MaintenanceTask />} path="/maintenanceTask" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
                 </ScrollToTop>
