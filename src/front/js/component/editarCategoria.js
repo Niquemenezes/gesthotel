@@ -23,6 +23,7 @@ const EditarCategoria = () => {
     // Cargar los datos de la categoría al montar el componente
     useEffect(() => {
         if (store && store.categories) {
+            console.log("store.categories:", store.categories); // Agregado para depuración
             const nameCategory = store.categories.find(item => item.id == id);
             if (nameCategory) {
                 setNombre(nameCategory.nombre);

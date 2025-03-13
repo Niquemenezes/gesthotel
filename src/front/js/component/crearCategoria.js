@@ -24,7 +24,6 @@ const CrearCategoria = () => {
     // Se ejecuta cuando el componente se desmonta
     useEffect(() => {
         // Cuando el componente se desmonta, se cambia la referencia a false
-        isMounted.current = false;
         return () => {
             isMounted.current = false; // Se asegura de que cuando el componente se desmonte, no se actualice el estado
         };
@@ -59,16 +58,25 @@ const CrearCategoria = () => {
             }
             const data = await response.json(); // Esto asume que la respuesta es JSON
             console.log("Categoría creada:", data);
-            setNombre(""); // Limpiar el campo de nombre
-            alert("Categoría creada exitosamente.");
-            navigate("/listaCat");
+            
+            // Verificar si el componente está montado antes de actualizar el estado
+            if (isMounted.current) {
+                setNombre(""); // Limpiar el campo de nombre
+                alert("Categoría creada exitosamente.");
+                navigate("/listaCat");
+            }
         } catch (error) {
             console.error("Error al crear la categoría:", error);
-            setError(error.message || "Error desconocido al crear la categoría.");
+            // Verificar si el componente está montado antes de actualizar el estado
+            if (isMounted.current) {
+                setError(error.message || "Error desconocido al crear la categoría.");
+            }
         } finally {
-            setCargando(false);
+            // Verificar si el componente está montado antes de actualizar el estado
+            if (isMounted.current) {
+                setCargando(false);
+            }
         }
-
     };
 
     return (

@@ -70,6 +70,7 @@ class HotelTheme(db.Model):
             "id_hoteles": self.id_hoteles,
             "id_theme": self.id_theme
         }
+
 # Definición del modelo Category
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -81,7 +82,7 @@ class Category(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "nombre": self.nombre,
+            "nombre": self.nombre
         }
     
 class Branches(db.Model):
@@ -117,6 +118,14 @@ class Room(db.Model):
         return f'<Room {self.nombre}>'
             # do not serialize the password, its a security breach
         
+    def serialize(self):
+            return {
+                'id': self.id,
+                'nombre': self.nombre,
+                'branch_id': self.branch_id,
+                'branch': self.branch.nombre if self.branch else None  # Se asume que la relación 'branch' tiene un campo 'nombre'
+        }
+
 class Maintenance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
@@ -213,9 +222,8 @@ class MaintenanceTask(db.Model):
         return {
             "id": self.id,
             "nombre": self.nombre,
-            "branch_id": self.branch_id
-        }
-    
+            # "branch_id": self.branch_id
+        # }
             "photo": self.photo,
             "condition": self.condition,
             "room": self.room.serialize() if self.room else None,  # Detalles de la habitación

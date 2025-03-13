@@ -17,7 +17,7 @@ from flask_jwt_extended import create_access_token
 api = Blueprint('api', __name__)
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'tu_clave_secreta'  # Cambia esto por una clave secreta segura
-jwt = JWTManager(app)
+# jwt = JWTManager(app)
 
 SECRET_KEY = "your_secret_key"
 # Permitir solicitudes CORS a esta API
@@ -234,8 +234,17 @@ def actualizar_category(id):
     if not data.get("nombre"):
         return jsonify({"error": "El nombre de la categoría es obligatorio"}), 400
 
-    category.nombre = data.get("nombre", category.nombre)  # Actualizar el nombre
+    category.nombre = data.get("nombre", category.nombre)
     db.session.commit()
+
+    # if "nombre" in data:
+    #     category.nombre = data["nombre"]
+
+    # try:
+    #     db.session.commit()
+    # except Exception as e:
+    #     db.session.rollback()  # Si ocurre un error, deshacer los cambios
+    #     return jsonify({"error": f"Error al actualizar la categoría: {str(e)}"}), 500
 
     return jsonify(category.serialize()), 200  # Código 200 para solicitud exitosa
 
@@ -743,10 +752,10 @@ def delete_maintenance_task(id):
 
         return jsonify({"message": "Error al eliminar la tarea de mantenimiento", "error": str(e)}), 400
 
-@api.route('/rooms', methods=['GET'])
-def get_all_rooms():
-    rooms = Room.query.all()
-    return jsonify([room.serialize() for room in rooms]), 200
+# @api.route('/rooms', methods=['GET'])
+# def get_all_rooms():
+#     rooms = Room.query.all()
+#     return jsonify([room.serialize() for room in rooms]), 200
 
 # crear un login de hotel
 
