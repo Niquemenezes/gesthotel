@@ -14,7 +14,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 					initial: "white"
 				}
 			],
-			auth: false
+			auth: false,
+			categories: []
                 
         },
        
@@ -24,6 +25,11 @@ const getState = ({ getStore, getActions, setStore }) => {
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
 			},
+
+			setCategories: (categories) => {
+				setStore({categories})
+			},
+
 
 			logout: () => {
 				console.log("logout")	

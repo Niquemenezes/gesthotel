@@ -9,7 +9,7 @@ export const ListaCat = () => {
                 <h1 aria-live="polite">Categorias</h1>
             </div>
             <ListaCategoria />
-            <EditarCategoria />
+            {/* <EditarCategoria />*/}
         </>
     );
 };
