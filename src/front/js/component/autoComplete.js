@@ -49,9 +49,7 @@ const AutocompleteWithMap = ({ value, onChange, onSelect, onLatLngChange }) => {
         </PlacesAutocomplete>
 
         {/* Mapa de Google */}
-        <GoogleMap mapContainerStyle={mapContainerStyle} center={position} zoom={15}>
-          <Marker position={position} />
-        </GoogleMap>
+      
       </div>
     </LoadScript>
   );
