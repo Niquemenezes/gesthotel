@@ -32,7 +32,7 @@ const AutocompleteWithMap = ({ value, onChange, onSelect, onLatLngChange }) => {
 
   return (
     <LoadScript googleMapsApiKey={key} libraries={["places"]}>
-      <div className="form-container col-12 col-md-12">
+      <div>
         <PlacesAutocomplete value={value} onChange={onChange} onSelect={handleSelect}>
           {({ getInputProps, suggestions, getSuggestionItemProps }) => (
             <div>
@@ -49,7 +49,9 @@ const AutocompleteWithMap = ({ value, onChange, onSelect, onLatLngChange }) => {
         </PlacesAutocomplete>
 
         {/* Mapa de Google */}
-      
+        <GoogleMap mapContainerStyle={mapContainerStyle} center={position} zoom={15}>
+          <Marker position={position} />
+        </GoogleMap>
       </div>
     </LoadScript>
   );

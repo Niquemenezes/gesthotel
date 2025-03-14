@@ -155,68 +155,37 @@ const Branches = () => {
       ))}
 
       {mostrarFormulario && (
-        <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-          <div className="card p-4 w-100" style={{ maxWidth: '800px' }}>
-            <h3 className="text-center mb-4">{branchSeleccionado ? "Editar Branch" : "Crear Branch"}</h3>
-            <form onSubmit={handleSubmit} className="d-flex flex-column">
-              <div className="col-md-12 mb-3">
-                <input
-                  type="text"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  className="form-control"
-                  placeholder="Nombre Sucursal"
-                  required
-                />
-              </div>
-              <div className="col-md-12 mb-3">
-                <AutocompleteWithMap
-                  value={direccion}
-                  onChange={setDireccion}
-                  onSelect={setDireccion}
-                  onLatLngChange={handleLatLngChange} // Pasa las coordenadas
-                />
-              </div>
-              <div className="col-md-12 mb-3">
-                <input
-                  type="number"
-                  value={longitud}
-                  onChange={(e) => setLongitud(e.target.value)}
-                  className="form-control"
-                  placeholder="Longitud"
-                  required
-                />
-              </div>
-              <div className="col-md-12 mb-3">
-                <input
-                  type="number"
-                  value={latitud}
-                  onChange={(e) => setLatitud(e.target.value)}
-                  className="form-control"
-                  placeholder="Latitud"
-                  required
-                />
-              </div>
-              <div className="col-md-12 mb-3">
-                <select
-                  value={hotelId}
-                  onChange={(e) => setHotelId(e.target.value)}
-                  className="form-control"
-                  required
-                >
-                  <option value="">Seleccionar Hotel</option>
-                  {hoteles.map((hotel) => (
-                    <option key={hotel.id} value={hotel.id}>
-                      {hotel.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button type="submit" className="btn btn-primary w-100">
-                {branchSeleccionado ? "Guardar Cambios" : "Crear Branch"}
-              </button>
-            </form>
-          </div>
+        <div className="card p-4 mt-5">
+          <h3 className="text-center mb-4">{branchSeleccionado ? "Editar Branch" : "Crear Branch"}</h3>
+          <form onSubmit={handleSubmit}>
+            <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} className="form-control mb-3" placeholder="Nombre Sucursal" required/>
+            <select
+              value={hotelId}
+              onChange={(e) => setHotelId(e.target.value)}
+              className="form-control mb-3"
+              required
+            >
+              <option value="">Seleccionar Hotel</option>
+              {hoteles.map((hotel) => (
+                <option key={hotel.id} value={hotel.id}>
+                  {hotel.nombre}
+                </option>
+              ))}
+            </select>
+            <AutocompleteWithMap
+              value={direccion}
+              onChange={setDireccion}
+              onSelect={setDireccion}
+              onLatLngChange={handleLatLngChange} // Pasa las coordenadas
+            />
+
+            <input type="number" value={longitud} onChange={(e) => setLongitud(e.target.value)} className="form-control mb-3" placeholder="Longitud" required/>
+            <input type="number" value={latitud} onChange={(e) => setLatitud(e.target.value)} className="form-control mb-3" placeholder="Latitud" required />
+           
+            <button type="submit" className="btn btn-primary w-100">
+              {branchSeleccionado ? "Guardar Cambios" : "Crear Branch"}
+            </button>
+          </form>
         </div>
       )}
     </div>
