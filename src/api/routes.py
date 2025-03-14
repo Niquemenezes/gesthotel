@@ -436,19 +436,23 @@ def obtener_rooms_id(id):
 def get_maintenance():
     maintenance = Maintenance.query.all()
     
-    return jsonify([maint.serialize() for maint in maintenance])
+    return jsonify([maint.serialize() for maint in maintenance]), 200
 
 # Ruta para obtener un trabajador de mantenimiento por ID
 @api.route('/maintenance/<int:id>', methods=['GET'])
 def get_maint(id):
     maint = Maintenance.query.get_or_404(id)
     
-    return jsonify(maint.serialize())
+    return jsonify([maint.serialize() for maint in maint]), 200
 
 # Ruta para crear un nuevo trabajador de mantenimiento
 @api.route('/maintenance', methods=['POST'])
 def create_maintenance():
     data = request.get_json()
+        # Verificamos que los datos estén presentes
+    if not data.get('nombre') or not data.get('email') or not data.get('password'):
+        return jsonify({"error": "Missing data"}), 400
+    
     nuevo_maint = Maintenance(
         nombre=data['nombre'],
         email=data['email'],
@@ -567,6 +571,24 @@ def login_housekeeper():
         return jsonify({"error": "Invalid password credentials"}), 401
     token = jwt.encode({
         'housekeeper_id': housekeeper.id,
+        'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=5)
+    }, SECRET_KEY, algorithm='HS256')
+    return jsonify({'token': token}), 200
+
+@api.route('/loginMaintenance', methods=['POST'])
+def login_maintenance():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    if not email or not password:
+        return jsonify({"error": "Missing email or password"}), 400
+    maintenance = Maintenance.query.filter_by(email=email).first()
+    if not maintenance:
+        return jsonify({"error": "Invalid housekeeper credentials"}), 401
+    if maintenance.password != password:
+        return jsonify({"error": "Invalid password credentials"}), 401
+    token = jwt.encode({
+        'maintenance_id': maintenance.id,
         'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=5)
     }, SECRET_KEY, algorithm='HS256')
     return jsonify({'token': token}), 200
