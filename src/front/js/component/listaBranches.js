@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import AutocompleteWithMap from "./autoComplete";
+
 
 const Branches = () => {
   const [branches, setBranches] = useState([]);
@@ -8,31 +10,27 @@ const Branches = () => {
   const [direccion, setDireccion] = useState("");
   const [longitud, setLongitud] = useState("");
   const [latitud, setLatitud] = useState("");
-  const [hotelId, setHotelId] = useState(""); // Asegurar que tenga un valor por defecto
+  const [hotelId, setHotelId] = useState("");
   const [hoteles, setHoteles] = useState([]);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Obtener lista de Branches y Hoteles al cargar el componente
   useEffect(() => {
-    // Obtener las ramas
     fetch(process.env.BACKEND_URL + "/api/branches")
       .then((response) => response.json())
       .then((data) => setBranches(data))
       .catch((error) => console.error("Error al obtener Branches:", error));
 
-    // Obtener los hoteles
     fetch(process.env.BACKEND_URL + "/api/hoteles")
-    .then((response) => response.json())
-    .then((data) => {
-      setHoteles(data);
-      console.log("Hoteles cargados:", data); // Verifica si los datos son correctos
-    })
-    .catch((error) => console.error("Error al obtener Hoteles:", error));
+      .then((response) => response.json())
+      .then((data) => {
+        setHoteles(data);
+        console.log("Hoteles cargados:", data);
+      })
+      .catch((error) => console.error("Error al obtener Hoteles:", error));
   }, []);
 
-  // Manejar el envío del formulario (crear o editar)
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!hotelId) {
@@ -56,10 +54,8 @@ const Branches = () => {
       })
       .then((branch) => {
         if (branchSeleccionado) {
-          // Si es edición, actualiza la lista de branches
           setBranches(branches.map((b) => (b.id === branch.id ? branch : b)));
         } else {
-          // Si es creación, añade el nuevo branch a la lista
           setBranches((prevBranches) => [...prevBranches, branch]);
         }
 
@@ -77,7 +73,6 @@ const Branches = () => {
       });
   };
 
-  // Eliminar un branch
   const eliminarBranch = (id) => {
     fetch(process.env.BACKEND_URL + `/api/branches/${id}`, {
       method: "DELETE",
@@ -90,6 +85,12 @@ const Branches = () => {
       .catch((error) => {
         alert("Error al eliminar: " + error.message);
       });
+  };
+
+  // Manejar la actualización de latitud y longitud desde Autocomplete
+  const handleLatLngChange = (lat, lng) => {
+    setLatitud(lat);
+    setLongitud(lng);
   };
 
   return (
@@ -154,23 +155,68 @@ const Branches = () => {
       ))}
 
       {mostrarFormulario && (
-        <div className="card p-4 mt-5">
-          <h3 className="text-center mb-4">{branchSeleccionado ? "Editar Branch" : "Crear Branch"}</h3>
-          <form onSubmit={handleSubmit}>
-            <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} className="form-control mb-3" placeholder="Nombre" required />
-            <input type="text" value={direccion} onChange={(e) => setDireccion(e.target.value)} className="form-control mb-3" placeholder="Dirección" required />
-            <input type="number" value={longitud} onChange={(e) => setLongitud(e.target.value)} className="form-control mb-3" placeholder="Longitud" required />
-            <input type="number" value={latitud} onChange={(e) => setLatitud(e.target.value)} className="form-control mb-3" placeholder="Latitud" required />
-            <select value={hotelId} onChange={(e) => setHotelId(e.target.value)} className="form-control mb-3" required>
-              <option value="">Seleccionar Hotel</option>
-              {hoteles.map((hotel) => (
-                <option key={hotel.id} value={hotel.id}>
-                  {hotel.nombre}
-                </option>
-              ))}
-            </select>
-            <button type="submit" className="btn btn-primary w-100">{branchSeleccionado ? "Guardar Cambios" : "Crear Branch"}</button>
-          </form>
+        <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+          <div className="card p-4 w-100" style={{ maxWidth: '800px' }}>
+            <h3 className="text-center mb-4">{branchSeleccionado ? "Editar Branch" : "Crear Branch"}</h3>
+            <form onSubmit={handleSubmit} className="d-flex flex-column">
+              <div className="col-md-12 mb-3">
+                <input
+                  type="text"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  className="form-control"
+                  placeholder="Nombre Sucursal"
+                  required
+                />
+              </div>
+              <div className="col-md-12 mb-3">
+                <AutocompleteWithMap
+                  value={direccion}
+                  onChange={setDireccion}
+                  onSelect={setDireccion}
+                  onLatLngChange={handleLatLngChange} // Pasa las coordenadas
+                />
+              </div>
+              <div className="col-md-12 mb-3">
+                <input
+                  type="number"
+                  value={longitud}
+                  onChange={(e) => setLongitud(e.target.value)}
+                  className="form-control"
+                  placeholder="Longitud"
+                  required
+                />
+              </div>
+              <div className="col-md-12 mb-3">
+                <input
+                  type="number"
+                  value={latitud}
+                  onChange={(e) => setLatitud(e.target.value)}
+                  className="form-control"
+                  placeholder="Latitud"
+                  required
+                />
+              </div>
+              <div className="col-md-12 mb-3">
+                <select
+                  value={hotelId}
+                  onChange={(e) => setHotelId(e.target.value)}
+                  className="form-control"
+                  required
+                >
+                  <option value="">Seleccionar Hotel</option>
+                  {hoteles.map((hotel) => (
+                    <option key={hotel.id} value={hotel.id}>
+                      {hotel.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button type="submit" className="btn btn-primary w-100">
+                {branchSeleccionado ? "Guardar Cambios" : "Crear Branch"}
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>
