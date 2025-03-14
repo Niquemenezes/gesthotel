@@ -27,13 +27,15 @@ import SignupHouseKeeper from "./pages/signupHouseKeeper";
 import PrivateHouseKeeper from './pages/privateHouseKeeper';
 import ProtectedPrivateHouseKeeper from './pages/ProtectedPrivateHouseKeeper';
 import HouseKeeperTask from './pages/HouseKeeperTask';
-
 import LoginHotel from "./pages/loginHotel";
 import SignupHotel from "./pages/signupHotel";
 import PrivateHotel from "./pages/privateHotel";
 import AuthHotel from "./component/authhotel";
-
 import MaintenanceTask from './pages/maintenanceTask';
+
+import LoginMaintenance from "./pages/loginMaintenance";
+import PrivateMaintenance from './pages/privateMaintenance';
+import ProtectedPrivateMaintenance from './pages/ProtectedPrivateMaintenance';
 
 const Layout = () => {
     // Basename: Usado si el proyecto está en un subdirectorio, configurado en .env
@@ -76,6 +78,10 @@ const Layout = () => {
                         <Route element={<LoginHotel />} path="/loginHotel" />
                         <Route element={<AuthHotel />} path="/authhotel" />
                         <Route element={<MaintenanceTask />} path="/maintenanceTask" />
+
+                        <Route element={<LoginMaintenance />} path="/loginMaintenance" />
+                        <Route element={<ProtectedPrivateMaintenance><PrivateMaintenance /></ProtectedPrivateMaintenance>} path="/privateMaintenance" />
+
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
                 </ScrollToTop>
