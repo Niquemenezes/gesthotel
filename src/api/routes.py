@@ -699,17 +699,16 @@ def get_maintenance_task(id):
 
 @api.route('/maintenancetasks', methods=['POST'])
 def create_maintenance_task():
-    """Crear una nueva tarea de mantenimiento"""
     data = request.get_json()
 
     try:
         nombre = data.get('nombre')
-        photo = data.get('photo')
-        condition = data.get('condition')
-        room_id = data.get('room_id')
-        maintenance_id = data.get('maintenance_id')
-        housekeeper_id = data.get('housekeeper_id')
-        category_id = data.get('category_id')
+        photo = data.get('photo', None)
+        condition = data.get('condition', None)
+        room_id = data.get('room_id', None)
+        maintenance_id = data.get('maintenance_id', None)
+        housekeeper_id = data.get('housekeeper_id', None)
+        category_id = data.get('category_id', None)
 
         new_task = MaintenanceTask(
             nombre=nombre,
