@@ -158,7 +158,7 @@ const Branches = () => {
         <div className="card p-4 mt-5">
           <h3 className="text-center mb-4">{branchSeleccionado ? "Editar Branch" : "Crear Branch"}</h3>
           <form onSubmit={handleSubmit}>
-            <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} className="form-control mb-3" placeholder="Nombre Sucursal" required/>
+            <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} className="form-control mb-3" placeholder="Nombre Sucursal" required />
             <select
               value={hotelId}
               onChange={(e) => setHotelId(e.target.value)}
@@ -179,15 +179,20 @@ const Branches = () => {
               onLatLngChange={handleLatLngChange} // Pasa las coordenadas
             />
 
-            <input type="number" value={longitud} onChange={(e) => setLongitud(e.target.value)} className="form-control mb-3" placeholder="Longitud" required/>
+            <input type="number" value={longitud} onChange={(e) => setLongitud(e.target.value)} className="form-control mb-3" placeholder="Longitud" required />
             <input type="number" value={latitud} onChange={(e) => setLatitud(e.target.value)} className="form-control mb-3" placeholder="Latitud" required />
-           
+
             <button type="submit" className="btn btn-primary w-100">
               {branchSeleccionado ? "Guardar Cambios" : "Crear Branch"}
             </button>
           </form>
         </div>
       )}
+      <div className="d-flex justify-content-center align-items-center mt-4">
+        <button className="btn btn-secondary" onClick={() => navigate("/privateHotel")}>
+          Volver
+        </button>
+      </div>
     </div>
   );
 };

@@ -12,6 +12,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended import create_access_token
+from datetime import datetime
 
 # Blueprint para los endpoints de la API
 api = Blueprint('api', __name__)
@@ -446,18 +447,32 @@ def get_maint(id):
     return jsonify([maint.serialize() for maint in maint]), 200
 
 # Ruta para crear un nuevo trabajador de mantenimiento
+from flask import jsonify
+
 @api.route('/maintenance', methods=['POST'])
 def create_maintenance():
     data = request.get_json()
-        # Verificamos que los datos estén presentes
-    if not data.get('nombre') or not data.get('email') or not data.get('password'):
+    
+    # Verificamos que los datos estén presentes
+    if not data.get('nombre') or not data.get('email') or not data.get('password') or not data.get('hotel_id') or not data.get('branch_id'):
         return jsonify({"error": "Missing data"}), 400
+    
+    # Verificamos si el hotel existe
+    hotel = Hoteles.query.get(data['hotel_id'])
+    if not hotel:
+        return jsonify({"error": "Hotel not found"}), 404
+    
+    # Verificamos si la sucursal existe
+    branch = Branches.query.get(data['branch_id'])
+    if not branch:
+        return jsonify({"error": "Branch not found"}), 404
     
     nuevo_maint = Maintenance(
         nombre=data['nombre'],
         email=data['email'],
         password=data['password'],
-        hotel_id=data['hotel_id']
+        hotel_id=data['hotel_id'],
+        branch_id=data['branch_id']
     )
     
     db.session.add(nuevo_maint)
@@ -465,19 +480,33 @@ def create_maintenance():
     
     return jsonify(nuevo_maint.serialize()), 201
 
+
 # Ruta para actualizar un trabajador de mantenimiento
 @api.route('/maintenance/<int:id>', methods=['PUT'])
 def update_maintenance(id):
     maint = Maintenance.query.get_or_404(id)
     data = request.get_json()
+    
+    # Verificamos si el hotel existe
+    hotel = Hoteles.query.get(data['hotel_id'])
+    if not hotel:
+        return jsonify({"error": "Hotel not found"}), 404
+    
+    # Verificamos si la sucursal existe
+    branch = Branches.query.get(data['branch_id'])
+    if not branch:
+        return jsonify({"error": "Branch not found"}), 404
+    
     maint.nombre = data['nombre']
     maint.email = data['email']
     maint.password = data['password']
     maint.hotel_id = data['hotel_id']
-   
+    maint.branch_id = data['branch_id']
+    
     db.session.commit()
    
     return jsonify(maint.serialize())
+
 
 # Ruta para eliminar un trabajador de mantenimiento
 @api.route('/maintenance/<int:id>', methods=['DELETE'])
@@ -488,6 +517,8 @@ def delete_maintenance(id):
     db.session.commit()
     
     return jsonify({"message": "Trabajador de mantenimiento eliminado con éxito"}), 200
+
+# houseKeeper
 
 @api.route('/housekeepers', methods=['POST'])
 def create_housekeeper():
@@ -501,6 +532,7 @@ def create_housekeeper():
         nombre=data['nombre'],
         email=data['email'],
         password=data['password'],  # En un proyecto real deberías cifrar la contraseña
+        hotel_id=data['hotel_id'],
         id_branche=data.get('id_branche')
     )
 
@@ -538,6 +570,7 @@ def update_housekeeper(id):
     housekeeper.nombre = data.get('nombre', housekeeper.nombre)
     housekeeper.email = data.get('email', housekeeper.email)
     housekeeper.password = data.get('password', housekeeper.password)
+    housekeeper.hotel = data.get('hotel', housekeeper.hotel)
     housekeeper.id_branche = data.get('id_branche', housekeeper.id_branche)
 
     db.session.commit()
@@ -699,16 +732,17 @@ def get_maintenance_task(id):
 
 @api.route('/maintenancetasks', methods=['POST'])
 def create_maintenance_task():
+    """Crear una nueva tarea de mantenimiento"""
     data = request.get_json()
 
     try:
         nombre = data.get('nombre')
-        photo = data.get('photo', None)
-        condition = data.get('condition', None)
-        room_id = data.get('room_id', None)
-        maintenance_id = data.get('maintenance_id', None)
-        housekeeper_id = data.get('housekeeper_id', None)
-        category_id = data.get('category_id', None)
+        photo = data.get('photo')
+        condition = data.get('condition')
+        room_id = data.get('room_id')
+        maintenance_id = data.get('maintenance_id')
+        housekeeper_id = data.get('housekeeper_id')
+        category_id = data.get('category_id')
 
         new_task = MaintenanceTask(
             nombre=nombre,
@@ -772,6 +806,7 @@ def delete_maintenance_task(id):
         db.session.rollback()
 
         return jsonify({"message": "Error al eliminar la tarea de mantenimiento", "error": str(e)}), 400
+
 
 # @api.route('/rooms', methods=['GET'])
 # def get_all_rooms():

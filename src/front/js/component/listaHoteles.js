@@ -172,6 +172,11 @@ const Hoteles = () => {
           </form>
         </div>
       )}
+      <div className="d-flex justify-content-center align-items-center mt-4">
+        <button className="btn btn-secondary" onClick={() => navigate("/privateHotel")}>
+          Volver
+        </button>
+      </div>
     </div>
   );
 };

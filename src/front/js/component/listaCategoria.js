@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Context } from "../store/appContext";
+import { useNavigate } from "react-router-dom";
 
 const ListaCategoria = () => {
     const [categories, setCategories] = useState([]);
@@ -8,6 +9,7 @@ const ListaCategoria = () => {
     const [error, setError] = useState(null);
     const [eliminando, setEliminando] = useState(null); // ID de la categoría que se está eliminando
     const { store, actions } = useContext(Context);
+    const navigate = useNavigate();
     // Función para obtener la URL del backend de forma segura
     const getBackendUrl = () => {
         const baseUrl = process.env.BACKEND_URL;
@@ -110,6 +112,11 @@ const ListaCategoria = () => {
                     ))}
                 </>
             )}
+             <div className="d-flex justify-content-center align-items-center mt-4">
+                <button className="btn btn-secondary" onClick={() => navigate("/privateHotel")}>
+                    Volver
+                </button>
+            </div>
         </div>
     );
 };
