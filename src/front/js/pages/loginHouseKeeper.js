@@ -45,7 +45,7 @@ const LoginHouseKeeper = () => {
 
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
-      <div className="card p-4" style={{ maxWidth: '400px', width: '100%' }}>
+      <div className="card p-4 shadow-lg" style={{ maxWidth: '400px', width: '100%' }}>
         <h1 className="text-center mb-4">Iniciar sesión</h1>
         <div className="mb-3">
           <label htmlFor="email" className="form-label">Email</label>
@@ -72,11 +72,6 @@ const LoginHouseKeeper = () => {
         <button className="btn btn-primary w-100" onClick={handleLogin}>
           Iniciar sesión
         </button>
-        <div className="mt-3 text-center">
-          <button className="btn btn-link" onClick={() => navigate('/signupHouseKeeper')}>
-            ¿No tienes cuenta? Regístrate
-          </button>
-        </div>
       </div>
     </div>
   );
