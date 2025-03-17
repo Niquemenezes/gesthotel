@@ -14,9 +14,6 @@ const LoginHouseKeeper = () => {
       return;
     }
 
-    console.log('Email:', email);
-    console.log('Password:', password);
-
     try {
       const response = await fetch(`${backendUrl}api/loginHouseKeeper`, {
         method: 'POST',

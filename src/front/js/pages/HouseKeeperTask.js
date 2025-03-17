@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const HouseKeeperTask = () => {
   const [houseKeeperTasks, setHouseKeeperTasks] = useState([]);
@@ -12,6 +13,8 @@ const HouseKeeperTask = () => {
   const [rooms, setRooms] = useState([]);
   const [housekeepers, setHousekeepers] = useState([]);
   const [editingId, setEditingId] = useState(null);
+
+  const navigate = useNavigate();
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
 
@@ -305,7 +308,7 @@ const HouseKeeperTask = () => {
               {editingId && (
                 <button
                   type="button"
-                  className="btn btn-secondary ml-2"
+                  className="btn btn-primary ml-2"
                   onClick={cancelEdit}
                 >
                   Cancelar
@@ -347,7 +350,7 @@ const HouseKeeperTask = () => {
                     Editar
                   </button>
                   <button
-                    className="btn btn-secondary btn-sm"
+                    className="btn btn-primary btn-sm"
                     onClick={() => deleteHouseKeeperTask(task.id)}
                   >
                     Eliminar
@@ -358,6 +361,9 @@ const HouseKeeperTask = () => {
           </tbody>
         </table>
       </div>
+      <button className="btn btn-primary" onClick={() => navigate("/privateHotel")}>
+          Volver
+      </button>
     </div>
   );
 };

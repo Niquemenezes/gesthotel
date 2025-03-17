@@ -193,12 +193,8 @@ const ThemeForm = () => {
                         <p className="mt-3 text-center text-dark">No themes available.</p>
                     )}
                 </ul>
-                <button
-                    type="button"
-                    className="btn btn-primary w-100 mt-2"
-                    onClick={goToHome}
-                >
-                    Go to Home
+                <button className="btn btn-primary" onClick={() => navigate("/privateHotel")}>
+                    Volver
                 </button>
             </div>
         </div>

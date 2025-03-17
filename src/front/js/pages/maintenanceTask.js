@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const MaintenanceTask = () => {
   const [maintenanceTasks, setMaintenanceTasks] = useState([]);
@@ -14,6 +15,8 @@ const MaintenanceTask = () => {
   const [housekeepers, setHousekeepers] = useState([]);
   const [categories, setCategories] = useState([]);
   const [editingId, setEditingId] = useState(null);
+
+  const navigate = useNavigate();
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
 
@@ -360,6 +363,9 @@ const MaintenanceTask = () => {
           ))}
         </tbody>
       </table>
+      <button className="btn btn-primary" onClick={() => navigate("/privateHotel")}>
+          Volver
+      </button>
     </div>
   );
 };

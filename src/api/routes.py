@@ -12,7 +12,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended import create_access_token
-from datetime import datetime
+# from datetime import datetime
 
 # Blueprint para los endpoints de la API
 api = Blueprint('api', __name__)
@@ -732,17 +732,16 @@ def get_maintenance_task(id):
 
 @api.route('/maintenancetasks', methods=['POST'])
 def create_maintenance_task():
-    """Crear una nueva tarea de mantenimiento"""
     data = request.get_json()
 
     try:
         nombre = data.get('nombre')
-        photo = data.get('photo')
-        condition = data.get('condition')
-        room_id = data.get('room_id')
-        maintenance_id = data.get('maintenance_id')
-        housekeeper_id = data.get('housekeeper_id')
-        category_id = data.get('category_id')
+        photo = data.get('photo', None)
+        condition = data.get('condition', None)
+        room_id = data.get('room_id', None)
+        maintenance_id = data.get('maintenance_id', None)
+        housekeeper_id = data.get('housekeeper_id', None)
+        category_id = data.get('category_id', None)
 
         new_task = MaintenanceTask(
             nombre=nombre,

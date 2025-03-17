@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const HotelTheme = () => {
   const [hoteles, setHoteles] = useState([]);
@@ -7,6 +8,8 @@ const HotelTheme = () => {
   const [themeId, setThemeId] = useState('');
   const [hotelThemes, setHotelThemes] = useState([]);
   const [editingId, setEditingId] = useState(null);
+
+  const navigate = useNavigate();
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
 
@@ -256,6 +259,9 @@ const HotelTheme = () => {
           </div>
         ))}
       </div>
+      <button className="btn btn-primary" onClick={() => navigate("/privateHotel")}>
+          Volver
+      </button>
     </div>
   );
 };
