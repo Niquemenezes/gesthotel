@@ -378,7 +378,8 @@ def crear_room():
         return jsonify({"error": "El nombre de la habitación es obligatorio"}), 400
 
     # Verificar si la habitacion ya existe
-    existing_room = Room.query.filter_by(nombre=data["nombre"]).first()
+    print(data)
+    existing_room = Room.query.filter_by(nombre=data["nombre"]).filter_by(branch_id=data["branchId"]).first()
     if existing_room:
         return jsonify({"error": "Habitación con este nombre ya existe"}), 400
     # Crear nueva habitacion

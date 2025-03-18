@@ -182,11 +182,11 @@ class HouseKeeper(db.Model):
 class HouseKeeperTask(db.Model):
     __tablename__ = 'housekeepertask'
     id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(120), unique=True, nullable=False)
-    photo = db.Column(db.String(120), unique=True, nullable=False)
-    condition = db.Column(db.String(80), unique=False, nullable=False)
-    assignment_date = db.Column(db.String(80), unique=False, nullable=False)
-    submission_date = db.Column(db.String(80), unique=False, nullable=False)
+    nombre = db.Column(db.String(120), nullable=False)
+    photo = db.Column(db.String(120), nullable=False)
+    condition = db.Column(db.String(80), nullable=False)
+    assignment_date = db.Column(db.String(80), nullable=False)
+    submission_date = db.Column(db.String(80), nullable=False)
     id_room = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)
     id_housekeeper = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=True)
 
@@ -212,7 +212,7 @@ class HouseKeeperTask(db.Model):
 class MaintenanceTask(db.Model):
     __tablename__ = 'maintenancetask'
     id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(120), unique=True, nullable=False)
+    nombre = db.Column(db.String(120), nullable=False)
     photo = db.Column(db.String(255), nullable=True)
     condition = db.Column(db.String(120), nullable=True)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)  # Cambiar a nullable=True
