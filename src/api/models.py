@@ -240,3 +240,4 @@ class MaintenanceTask(db.Model):
             "housekeeper": self.housekeeper.serialize() if self.housekeeper else None,  # Detalles del housekeeper
             "category": self.category.serialize() if self.category else None,  # Detalles de la categoría
         }
+
