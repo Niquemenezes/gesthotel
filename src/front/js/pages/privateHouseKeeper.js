@@ -7,18 +7,43 @@ const PrivateHouseKeeper = () => {
   const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [isRoomSelected, setIsRoomSelected] = useState(false);
   const [nombre, setNombre] = useState('');
+  const [housekeeperId, setHousekeeperId] = useState(null);
   const navigate = useNavigate();
-
+  
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
 
+  const getHousekeeperIdFromToken = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setHousekeeperId(decoded.housekeeper_id);
+      } catch (error) {
+        console.error('Error al decodificar el token:', error);
+        alert('Hubo un error al obtener el ID del housekeeper');
+      }
+    } else {
+      navigate('/loginHouseKeeper');
+    }
+  };
+
+  useEffect(() => {
+    getHousekeeperIdFromToken();
+  }, []);
+
   const handleFetchTasks = async () => {
+    if (housekeeperId === null) {
+      return;
+    }
+
     try {
       const response = await fetch(`${backendUrl}api/housekeeper_tasks`);
       if (!response.ok) {
         throw new Error('Error en la respuesta del servidor');
       }
       const data = await response.json();
-      setTasks(data);
+      const filteredTasks = data.filter(task => task.id_housekeeper === housekeeperId);
+      setTasks(filteredTasks);
     } catch (error) {
       console.error('Error al obtener las tareas:', error);
       alert('Error al obtener las tareas, por favor intente más tarde.');
@@ -26,8 +51,10 @@ const PrivateHouseKeeper = () => {
   };
 
   useEffect(() => {
-    handleFetchTasks();
-  }, []);
+    if (housekeeperId !== null) {
+      handleFetchTasks();
+    }
+  }, [housekeeperId]);
 
   const handleRoomClick = (roomId) => {
     setSelectedRoomId(roomId);
@@ -66,7 +93,7 @@ const PrivateHouseKeeper = () => {
     };
 
     try {
-      const response = await fetch(`${backendUrl}api/maintenancetasks`, {
+      const response = await fetch(`${backendUrl}api/maintenancetasks`, { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +132,6 @@ const PrivateHouseKeeper = () => {
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
       <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
         <h2 className="text-center mb-4 text-primary">Tareas de Housekeeper</h2>
-
         {!isRoomSelected && Object.keys(groupedTasks).length > 0 ? (
           Object.keys(groupedTasks).map((roomId) => {
             const roomTasks = groupedTasks[roomId];
@@ -121,7 +147,6 @@ const PrivateHouseKeeper = () => {
             );
           })
         ) : null}
-
         {isRoomSelected && (
           <div className="mt-4">
             {groupedTasks[selectedRoomId] && groupedTasks[selectedRoomId].map((task) => (
@@ -142,7 +167,6 @@ const PrivateHouseKeeper = () => {
                 </div>
               </div>
             ))}
-
             <div className="card shadow-lg">
               <div className="card-body">
                 <h5 className="card-title text-primary">Tarea de Mantenimiento</h5>
@@ -157,7 +181,6 @@ const PrivateHouseKeeper = () => {
                       placeholder="Ingresa la tarea de mantenimiento..."
                     />
                   </div>
-
                   <button
                     type="button"
                     className="btn btn-primary btn-block"
@@ -168,7 +191,6 @@ const PrivateHouseKeeper = () => {
                 </form>
               </div>
             </div>
-
             <div className="mt-3">
               <button
                 className="btn btn-primary w-100"
@@ -179,7 +201,6 @@ const PrivateHouseKeeper = () => {
             </div>
           </div>
         )}
-
         <div className="d-flex justify-content-center">
           <button
             className="btn btn-primary mt-3 px-5 py-2"
