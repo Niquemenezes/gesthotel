@@ -26,16 +26,16 @@ const ListaRoom = () => {
     const cargarRooms = async () => {
       const apiUrl = getBackendUrl();
       if (!apiUrl) return;
-    
+
       setCargando(true);
       setError(null);
-    
+
       try {
         const response = await fetch(`${apiUrl}api/rooms`);
         if (!response.ok) throw new Error("Error al cargar las habitaciones");
-    
+
         let data = await response.json();
-    
+
         // Si solo viene sucursal_id, obtener los nombres de las sucursales
         for (let room of data) {
           if (room.branch_id) {
@@ -46,7 +46,7 @@ const ListaRoom = () => {
             }
           }
         }
-    
+
         setRooms(data);
         actions.setRooms(data);
       } catch (error) {
@@ -89,10 +89,10 @@ const ListaRoom = () => {
   }, []);
 
   return (
+     
     <div className="container">
-      <div className="d-flex justify-content-between mt-3">
-        <Link to="/listaRooms" className="btn btn-primary">Lista de Habitaciones</Link>
-        <Link to="/crearRoom" className="btn btn-success">Crear Habitación</Link>
+      <div className="d-flex justify-content-center align-items-center mb-4">
+        <Link to="/crearRoom" className="btn" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}>Crear Habitación</Link>
       </div>
       <h2 className="text-center my-3">Lista de Habitaciones</h2>
       {(
@@ -110,10 +110,10 @@ const ListaRoom = () => {
               </div>
               <div className="col d-flex justify-content-center">
                 <Link to={`/editarRoom/${room.id}`}>
-                  <button className="btn btn-warning me-3">Editar</button>
+                  <button className="btn me-3" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}>Editar</button>
                 </Link>
                 <button
-                  className="btn btn-danger"
+                  className="btn" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
                   onClick={() => eliminarRoom(room.id)}
                   disabled={eliminando === room.id}
                 >
@@ -124,12 +124,9 @@ const ListaRoom = () => {
           ))}
         </>
       )}
-      <div className="d-flex justify-content-center align-items-center mt-4">
-        <button className="btn btn-secondary" onClick={() => navigate("/privateHotel")}>
-          Volver
-        </button>
-      </div>
+
     </div>
+        
   );
 };
 

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import Sidebar from "../component/sidebar";
 
 const MaintenanceTask = () => {
   const [maintenanceTasks, setMaintenanceTasks] = useState([]);
@@ -19,7 +21,7 @@ const MaintenanceTask = () => {
   const navigate = useNavigate();
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
-
+  
   // Cargar todas las tareas de mantenimiento
   const loadMaintenanceTasks = async () => {
     try {
@@ -199,174 +201,179 @@ const MaintenanceTask = () => {
   };
 
   return (
-    <div className="container">
-      <h1>Gestión de Tareas de Mantenimiento</h1>
+    <>
+      <div className="d-flex">
+        {/* Sidebar */}
+      <Sidebar/>
 
-      <div className="card">
-        <div className="card-body">
-          <h5 className="card-title">{editingId ? 'Editar' : 'Crear'} Tarea de Mantenimiento</h5>
-          <form>
-            <div className="form-group">
-              <label htmlFor="nombre">Nombre</label>
-              <input
-                type="text"
-                className="form-control"
-                id="nombre"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-              />
+        <div className="container">
+          <h1>Gestión de Tareas de Mantenimiento</h1>
+          <div className="card">
+            <div className="card-body">
+              <h5 className="card-title">{editingId ? 'Editar' : 'Crear'} Tarea de Mantenimiento</h5>
+              <form>
+                <div className="form-group">
+                  <label htmlFor="nombre">Nombre</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="nombre"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="photo">Foto</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="photo"
+                    value={photo}
+                    onChange={(e) => setPhoto(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="condition">Condición</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="condition"
+                    value={condition}
+                    onChange={(e) => setCondition(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="idRoom">Habitación</label>
+                  <select
+                    className="form-control"
+                    id="idRoom"
+                    value={idRoom}
+                    onChange={(e) => setIdRoom(e.target.value)}
+                  >
+                    <option value="">Selecciona una habitación</option>
+                    {rooms.map((room) => (
+                      <option key={room.id} value={room.id}>
+                        {room.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="idMaintenance">Mantenimiento</label>
+                  <select
+                    className="form-control"
+                    id="idMaintenance"
+                    value={idMaintenance}
+                    onChange={(e) => setIdMaintenance(e.target.value)}
+                  >
+                    <option value="">Selecciona un mantenimiento</option>
+                    {maintenances.map((maintenance) => (
+                      <option key={maintenance.id} value={maintenance.id}>
+                        {maintenance.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="idHousekeeper">Housekeeper</label>
+                  <select
+                    className="form-control" 
+                    id="idHousekeeper"
+                    value={idHousekeeper}
+                    onChange={(e) => setIdHousekeeper(e.target.value)}
+                  >
+                    <option value="" >Selecciona un housekeeper</option>
+                    {housekeepers.map((housekeeper) => (
+                      <option key={housekeeper.id} value={housekeeper.id}>
+                        {housekeeper.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="idCategory">Categoría</label>
+                  <select
+                    className="form-control"
+                    id="idCategory"
+                    value={idCategory}
+                    onChange={(e) => setIdCategory(e.target.value)}
+                  >
+                    <option value="">Selecciona una categoría</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  type="button"
+                  className="btn" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                  onClick={editingId ? updateMaintenanceTask : createMaintenanceTask}
+                >
+                  {editingId ? 'Actualizar' : 'Crear'} Tarea
+                </button>
+                {editingId && (
+                  <button type="button" className="btn" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }} onClick={cancelEdit}>
+                    Cancelar
+                  </button>
+                )}
+              </form>
             </div>
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="photo">Foto</label>
-              <input
-                type="text"
-                className="form-control"
-                id="photo"
-                value={photo}
-                onChange={(e) => setPhoto(e.target.value)}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="condition">Condición</label>
-              <input
-                type="text"
-                className="form-control"
-                id="condition"
-                value={condition}
-                onChange={(e) => setCondition(e.target.value)}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="idRoom">Habitación</label>
-              <select
-                className="form-control"
-                id="idRoom"
-                value={idRoom}
-                onChange={(e) => setIdRoom(e.target.value)}
-              >
-                <option value="">Selecciona una habitación</option>
-                {rooms.map((room) => (
-                  <option key={room.id} value={room.id}>
-                    {room.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="idMaintenance">Mantenimiento</label>
-              <select
-                className="form-control"
-                id="idMaintenance"
-                value={idMaintenance}
-                onChange={(e) => setIdMaintenance(e.target.value)}
-              >
-                <option value="">Selecciona un mantenimiento</option>
-                {maintenances.map((maintenance) => (
-                  <option key={maintenance.id} value={maintenance.id}>
-                    {maintenance.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="idHousekeeper">Housekeeper</label>
-              <select
-                className="form-control"
-                id="idHousekeeper"
-                value={idHousekeeper}
-                onChange={(e) => setIdHousekeeper(e.target.value)}
-              >
-                <option value="">Selecciona un housekeeper</option>
-                {housekeepers.map((housekeeper) => (
-                  <option key={housekeeper.id} value={housekeeper.id}>
-                    {housekeeper.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="idCategory">Categoría</label>
-              <select
-                className="form-control"
-                id="idCategory"
-                value={idCategory}
-                onChange={(e) => setIdCategory(e.target.value)}
-              >
-                <option value="">Selecciona una categoría</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={editingId ? updateMaintenanceTask : createMaintenanceTask}
-            >
-              {editingId ? 'Actualizar' : 'Crear'} Tarea
-            </button>
-            {editingId && (
-              <button type="button" className="btn btn-primary" onClick={cancelEdit}>
-                Cancelar
-              </button>
-            )}
-          </form>
+          <h2>Tareas de Mantenimiento</h2>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Condición</th>
+                <th>Habitación</th>
+                <th>Mantenimiento</th>
+                <th>Housekeeper</th>
+                <th>Categoría</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {maintenanceTasks.map((task) => (
+                <tr key={task.id}>
+                  <td>{task.nombre}</td>
+                  <td>{task.condition}</td>
+                  <td>{task.room?.nombre}</td>
+                  <td>{task.maintenance?.nombre}</td>
+                  <td>{task.housekeeper?.nombre}</td>
+                  <td>{task.category?.nombre}</td>
+                  <td>
+                    <button
+                      className="btn btn-sm" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                      onClick={() => editMaintenanceTask(task.id)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      className="btn btn-sm ml-2" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                      onClick={() => deleteMaintenanceTask(task.id)}
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+         
         </div>
       </div>
 
-      <h2>Tareas de Mantenimiento</h2>
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Condición</th>
-            <th>Habitación</th>
-            <th>Mantenimiento</th>
-            <th>Housekeeper</th>
-            <th>Categoría</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {maintenanceTasks.map((task) => (
-            <tr key={task.id}>
-              <td>{task.nombre}</td>
-              <td>{task.condition}</td>
-              <td>{task.room?.nombre}</td>
-              <td>{task.maintenance?.nombre}</td>
-              <td>{task.housekeeper?.nombre}</td>
-              <td>{task.category?.nombre}</td>
-              <td>
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() => editMaintenanceTask(task.id)}
-                >
-                  Editar
-                </button>
-                <button
-                  className="btn btn-primary btn-sm ml-2"
-                  onClick={() => deleteMaintenanceTask(task.id)}
-                >
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <button className="btn btn-primary" onClick={() => navigate("/privateHotel")}>
-          Volver
-      </button>
-    </div>
+    </>
   );
 };
 
