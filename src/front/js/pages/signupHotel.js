@@ -1,87 +1,61 @@
-import React, { useState } from "react";
-
+import React, { useState, useContext } from "react";
+import { Context } from "../store/appContext";
+import { Navigate } from "react-router-dom";
 const SignupHotel = () => {
-  const [hotelName, setHotelName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Crear un objeto con los datos del nuevo hotel
-    const hotelData = {
-      hotelName,
-      email,
-      password,
+    const { actions } = useContext(Context);
+    const [nombre, setNombre] = useState(""); // Nuevo estado para el nombre
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [redirectoToLogin, setRedirectToLogin] = useState(false);
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        actions.signup(nombre, email, password); // Pasamos el nombre junto con el email y la contraseña
+        setRedirectToLogin(true); //redirige al login despues de crear el usuario
     };
-
-    // Hacer la petición para registrar el hotel
-    fetch("/api/hoteles", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(hotelData),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          setSuccessMessage("Hotel registrado exitosamente!");
-          setHotelName("");
-          setEmail("");
-          setPassword("");
-        } else {
-          setErrorMessage("Hubo un problema al registrar el hotel.");
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setErrorMessage("Error en el servidor. Intenta nuevamente.");
-      });
-  };
-
-  return (
-    <div className="container" style={{ width: "500px", marginTop: "50px" }}>
-      <h2 className="text-center mb-4">Registrar Hotel</h2>
-      {successMessage && <div className="alert alert-success">{successMessage}</div>}
-      {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Nombre del Hotel</label>
-          <input
-            type="text"
-            className="form-control"
-            value={hotelName}
-            onChange={(e) => setHotelName(e.target.value)}
-            required
-          />
+    if (redirectoToLogin) {
+        return <Navigate to="/loginhotel" />;
+    }
+    return (
+      <div className="container" style={{ width: "500px" }}>
+            <div className="card p-4" style={{ width: "100%", maxWidth: "400px" }}>
+                <h2>Crear Cuenta</h2>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                        <label className="form-label">Nombre</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            value={nombre}
+                            onChange={(e) => setNombre(e.target.value)} // Actualiza el estado de nombre
+                            required
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label className="form-label">Email address</label>
+                        <input
+                            type="email"
+                            className="form-control"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label className="form-label">Password</label>
+                        <input
+                            type="password"
+                            className="form-control"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="btn"style={{ backgroundColor: "#AC85EB", borderColor: "#B7A7D1" }}>
+                        Registro
+                    </button>
+                </form>
+            </div>
         </div>
-        <div className="mb-3">
-          <label className="form-label">Email del Administrador</label>
-          <input
-            type="email"
-            className="form-control"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Contraseña</label>
-          <input
-            type="password"
-            className="form-control"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="btn w-100" style={{ backgroundColor: "#9b5de5", borderColor: "#B7A7D1" }}>
-          Registrar
-        </button>
-      </form>
-    </div>
-  );
+    );
 };
-
 export default SignupHotel;
