@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import Sidebar from "../component/sidebar";
 
 const ThemeForm = () => {
     const [nombre, setNombre] = useState('');
@@ -16,6 +16,7 @@ const ThemeForm = () => {
         fetchThemes();
     }, []);
 
+    
     const fetchThemes = async () => {
         try {
             const response = await fetch(`${backendUrl}api/theme`);
@@ -124,81 +125,91 @@ const ThemeForm = () => {
     };
 
     return (
-        <div className="container mt-5 mb-5 container-dark">
-            <h2 className="text-center mb-4">{editMode ? 'Edit Theme' : 'Create Theme'}</h2>
-            <div className="row justify-content-center">
-                <div className="col-md-7">
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-3">
-                            <label htmlFor="theme" className="form-label custom-label">Theme:</label>
-                            <input
-                                type="text"
-                                id="theme"
-                                className="form-control custom-input"
-                                value={nombre}
-                                onChange={(e) => setNombre(e.target.value)}
-                                required
-                                style={{ fontSize: '24px' }}
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="btn btn-primary w-100"
-                        >
-                            {editMode ? 'Save Changes' : 'Create Theme'}
-                        </button>
-                        {editMode && (
-                            <button
-                                type="button"
-                                className="btn btn-primary w-100 mt-2"
-                                onClick={handleCancel}
-                            >
-                                Cancel changes
-                            </button>
-                        )}
-                    </form>
-                </div>
-            </div>
+        <>
+            <div className="d-flex">
+                {/* Sidebar */}
+               <Sidebar/>
+                <div className="main-content flex-fill p-4">
+                    {/* Texto centrado */}
+                    <div className="text-center">
 
-            {message && <p className="mt-3 text-center text-dark">{message}</p>}
-
-            <h3 className="text-center mt-5">Themes List</h3>
-            <div className="mt-4 col-md-7 mx-auto row">
-                <ul className="list-group">
-                    {themesList.length > 0 ? (
-                        themesList.map((theme) => (
-                            <li key={theme.id} className="list-group-item d-flex justify-content-between align-items-center  mb-2">
-                                <span className="theme-text">{theme.nombre}</span>
-                                <div className="col-2 d-flex justify-content-between">
-                                    <i
-                                        className="fa fa-pencil"
-                                        style={{
-                                            fontSize: '20px',
-                                            cursor: 'pointer',
-                                        }}
-                                        onClick={() => handleEdit(theme.id)}
-                                    ></i>
-                                    <i
-                                        className="fa fa-trash"
-                                        style={{
-                                            fontSize: '20px',
-                                            cursor: 'pointer'
-                                        }}
-                                        onClick={() => handleDelete(theme.id)}
-                                    ></i>
+                        <div className="container mt-5 mb-5 container-dark">
+                            <h2 className="text-center mb-4">{editMode ? 'Edit Theme' : 'Create Theme'}</h2>
+                            <div className="row justify-content-center">
+                                <div className="col-md-7">
+                                    <form onSubmit={handleSubmit}>
+                                        <div className="mb-3">
+                                            <label htmlFor="theme" className="form-label custom-label">Theme:</label>
+                                            <input
+                                                type="text"
+                                                id="theme"
+                                                className="form-control custom-input"
+                                                value={nombre}
+                                                onChange={(e) => setNombre(e.target.value)}
+                                                required
+                                                style={{ fontSize: '24px' }}
+                                            />
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            className="btn w-100" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                                        >
+                                            {editMode ? 'Save Changes' : 'Create Theme'}
+                                        </button>
+                                        {editMode && (
+                                            <button
+                                                type="button"
+                                                className="btn w-100 mt-2" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                                                onClick={handleCancel}
+                                            >
+                                                Cancel changes
+                                            </button>
+                                        )}
+                                    </form>
                                 </div>
-                            </li>
-                        ))
-                    ) : (
-                        <p className="mt-3 text-center text-dark">No themes available.</p>
-                    )}
-                </ul>
-                <button className="btn btn-primary" onClick={() => navigate("/privateHotel")}>
-                    Volver
-                </button>
-            </div>
-        </div>
-    );
+                            </div>
+
+                            {message && <p className="mt-3 text-center text-dark">{message}</p>}
+
+                            <h3 className="text-center mt-5">Themes List</h3>
+                            <div className="mt-4 col-md-7 mx-auto row">
+                                <ul className="list-group">
+                                    {themesList.length > 0 ? (
+                                        themesList.map((theme) => (
+                                            <li key={theme.id} className="list-group-item d-flex justify-content-between align-items-center  mb-2">
+                                                <span className="theme-text">{theme.nombre}</span>
+                                                <div className="col-2 d-flex justify-content-between">
+                                                    <i
+                                                        className="fa fa-pencil"
+                                                        style={{
+                                                            fontSize: '20px',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                        onClick={() => handleEdit(theme.id)}
+                                                    ></i>
+                                                    <i
+                                                        className="fa fa-trash"
+                                                        style={{
+                                                            fontSize: '20px',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                        onClick={() => handleDelete(theme.id)}
+                                                    ></i>
+                                                </div>
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <p className="mt-3 text-center text-dark">No themes available.</p>
+                                    )}
+                                </ul>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </>
+            );
 };
 
-export default ThemeForm;
+            export default ThemeForm;

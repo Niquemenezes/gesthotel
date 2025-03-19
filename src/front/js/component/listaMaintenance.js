@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import Sidebar from "../component/sidebar";
 
 const Maintenance = () => {
   const [maintenance, setMaintenance] = useState([]);
@@ -121,145 +123,146 @@ const Maintenance = () => {
   };
 
   return (
-    <div className="container">
-      <h2 className="text-center my-3">Técnicos de Mantenimiento</h2>
+    <>
+      <div className="d-flex">
+        {/* Sidebar */}
+        <Sidebar/>
+        <div className="container">
+          <h2 className="text-center my-3">Técnicos de Mantenimiento</h2>
 
-      <div className="d-flex justify-content-center align-items-center mb-4">
-        <button
-          className="btn btn-primary"
-          onClick={() => {
-            setMaintenanceSeleccionado(null);
-            setNombre("");
-            setEmail("");
-            setPassword("");
-            setHotelId("");
-            setBranchId(""); // Resetear sucursal
-            setMostrarFormulario(true);
-          }}
-        >
-          Crear Técnico de Mantenimiento
-        </button>
-      </div>
-
-      <div className="row bg-light p-2 fw-bold border-bottom">
-        <div className="col">Nombre</div>
-        <div className="col">Email</div>
-        <div className="col">Hotel</div>
-        <div className="col">Sucursal</div>
-        <div className="col text-center">Acciones</div>
-      </div>
-
-      {maintenance.map((mantenimiento) => (
-        <div key={mantenimiento.id} className="row p-2 border-bottom align-items-center">
-          <div className="col">{mantenimiento.nombre}</div>
-          <div className="col">{mantenimiento.email}</div>
-          <div className="col">
-            {hoteles.find((hotel) => hotel.id === mantenimiento.hotel_id)?.nombre || "No asignado"}
-          </div>
-          <div className="col">
-            {mantenimiento.branch || "No asignado"}
-          </div>
-
-
-          <div className="col d-flex justify-content-center">
-            <button
-              className="btn btn-warning me-2"
+          <div className="d-flex justify-content-center align-items-center mb-4">
+            <button className="btn" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
               onClick={() => {
-                setMaintenanceSeleccionado(mantenimiento);
-                setNombre(mantenimiento.nombre);
-                setEmail(mantenimiento.email);
-                setPassword(mantenimiento.password);
-                setHotelId(mantenimiento.hotel_id);
-                setBranchId(mantenimiento.branch_id); // Asignar branch_id
+                setMaintenanceSeleccionado(null);
+                setNombre("");
+                setEmail("");
+                setPassword("");
+                setHotelId("");
+                setBranchId(""); // Resetear sucursal
                 setMostrarFormulario(true);
               }}
             >
-              Editar
-            </button>
-            <button className="btn btn-danger" onClick={() => eliminarMaintenance(mantenimiento.id)}>
-              Eliminar
+              Crear Técnico de Mantenimiento
             </button>
           </div>
+
+          <div className="row bg-light p-2 fw-bold border-bottom">
+            <div className="col">Nombre</div>
+            <div className="col">Email</div>
+            <div className="col">Hotel</div>
+            <div className="col">Sucursal</div>
+            <div className="col text-center">Acciones</div>
+          </div>
+
+          {maintenance.map((mantenimiento) => (
+            <div key={mantenimiento.id} className="row p-2 border-bottom align-items-center">
+              <div className="col">{mantenimiento.nombre}</div>
+              <div className="col">{mantenimiento.email}</div>
+              <div className="col">
+                {hoteles.find((hotel) => hotel.id === mantenimiento.hotel_id)?.nombre || "No asignado"}
+              </div>
+              <div className="col">
+                {mantenimiento.branch || "No asignado"}
+              </div>
+
+
+              <div className="col d-flex justify-content-center">
+                <button
+                  className="btn me-2" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                  onClick={() => {
+                    setMaintenanceSeleccionado(mantenimiento);
+                    setNombre(mantenimiento.nombre);
+                    setEmail(mantenimiento.email);
+                    setPassword(mantenimiento.password);
+                    setHotelId(mantenimiento.hotel_id);
+                    setBranchId(mantenimiento.branch_id); // Asignar branch_id
+                    setMostrarFormulario(true);
+                  }}
+                >
+                  Editar
+                </button>
+                <button className="btn" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }} onClick={() => eliminarMaintenance(mantenimiento.id)}>
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {mostrarFormulario && (
+            <div className="card p-4 mt-5">
+              <h3 className="text-center mb-4">
+                {maintenanceSeleccionado ? "Editar Técnico" : "Crear Técnico"}
+              </h3>
+              <form onSubmit={handleSubmit}>
+                <input
+                  type="text"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  className="form-control mb-3"
+                  placeholder="Nombre"
+                  required
+                />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="form-control mb-3"
+                  placeholder="Email"
+                  required
+                />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="form-control mb-3"
+                  placeholder="Contraseña"
+                  required
+                />
+                <select
+                  value={hotelId}
+                  onChange={(e) => {
+                    setHotelId(e.target.value);
+                    setBranchId(""); // Resetear branch_id cuando se cambia el hotel
+                  }}
+                  className="form-control mb-3"
+                  required
+                >
+                  <option value="">Seleccionar Hotel</option>
+                  {hoteles.map((hotel) => (
+                    <option key={hotel.id} value={hotel.id}>
+                      {hotel.nombre}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Solo mostrar el select de sucursales si hay un hotel seleccionado */}
+                {hotelId && (
+                  <select
+                    value={branchId}
+                    onChange={(e) => setBranchId(e.target.value)}
+                    className="form-control mb-3"
+                    required
+                  >
+                    <option value="">Seleccionar Sucursal</option>
+                    {branches.map((branch) => (
+                      <option key={branch.id} value={branch.id}>
+                        {branch.nombre}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                <button type="submit" className="btn w-100" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}>
+                  {maintenanceSeleccionado ? "Guardar Cambios" : "Crear Técnico"}
+                </button>
+              </form>
+            </div>
+          )}
+
+
         </div>
-      ))}
-
-      {mostrarFormulario && (
-        <div className="card p-4 mt-5">
-          <h3 className="text-center mb-4">
-            {maintenanceSeleccionado ? "Editar Técnico" : "Crear Técnico"}
-          </h3>
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              className="form-control mb-3"
-              placeholder="Nombre"
-              required
-            />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="form-control mb-3"
-              placeholder="Email"
-              required
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="form-control mb-3"
-              placeholder="Contraseña"
-              required
-            />
-            <select
-              value={hotelId}
-              onChange={(e) => {
-                setHotelId(e.target.value);
-                setBranchId(""); // Resetear branch_id cuando se cambia el hotel
-              }}
-              className="form-control mb-3"
-              required
-            >
-              <option value="">Seleccionar Hotel</option>
-              {hoteles.map((hotel) => (
-                <option key={hotel.id} value={hotel.id}>
-                  {hotel.nombre}
-                </option>
-              ))}
-            </select>
-
-            {/* Solo mostrar el select de sucursales si hay un hotel seleccionado */}
-            {hotelId && (
-              <select
-                value={branchId}
-                onChange={(e) => setBranchId(e.target.value)}
-                className="form-control mb-3"
-                required
-              >
-                <option value="">Seleccionar Sucursal</option>
-                {branches.map((branch) => (
-                  <option key={branch.id} value={branch.id}>
-                    {branch.nombre}
-                  </option>
-                ))}
-              </select>
-            )}
-
-            <button type="submit" className="btn btn-primary w-100">
-              {maintenanceSeleccionado ? "Guardar Cambios" : "Crear Técnico"}
-            </button>
-          </form>
-        </div>
-      )}
-
-      <div className="d-flex justify-content-center align-items-center mt-4">
-        <button className="btn btn-secondary" onClick={() => navigate("/privateHotel")}>
-          Volver
-        </button>
       </div>
-    </div>
+    </>
   );
 };
 

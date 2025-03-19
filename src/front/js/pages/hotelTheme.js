@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import Sidebar from "../component/sidebar";
 
 const HotelTheme = () => {
   const [hoteles, setHoteles] = useState([]);
@@ -8,8 +9,6 @@ const HotelTheme = () => {
   const [themeId, setThemeId] = useState('');
   const [hotelThemes, setHotelThemes] = useState([]);
   const [editingId, setEditingId] = useState(null);
-
-  const navigate = useNavigate();
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
 
@@ -123,7 +122,7 @@ const HotelTheme = () => {
 
   const deleteHotelTheme = async (id) => {
     const isConfirmed = window.confirm("¿Estás seguro de que quieres eliminar esta relación?");
-  
+
     if (!isConfirmed) {
       return;
     }
@@ -170,99 +169,107 @@ const HotelTheme = () => {
   }, []);
 
   return (
-    <div className="container">
-      <h1>Gestión de Relaciones entre Hotel y Tema</h1>
+    <>
+      <div className="d-flex">
+        {/* Sidebar */}
+        <Sidebar/>
+        {/* Main Content */}
+        <div className="main-content flex-fill p-4">
+          {/* Texto centrado */}
+          <div className="text-center mt-5"></div>
+          <div className="container">
+            <h1>Gestión de Relaciones entre Hotel y Tema</h1>
 
-      <div className="card">
-        <div className="card-body">
-          <h5 className="card-title">{editingId ? 'Editar' : 'Crear'} Relación Hotel-Tema</h5>
+            <div className="card">
+              <div className="card-body">
+                <h5 className="card-title">{editingId ? 'Editar' : 'Crear'} Relación Hotel-Tema</h5>
 
-          <form>
-            <div className="form-group">
-              <label htmlFor="hotelSelect">Hotel</label>
-              <select
-                className="form-control"
-                id="hotelSelect"
-                value={hotelId}
-                onChange={(e) => setHotelId(e.target.value)}
-              >
-                <option value="">Selecciona un hotel</option>
-                {hoteles.map((hotel) => (
-                  <option key={hotel.id} value={hotel.id}>
-                    {hotel.nombre}
-                  </option>
-                ))}
-              </select>
+                <form>
+                  <div className="form-group">
+                    <label htmlFor="hotelSelect">Hotel</label>
+                    <select
+                      className="form-control"
+                      id="hotelSelect"
+                      value={hotelId}
+                      onChange={(e) => setHotelId(e.target.value)}
+                    >
+                      <option value="">Selecciona un hotel</option>
+                      {hoteles.map((hotel) => (
+                        <option key={hotel.id} value={hotel.id}>
+                          {hotel.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="themeSelect">Tema</label>
+                    <select
+                      className="form-control"
+                      id="themeSelect"
+                      value={themeId}
+                      onChange={(e) => setThemeId(e.target.value)}
+                    >
+                      <option value="">Selecciona un tema</option>
+                      {themes.map((theme) => (
+                        <option key={theme.id} value={theme.id}>
+                          {theme.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <button
+                      type="button"
+                      className="btn" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                      onClick={editingId ? updateHotelTheme : createHotelTheme}
+                    >
+                      {editingId ? 'Actualizar' : 'Crear'} Relación
+                    </button>
+
+                    {editingId && (
+                      <button
+                        type="button"
+                        className="btn ml-2" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                        onClick={cancelEdit}
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
+                </form>
+              </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="themeSelect">Tema</label>
-              <select
-                className="form-control"
-                id="themeSelect"
-                value={themeId}
-                onChange={(e) => setThemeId(e.target.value)}
-              >
-                <option value="">Selecciona un tema</option>
-                {themes.map((theme) => (
-                  <option key={theme.id} value={theme.id}>
-                    {theme.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={editingId ? updateHotelTheme : createHotelTheme}
-              >
-                {editingId ? 'Actualizar' : 'Crear'} Relación
-              </button>
-
-              {editingId && (
-                <button
-                  type="button"
-                  className="btn btn-primary ml-2"
-                  onClick={cancelEdit}
-                >
-                  Cancelar
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <h3 className="mt-4">Relaciones Actuales entre Hotel y Tema</h3>
-      <div className="list-group mt-4">
-        {hotelThemes.map((hotelTheme) => (
-          <div className="list-group-item d-flex justify-content-between align-items-center" key={hotelTheme.id}>
-            <div>
-              <strong>Hotel ID:</strong> {hotelTheme.id_hoteles} - <strong>Tema ID:</strong> {hotelTheme.id_theme}
-            </div>
-            <div>
-              <button
-                className="btn btn-primary btn-sm mr-2"
-                onClick={() => editHotelTheme(hotelTheme.id)}
-              >
-                Editar
-              </button>
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={() => deleteHotelTheme(hotelTheme.id)}
-              >
-                Eliminar
-              </button>
+            <h3 className="mt-4">Relaciones Actuales entre Hotel y Tema</h3>
+            <div className="list-group mt-4">
+              {hotelThemes.map((hotelTheme) => (
+                <div className="list-group-item d-flex justify-content-between align-items-center" key={hotelTheme.id}>
+                  <div>
+                    <strong>Hotel ID:</strong> {hotelTheme.id_hoteles} - <strong>Tema ID:</strong> {hotelTheme.id_theme}
+                  </div>
+                  <div>
+                    <button
+                      className="btn btn-sm m-2" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                      onClick={() => editHotelTheme(hotelTheme.id)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      className="btn  btn-sm" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                      onClick={() => deleteHotelTheme(hotelTheme.id)}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
+        </div>
       </div>
-      <button className="btn btn-primary" onClick={() => navigate("/privateHotel")}>
-          Volver
-      </button>
-    </div>
+    </>
   );
 };
 
