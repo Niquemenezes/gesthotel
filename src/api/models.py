@@ -235,9 +235,10 @@ class MaintenanceTask(db.Model):
             "nombre": self.nombre,
             "photo": self.photo,
             "condition": self.condition,
-            "room": self.room.serialize() if self.room else None,  # Detalles de la habitación
-            "maintenance": self.maintenance.serialize() if self.maintenance else None,  # Detalles del mantenimiento
-            "housekeeper": self.housekeeper.serialize() if self.housekeeper else None,  # Detalles del housekeeper
-            "category": self.category.serialize() if self.category else None,  # Detalles de la categoría
+            "room_id": self.room_id if self.room_id is not None else None,  # Solo devolver el ID de la habitación
+            "room_nombre": self.room.nombre if self.room else None,  # Agregar el nombre de la habitación
+            "maintenance_id": self.maintenance_id if self.maintenance_id is not None else None,  # Solo devolver el ID del mantenimiento
+            "housekeeper_id": self.housekeeper_id if self.housekeeper_id is not None else None,  # Solo devolver el ID del housekeeper
+            "category_id": self.category_id if self.category_id is not None else None,  # Solo devolver el ID de la categoría
         }
 

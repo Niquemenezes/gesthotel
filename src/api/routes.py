@@ -719,9 +719,20 @@ def delete_housekeeper_task(id):
 
 @api.route('/maintenancetasks', methods=['GET'])
 def get_all_maintenance_tasks():
-    """Obtener todas las tareas de mantenimiento"""
-    maintenance_tasks = MaintenanceTask.query.all()
+    """Obtener todas las tareas de mantenimiento asociadas al usuario logueado"""
+    token = request.headers.get('Authorization').split(" ")[1]  # Obtener el token del header
+    try:
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        maintenance_id = decoded_token['maintenance_id']  # Obtener el ID del usuario logueado
+    except jwt.ExpiredSignatureError:
+        return jsonify({"error": "Token expirado"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"error": "Token inválido"}), 401
+
+    # Filtrar las tareas por el maintenance_id
+    maintenance_tasks = MaintenanceTask.query.filter_by(maintenance_id=maintenance_id).all()
     return jsonify([task.serialize() for task in maintenance_tasks]), 200
+
 
 @api.route('/maintenancetasks/<int:id>', methods=['GET'])
 def get_maintenance_task(id):
