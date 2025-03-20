@@ -67,7 +67,7 @@ const MaintenanceTask = () => {
 
   // Crear una nueva tarea de mantenimiento
   const createMaintenanceTask = async () => {
-    if (!nombre || !photo || !condition || !idRoom || !idMaintenance || !idHousekeeper || !idCategory) {
+    if (!nombre || !idRoom || !idHousekeeper) {
       alert('Por favor, completa todos los campos');
       return;
     }
@@ -80,12 +80,12 @@ const MaintenanceTask = () => {
         },
         body: JSON.stringify({
           nombre,
-          photo,
-          condition,
+          photo: photo || '',
+          condition: condition || '',
           room_id: idRoom,
-          maintenance_id: idMaintenance,
+          maintenance_id: idMaintenance || null,
           housekeeper_id: idHousekeeper,
-          category_id: idCategory,
+          category_id: idCategory || null,
         }),
       });
 
@@ -104,7 +104,7 @@ const MaintenanceTask = () => {
 
   // Actualizar una tarea de mantenimiento
   const updateMaintenanceTask = async () => {
-    if (!nombre || !photo || !condition || !idRoom || !idMaintenance || !idHousekeeper || !idCategory || !editingId) {
+    if (!nombre || !idRoom || !idHousekeeper|| !editingId) {
       alert('Por favor, completa todos los campos para editar');
       return;
     }
@@ -117,12 +117,12 @@ const MaintenanceTask = () => {
         },
         body: JSON.stringify({
           nombre,
-          photo,
-          condition,
+          photo: photo || '',
+          condition: condition || '',
           room_id: idRoom,
-          maintenance_id: idMaintenance,
+          maintenance_id: idMaintenance || null,
           housekeeper_id: idHousekeeper,
-          category_id: idCategory,
+          category_id: idCategory || null,
         }),
       });
 
@@ -188,9 +188,9 @@ const MaintenanceTask = () => {
       setPhoto(taskToEdit.photo);
       setCondition(taskToEdit.condition);
       setIdRoom(taskToEdit.room.id);
-      setIdMaintenance(taskToEdit.maintenance.id);
+      setIdMaintenance(taskToEdit.maintenance ? taskToEdit.maintenance.id : '');
       setIdHousekeeper(taskToEdit.housekeeper.id);
-      setIdCategory(taskToEdit.category.id);
+      setIdCategory(taskToEdit.category ? taskToEdit.category.id : '');
       setEditingId(id);
     }
   };

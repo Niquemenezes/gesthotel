@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 const PrivateMaintenance = () => {
   const [tasks, setTasks] = useState([]);  // Tareas de mantenimiento
@@ -20,6 +21,9 @@ const PrivateMaintenance = () => {
         return;
       }
 
+      const decodedToken = jwtDecode(token);  // Decodificamos el token para obtener el maintenance_id
+      const maintenanceId = decodedToken.maintenance_id;  // Extraemos el maintenance_id
+
       const response = await fetch(`${backendUrl}api/maintenancetasks`, {
         headers: {
           Authorization: `Bearer ${token}`,  // Pasar el token en el encabezado
@@ -32,8 +36,12 @@ const PrivateMaintenance = () => {
       }
 
       const data = await response.json();
-      setTasks(data);  // Almacenar todas las tareas de mantenimiento
-      setGroupedTasks(groupTasksByRoom(data));  // Agrupar las tareas por habitación
+
+      // Filtrar las tareas para que solo se muestren las que corresponden al maintenance logueado
+      const filteredTasks = data.filter(task => task.maintenance_id === maintenanceId);
+
+      setTasks(filteredTasks);  // Almacenar las tareas filtradas
+      setGroupedTasks(groupTasksByRoom(filteredTasks));  // Agrupar las tareas por habitación
     } catch (error) {
       console.error('Error al obtener las tareas:', error);
       alert('Hubo un problema al obtener las tareas de mantenimiento');
