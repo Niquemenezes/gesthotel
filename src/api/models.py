@@ -219,7 +219,7 @@ class MaintenanceTask(db.Model):
     maintenance_id = db.Column(db.Integer, db.ForeignKey('maintenance.id'), nullable=True)  # Cambiar a nullable=True
     housekeeper_id = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=True)  # Cambiar a nullable=True
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)  # Cambiar a nullable=True
-
+    status = db.Column(db.String(20), nullable=False, default='PENDIENTE')
     # Relaciones
     room = db.relationship('Room')
     maintenance = db.relationship('Maintenance')

@@ -87,6 +87,38 @@ const PrivateMaintenance = () => {
     setSelectedRoomId(null);   // Limpiar la habitación seleccionada
   };
 
+  // Función para cambiar el estado de la tarea
+  const handleStatusChange = async (taskId, newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${backendUrl}api/maintenancetasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }), // Enviar el nuevo estado
+      });
+
+      if (response.ok) {
+        setTasks(prevTasks =>
+          prevTasks.map(task =>
+            task.id === taskId ? { ...task, status: newStatus } : task
+          )
+        );
+        // Si la tarea se finaliza, redirigir a la vista de habitaciones
+        if (newStatus === 'FINALIZADA') {
+          handleBackToRooms();
+        }
+      } else {
+        alert('Error al cambiar el estado de la tarea');
+      }
+    } catch (error) {
+      console.error('Error al cambiar el estado:', error);
+      alert('Hubo un problema al cambiar el estado de la tarea');
+    }
+  };
+
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
       <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
@@ -117,9 +149,35 @@ const PrivateMaintenance = () => {
               <div key={task.id} className="card mb-3 shadow-sm">
                 <div className="card-body">
                   <p><strong>Nombre de la tarea:</strong> {task.nombre}</p>
-                  <p><strong>Condición:</strong> {task.condition}</p>
+                  <p><strong>Estado:</strong> {task.status}</p>
                   <p><strong>Foto:</strong></p>
                   {task.photo && <img src={task.photo} alt={task.nombre} style={{ width: '100px', height: '100px' }} />}
+                  
+                  {/* Botones para cambiar el estado */}
+                  <button
+                    className="btn btn-warning mr-2"
+                    onClick={() => handleStatusChange(task.id, 'PENDIENTE')}
+                    disabled={task.status === 'PENDIENTE'}
+                  >
+                    Pendiente
+                  </button>
+                  <button
+                    className="btn btn-info mr-2"
+                    onClick={() => handleStatusChange(task.id, 'EN PROCESO')}
+                    disabled={task.status === 'EN PROCESO'}
+                  >
+                    En Proceso
+                  </button>
+                  <button
+                    className="btn btn-success mr-2"
+                    onClick={() => handleStatusChange(task.id, 'FINALIZADA')}
+                    disabled={task.status === 'FINALIZADA'}
+                  >
+                    Finalizada
+                  </button>
+
+                  {/* Mostrar checkbox grande y verde si está finalizada */}
+                  {task.status === 'FINALIZADA' && <input type="checkbox" checked readOnly style={{ width: '30px', height: '30px', backgroundColor: 'green' }} />}
                 </div>
               </div>
             ))}
