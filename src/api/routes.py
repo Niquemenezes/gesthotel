@@ -732,6 +732,7 @@ def get_maintenance_task(id):
         return jsonify({"message": "Tarea de mantenimiento no encontrada"}), 404
     return jsonify(maintenance_task.serialize()), 200
 
+
 @api.route('/maintenancetasks', methods=['POST'])
 def create_maintenance_task():
     data = request.get_json()
@@ -739,7 +740,7 @@ def create_maintenance_task():
     try:
         nombre = data.get('nombre')
         photo = data.get('photo', None)
-        condition = data.get('condition', None)
+        status = data.get('status', None)  # Cambio de condition a status
         room_id = data.get('room_id', None)
         maintenance_id = data.get('maintenance_id', None)
         housekeeper_id = data.get('housekeeper_id', None)
@@ -748,7 +749,7 @@ def create_maintenance_task():
         new_task = MaintenanceTask(
             nombre=nombre,
             photo=photo,
-            condition=condition,
+            status=status,  # Cambio de condition a status
             room_id=room_id,
             maintenance_id=maintenance_id,
             housekeeper_id=housekeeper_id,
@@ -764,6 +765,7 @@ def create_maintenance_task():
         db.session.rollback()
         return jsonify({"message": "Error al crear la tarea de mantenimiento", "error": str(e)}), 400
 
+
 @api.route('/maintenancetasks/<int:id>', methods=['PUT'])
 def update_maintenance_task(id):
     """Actualizar una tarea de mantenimiento existente"""
@@ -777,7 +779,7 @@ def update_maintenance_task(id):
     try:
         maintenance_task.nombre = data.get('nombre', maintenance_task.nombre)
         maintenance_task.photo = data.get('photo', maintenance_task.photo)
-        maintenance_task.condition = data.get('condition', maintenance_task.condition)
+        maintenance_task.status = data.get('status', maintenance_task.status)  # Cambio de condition a status
         maintenance_task.room_id = data.get('room_id', maintenance_task.room_id)
         maintenance_task.maintenance_id = data.get('maintenance_id', maintenance_task.maintenance_id)
         maintenance_task.housekeeper_id = data.get('housekeeper_id', maintenance_task.housekeeper_id)
@@ -790,6 +792,7 @@ def update_maintenance_task(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": "Error al actualizar la tarea de mantenimiento", "error": str(e)}), 400
+
 
 @api.route('/maintenancetasks/<int:id>', methods=['DELETE'])
 def delete_maintenance_task(id):
@@ -805,7 +808,6 @@ def delete_maintenance_task(id):
         return jsonify({"message": "Tarea de mantenimiento eliminada exitosamente"}), 200
     except Exception as e:
         db.session.rollback()
-
         return jsonify({"message": "Error al eliminar la tarea de mantenimiento", "error": str(e)}), 400
 
 

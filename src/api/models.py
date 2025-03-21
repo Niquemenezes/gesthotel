@@ -214,12 +214,12 @@ class MaintenanceTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
     photo = db.Column(db.String(255), nullable=True)
-    condition = db.Column(db.String(120), nullable=True)
-    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)  # Cambiar a nullable=True
-    maintenance_id = db.Column(db.Integer, db.ForeignKey('maintenance.id'), nullable=True)  # Cambiar a nullable=True
-    housekeeper_id = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=True)  # Cambiar a nullable=True
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)  # Cambiar a nullable=True
-    status = db.Column(db.String(20), nullable=False, default='PENDIENTE')
+    status = db.Column(db.String(120), nullable=True)  # Cambio de condition a status
+    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)
+    maintenance_id = db.Column(db.Integer, db.ForeignKey('maintenance.id'), nullable=True)
+    housekeeper_id = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
+
     # Relaciones
     room = db.relationship('Room')
     maintenance = db.relationship('Maintenance')
@@ -234,15 +234,15 @@ class MaintenanceTask(db.Model):
             "id": self.id,
             "nombre": self.nombre,
             "photo": self.photo,
-            "condition": self.condition,
+            "status": self.status,  # Se cambia condition por status
             "room": self.room.serialize() if self.room else None,
             "maintenance": self.maintenance.serialize() if self.maintenance else None,
             "housekeeper": self.housekeeper.serialize() if self.housekeeper else None,
             "category": self.category.serialize() if self.category else None,
-            "room_id": self.room_id if self.room_id is not None else None,  # Solo devolver el ID de la habitación
-            "room_nombre": self.room.nombre if self.room else None,  # Agregar el nombre de la habitación
-            "maintenance_id": self.maintenance_id if self.maintenance_id is not None else None,  # Solo devolver el ID del mantenimiento
-            "housekeeper_id": self.housekeeper_id if self.housekeeper_id is not None else None,  # Solo devolver el ID del housekeeper
-            "category_id": self.category_id if self.category_id is not None else None,  # Solo devolver el ID de la categoría
+            "room_id": self.room_id,
+            "room_nombre": self.room.nombre if self.room else None,
+            "maintenance_id": self.maintenance_id,
+            "housekeeper_id": self.housekeeper_id,
+            "category_id": self.category_id,
         }
 

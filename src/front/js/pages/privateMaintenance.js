@@ -3,30 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 
 const PrivateMaintenance = () => {
-  const [tasks, setTasks] = useState([]);  // Tareas de mantenimiento
-  const [groupedTasks, setGroupedTasks] = useState({});  // Tareas agrupadas por habitación
-  const [isRoomSelected, setIsRoomSelected] = useState(false);  // Indica si una habitación ha sido seleccionada
-  const [selectedRoomId, setSelectedRoomId] = useState(null);  // ID de la habitación seleccionada
-  const navigate = useNavigate();  // Función para redirigir al login si no hay sesión
+  const [tasks, setTasks] = useState([]);
+  const [groupedTasks, setGroupedTasks] = useState({});
+  const [isRoomSelected, setIsRoomSelected] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState(null);
+  const navigate = useNavigate();
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
 
-  // Fetch todas las tareas de mantenimiento
   const fetchMaintenanceTasks = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         alert('No estás logueado');
-        navigate('/loginMaintenance');  // Redirigir si no hay token
+        navigate('/loginMaintenance');
         return;
       }
 
-      const decodedToken = jwtDecode(token);  // Decodificamos el token para obtener el maintenance_id
-      const maintenanceId = decodedToken.maintenance_id;  // Extraemos el maintenance_id
+      const decodedToken = jwtDecode(token);
+      const maintenanceId = decodedToken.maintenance_id;
 
       const response = await fetch(`${backendUrl}api/maintenancetasks`, {
         headers: {
-          Authorization: `Bearer ${token}`,  // Pasar el token en el encabezado
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -36,19 +35,16 @@ const PrivateMaintenance = () => {
       }
 
       const data = await response.json();
-
-      // Filtrar las tareas para que solo se muestren las que corresponden al maintenance logueado
       const filteredTasks = data.filter(task => task.maintenance_id === maintenanceId);
 
-      setTasks(filteredTasks);  // Almacenar las tareas filtradas
-      setGroupedTasks(groupTasksByRoom(filteredTasks));  // Agrupar las tareas por habitación
+      setTasks(filteredTasks);
+      setGroupedTasks(groupTasksByRoom(filteredTasks));
     } catch (error) {
       console.error('Error al obtener las tareas:', error);
       alert('Hubo un problema al obtener las tareas de mantenimiento');
     }
   };
 
-  // Agrupar las tareas por habitación
   const groupTasksByRoom = (tasks) => {
     return tasks.reduce((acc, task) => {
       if (!acc[task.room_id]) {
@@ -59,36 +55,31 @@ const PrivateMaintenance = () => {
     }, {});
   };
 
-  // Cargar las tareas de mantenimiento al cargar el componente
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      navigate('/loginMaintenance');  // Redirigir al login si no hay token
+      navigate('/loginMaintenance');
       return;
     }
-    fetchMaintenanceTasks();  // Cargar las tareas de mantenimiento
+    fetchMaintenanceTasks();
   }, []);
 
-  // Manejar el cierre de sesión
   const handleLogout = () => {
     localStorage.removeItem('token');
-    navigate('/loginMaintenance');  // Redirigir al login
+    navigate('/loginMaintenance');
   };
 
-  // Manejar la selección de una habitación
   const handleRoomClick = (roomId) => {
     setSelectedRoomId(roomId);
-    setIsRoomSelected(true);  // Marcar que una habitación ha sido seleccionada
+    setIsRoomSelected(true);
   };
 
-  // Volver a la vista de todas las habitaciones
   const handleBackToRooms = () => {
-    setIsRoomSelected(false);  // Volver a la vista de todas las habitaciones
-    setSelectedRoomId(null);   // Limpiar la habitación seleccionada
+    setIsRoomSelected(false);
+    setSelectedRoomId(null);
   };
 
-  // Función para cambiar el estado de la tarea
-  const handleStatusChange = async (taskId, newStatus) => {
+  const handleStatusChange = async (taskId,selectedRoomId,newStatus) => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${backendUrl}api/maintenancetasks/${taskId}`, {
@@ -97,16 +88,23 @@ const PrivateMaintenance = () => {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus }), // Enviar el nuevo estado
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (response.ok) {
-        setTasks(prevTasks =>
-          prevTasks.map(task =>
-            task.id === taskId ? { ...task, status: newStatus } : task
-          )
-        );
-        // Si la tarea se finaliza, redirigir a la vista de habitaciones
+       setGroupedTasks(previus=>{
+        return {
+          ...previus,
+          [selectedRoomId]:[
+            ...previus[selectedRoomId].filter(item=>item.id!=taskId),
+            {
+            ...previus[selectedRoomId].find(item=>item.id===taskId),
+            status:newStatus
+            }
+            
+          ]
+        }
+       })
         if (newStatus === 'FINALIZADA') {
           handleBackToRooms();
         }
@@ -124,17 +122,13 @@ const PrivateMaintenance = () => {
       <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
         <h2 className="text-center mb-4 text-primary">Tareas de Mantenimiento</h2>
 
-        {/* Mostrar botones para cada habitación */}
         {!isRoomSelected && Object.keys(groupedTasks).length > 0 ? (
           Object.keys(groupedTasks).map((roomId) => {
             const roomTasks = groupedTasks[roomId];
-            const roomName = roomTasks[0].room_nombre || `Habitación ${roomId}`;  // Asegurarse de que el nombre exista
+            const roomName = roomTasks[0].room_nombre || `Habitación ${roomId}`;
             return (
               <div key={roomId} className="mb-3">
-                <button
-                  className="btn btn-primary mt-3 px-3 py-2"
-                  onClick={() => handleRoomClick(roomId)}
-                >
+                <button className="btn btn-primary mt-3 px-3 py-2" onClick={() => handleRoomClick(roomId)}>
                   <h5>Habitación: {roomName}</h5>
                 </button>
               </div>
@@ -142,66 +136,47 @@ const PrivateMaintenance = () => {
           })
         ) : null}
 
-        {/* Mostrar las tareas de la habitación seleccionada */}
-        {isRoomSelected && (
-          <div className="mt-4">
-            {groupedTasks[selectedRoomId] && groupedTasks[selectedRoomId].map((task) => (
-              <div key={task.id} className="card mb-3 shadow-sm">
-                <div className="card-body">
-                  <p><strong>Nombre de la tarea:</strong> {task.nombre}</p>
-                  <p><strong>Estado:</strong> {task.status}</p>
-                  <p><strong>Foto:</strong></p>
-                  {task.photo && <img src={task.photo} alt={task.nombre} style={{ width: '100px', height: '100px' }} />}
-                  
-                  {/* Botones para cambiar el estado */}
-                  <button
-                    className="btn btn-warning mr-2"
-                    onClick={() => handleStatusChange(task.id, 'PENDIENTE')}
-                    disabled={task.status === 'PENDIENTE'}
-                  >
-                    Pendiente
-                  </button>
-                  <button
-                    className="btn btn-info mr-2"
-                    onClick={() => handleStatusChange(task.id, 'EN PROCESO')}
-                    disabled={task.status === 'EN PROCESO'}
-                  >
-                    En Proceso
-                  </button>
-                  <button
-                    className="btn btn-success mr-2"
-                    onClick={() => handleStatusChange(task.id, 'FINALIZADA')}
-                    disabled={task.status === 'FINALIZADA'}
-                  >
-                    Finalizada
-                  </button>
-
-                  {/* Mostrar checkbox grande y verde si está finalizada */}
-                  {task.status === 'FINALIZADA' && <input type="checkbox" checked readOnly style={{ width: '30px', height: '30px', backgroundColor: 'green' }} />}
-                </div>
-              </div>
-            ))}
+{isRoomSelected && (
+  <div className="mt-4">
+    {groupedTasks[selectedRoomId] && groupedTasks[selectedRoomId].map((task) => (
+      <div key={task.id} className="card mb-3 shadow-sm">
+        <div className="card-body">
+          <p><strong>Nombre de la tarea:</strong> {task.nombre}</p>
+          <p><strong>Estado:</strong> {task.status}</p>
+          <p><strong>Foto:</strong></p>
+          {task.photo && <img src={task.photo} alt={task.nombre} style={{ width: '100px', height: '100px' }} />}
+          
+          {/* Contenedor para los botones con espacio */}
+          <div className="mt-3 p-3 border rounded d-flex justify-content-around">
+            <button className="btn btn-warning" onClick={() => handleStatusChange(task.id,selectedRoomId, 'PENDIENTE')} disabled={task.status === 'PENDIENTE'}>
+              Pendiente
+            </button>
+            <button className="btn btn-info" onClick={() => handleStatusChange(task.id,selectedRoomId, 'EN PROCESO')} disabled={task.status === 'EN PROCESO'}>
+              En Proceso
+            </button>
+            <button className="btn btn-success" onClick={() => handleStatusChange(task.id,selectedRoomId, 'FINALIZADA')} disabled={task.status === 'FINALIZADA'}>
+              Finalizada
+            </button>
           </div>
-        )}
 
-        {/* Botón para volver a ver todas las habitaciones */}
+          {/* Checkbox si la tarea está finalizada */}
+          {task.status === 'FINALIZADA' && <input type="checkbox" checked readOnly style={{ width: '30px', height: '30px', backgroundColor: 'green', marginTop: '10px' }} />}
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
         {isRoomSelected && (
           <div className="mt-3">
-            <button
-              className="btn btn-primary w-100"
-              onClick={handleBackToRooms}
-            >
+            <button className="btn btn-primary w-100" onClick={handleBackToRooms}>
               Volver a ver todas las habitaciones
             </button>
           </div>
         )}
 
-        {/* Botón de Cerrar sesión */}
         <div className="d-flex justify-content-center">
-          <button
-            className="btn btn-primary mt-3 px-5 py-2"
-            onClick={handleLogout}
-          >
+          <button className="btn btn-primary mt-3 px-5 py-2" onClick={handleLogout}>
             Cerrar sesión
           </button>
         </div>
