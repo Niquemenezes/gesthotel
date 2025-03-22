@@ -131,12 +131,10 @@ class Maintenance(db.Model):
     nombre = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(80), nullable=False)
-    hotel_id = db.Column(db.Integer, db.ForeignKey('hoteles.id'), nullable=True)
-    branch_id = db.Column(db.Integer, db.ForeignKey('branches.id'),nullable=False)
-    
+    hotel_id = db.Column(db.Integer, db.ForeignKey('hoteles.id'), nullable=False)
+   
     hotel = db.relationship('Hoteles')
-    branch = db.relationship("Branches")
-
+    
     def __repr__(self):
         return f'<Maintenance {self.nombre}>'
       
@@ -147,8 +145,7 @@ class Maintenance(db.Model):
           "email": self.email,
           "password": self.password,
           "hotel_id": self.hotel_id,
-          "branch_id": self.branch_id,
-          'branch': self.branch.nombre if self.branch else None  # Se asume que la relación 'branch' tiene un campo 'nombre'
+          "hotel": self.hotel.nombre if self.hotel else None
         }
       
 class HouseKeeper(db.Model):
@@ -157,10 +154,8 @@ class HouseKeeper(db.Model):
     nombre = db.Column(db.String(120), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
-    hotel_id = db.Column(db.Integer, db.ForeignKey('hoteles.id'), nullable=True)
     id_branche = db.Column(db.Integer, db.ForeignKey('branches.id'), nullable=True)
 
-    hotel = db.relationship('Hoteles')
     branches = db.relationship('Branches')
 
     def __repr__(self):
@@ -172,8 +167,6 @@ class HouseKeeper(db.Model):
             "nombre": self.nombre,
             "email": self.email,
             "password": self.password,
-            "hotel_id": self.hotel_id,
-            "hotel_nombre": self.hotel.nombre if self.hotel else None,# Agregar el nombre del hotel
             "id_branche": self.id_branche,
             
             
