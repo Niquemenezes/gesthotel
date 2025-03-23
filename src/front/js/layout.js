@@ -37,6 +37,7 @@ import { Footer } from "./component/footer";
 
 
 
+
 const Layout = () => {
     // Basename: Usado si el proyecto está en un subdirectorio, configurado en .env
     const basename = process.env.BASENAME || "";
