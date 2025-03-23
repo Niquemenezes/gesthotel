@@ -735,21 +735,26 @@ def get_maintenance_task(id):
 
 @api.route('/maintenancetasks', methods=['POST'])
 def create_maintenance_task():
+    """Crear una nueva tarea de mantenimiento"""
     data = request.get_json()
 
     try:
         nombre = data.get('nombre')
         photo = data.get('photo', None)
-        status = data.get('status', None)  # Cambio de condition a status
+        status = data.get('status', 'PENDIENTE')  # Valor por defecto 'PENDIENTE'
         room_id = data.get('room_id', None)
         maintenance_id = data.get('maintenance_id', None)
         housekeeper_id = data.get('housekeeper_id', None)
         category_id = data.get('category_id', None)
 
+        # Validar que el status sea uno de los valores permitidos
+        if status not in ['PENDIENTE', 'EN PROCESO', 'FINALIZADA']:
+            return jsonify({"message": "Estado no válido"}), 400
+
         new_task = MaintenanceTask(
             nombre=nombre,
             photo=photo,
-            status=status,  # Cambio de condition a status
+            status=status,
             room_id=room_id,
             maintenance_id=maintenance_id,
             housekeeper_id=housekeeper_id,
@@ -779,7 +784,13 @@ def update_maintenance_task(id):
     try:
         maintenance_task.nombre = data.get('nombre', maintenance_task.nombre)
         maintenance_task.photo = data.get('photo', maintenance_task.photo)
-        maintenance_task.status = data.get('status', maintenance_task.status)  # Cambio de condition a status
+        
+        # Validar que el status sea uno de los valores permitidos
+        new_status = data.get('status', maintenance_task.status)
+        if new_status not in ['PENDIENTE', 'EN PROCESO', 'FINALIZADA']:
+            return jsonify({"message": "Estado no válido"}), 400
+        maintenance_task.status = new_status
+
         maintenance_task.room_id = data.get('room_id', maintenance_task.room_id)
         maintenance_task.maintenance_id = data.get('maintenance_id', maintenance_task.maintenance_id)
         maintenance_task.housekeeper_id = data.get('housekeeper_id', maintenance_task.housekeeper_id)

@@ -79,7 +79,7 @@ const PrivateMaintenance = () => {
     setSelectedRoomId(null);
   };
 
-  const handleStatusChange = async (taskId,selectedRoomId,newStatus) => {
+  const handleStatusChange = async (taskId, selectedRoomId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${backendUrl}api/maintenancetasks/${taskId}`, {
@@ -92,19 +92,19 @@ const PrivateMaintenance = () => {
       });
 
       if (response.ok) {
-       setGroupedTasks(previus=>{
-        return {
-          ...previus,
-          [selectedRoomId]:[
-            ...previus[selectedRoomId].filter(item=>item.id!=taskId),
-            {
-            ...previus[selectedRoomId].find(item=>item.id===taskId),
-            status:newStatus
-            }
-            
-          ]
-        }
-       })
+        setTasks(prevTasks =>
+          prevTasks.map(task =>
+            task.id === taskId ? { ...task, status: newStatus } : task
+          )
+        );
+
+        setGroupedTasks(prevGroupedTasks => ({
+          ...prevGroupedTasks,
+          [selectedRoomId]: prevGroupedTasks[selectedRoomId].map(task =>
+            task.id === taskId ? { ...task, status: newStatus } : task
+          ),
+        }));
+
         if (newStatus === 'FINALIZADA') {
           handleBackToRooms();
         }
@@ -126,6 +126,7 @@ const PrivateMaintenance = () => {
           Object.keys(groupedTasks).map((roomId) => {
             const roomTasks = groupedTasks[roomId];
             const roomName = roomTasks[0].room_nombre || `Habitación ${roomId}`;
+
             return (
               <div key={roomId} className="mb-3">
                 <button className="btn btn-primary mt-3 px-3 py-2" onClick={() => handleRoomClick(roomId)}>
@@ -136,36 +137,34 @@ const PrivateMaintenance = () => {
           })
         ) : null}
 
-{isRoomSelected && (
-  <div className="mt-4">
-    {groupedTasks[selectedRoomId] && groupedTasks[selectedRoomId].map((task) => (
-      <div key={task.id} className="card mb-3 shadow-sm">
-        <div className="card-body">
-          <p><strong>Nombre de la tarea:</strong> {task.nombre}</p>
-          <p><strong>Estado:</strong> {task.status}</p>
-          <p><strong>Foto:</strong></p>
-          {task.photo && <img src={task.photo} alt={task.nombre} style={{ width: '100px', height: '100px' }} />}
-          
-          {/* Contenedor para los botones con espacio */}
-          <div className="mt-3 p-3 border rounded d-flex justify-content-around">
-            <button className="btn btn-warning" onClick={() => handleStatusChange(task.id,selectedRoomId, 'PENDIENTE')} disabled={task.status === 'PENDIENTE'}>
-              Pendiente
-            </button>
-            <button className="btn btn-info" onClick={() => handleStatusChange(task.id,selectedRoomId, 'EN PROCESO')} disabled={task.status === 'EN PROCESO'}>
-              En Proceso
-            </button>
-            <button className="btn btn-success" onClick={() => handleStatusChange(task.id,selectedRoomId, 'FINALIZADA')} disabled={task.status === 'FINALIZADA'}>
-              Finalizada
-            </button>
-          </div>
+        {isRoomSelected && (
+          <div className="mt-4">
+            {groupedTasks[selectedRoomId] && groupedTasks[selectedRoomId].map((task) => (
+              <div key={task.id} className="card mb-3 shadow-sm">
+                <div className="card-body">
+                  <p><strong>Nombre de la tarea:</strong> {task.nombre}</p>
+                  <p><strong>Estado:</strong> {task.status}</p>
+                  <p><strong>Foto:</strong></p>
+                  {task.photo && <img src={task.photo} alt={task.nombre} style={{ width: '100px', height: '100px' }} />}
+                  
+                  <div className="mt-3 p-3 border rounded d-flex justify-content-around">
+                    <button className="btn btn-warning" onClick={() => handleStatusChange(task.id, selectedRoomId, 'PENDIENTE')} disabled={task.status === 'PENDIENTE'}>
+                      Pendiente
+                    </button>
+                    <button className="btn btn-info" onClick={() => handleStatusChange(task.id, selectedRoomId, 'EN PROCESO')} disabled={task.status === 'EN PROCESO'}>
+                      En Proceso
+                    </button>
+                    <button className="btn btn-success" onClick={() => handleStatusChange(task.id, selectedRoomId, 'FINALIZADA')} disabled={task.status === 'FINALIZADA'}>
+                      Finalizada
+                    </button>
+                  </div>
 
-          {/* Checkbox si la tarea está finalizada */}
-          {task.status === 'FINALIZADA' && <input type="checkbox" checked readOnly style={{ width: '30px', height: '30px', backgroundColor: 'green', marginTop: '10px' }} />}
-        </div>
-      </div>
-    ))}
-  </div>
-)}
+                  {task.status === 'FINALIZADA' && <input type="checkbox" checked readOnly style={{ width: '30px', height: '30px', backgroundColor: 'green', marginTop: '10px' }} />}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {isRoomSelected && (
           <div className="mt-3">
@@ -179,6 +178,22 @@ const PrivateMaintenance = () => {
           <button className="btn btn-primary mt-3 px-5 py-2" onClick={handleLogout}>
             Cerrar sesión
           </button>
+        </div>
+
+        {/* Botones de filtrado */}
+        <div className="card mt-4 p-3">
+          <h5 className="text-center">Filtrar tareas</h5>
+          <div className="d-flex justify-content-around">
+            <button className="btn btn-primary" onClick={() => navigate('/task-filter', { state: { view: 'all' } })}>
+              Todas
+            </button>
+            <button className="btn btn-warning" onClick={() => navigate('/task-filter', { state: { view: 'PENDIENTE' } })}>
+              Pendientes
+            </button>
+            <button className="btn btn-success" onClick={() => navigate('/task-filter', { state: { view: 'FINALIZADA' } })}>
+              Finalizadas
+            </button>
+          </div>
         </div>
       </div>
     </div>
