@@ -7,7 +7,7 @@ from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from api.models import db, User, Hoteles, Theme, Category, HotelTheme, Branches, Maintenance, HouseKeeper, HouseKeeperTask, MaintenanceTask, Room
 import datetime
-#import jwt
+import jwt
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_jwt_extended import JWTManager
@@ -18,7 +18,7 @@ from flask_jwt_extended import create_access_token
 api = Blueprint('api', __name__)
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'tu_clave_secreta'  # Cambia esto por una clave secreta segura
-jwt = JWTManager(app)
+#jwt = JWTManager(app)
 
 
 SECRET_KEY = "your_secret_key"
@@ -196,37 +196,32 @@ def delete_branch_by_hotel(id):
     db.session.commit()
     return jsonify({"msg": "Sucursal eliminada correctamente"}), 200
 
-
-
-
-@api.route("/prueba", methods=["GET"])
-def prueba():
-    return jsonify({"msg": "¡Esto funciona!"}), 200
-
 # obtener tecnico del hotel autenticado
-@api.route("/api/maintenance_by_hotel", methods=["GET"])
+@api.route("/maintenance_by_hotel", methods=["GET"])
 @jwt_required()
 def get_maintenances_by_hotel():
-    user_email = get_jwt_identity()
-    hotel = Hoteles.query.filter_by(email=user_email).first()
+   user_email = get_jwt_identity()
+   hotel = Hoteles.query.filter_by(email=user_email).first()
 
-    if not hotel:
+
+   if not hotel:
         return jsonify({"msg": "Hotel no encontrado"}), 404
 
-    maintenances = Maintenance.query.filter_by(hotel_id=hotel.id).all()
-    return jsonify([m.serialize() for m in maintenances]), 200
+   maintenances = Maintenance.query.filter_by(hotel_id=hotel.id).all()
+   return jsonify([m.serialize() for m in maintenances]), 200
 
 
 
 #crear tecnico (solo el hotel autenticado)
 
-@api.route("/api/maintenance_by_hotel", methods=["POST"])
+@api.route("/maintenance_by_hotel", methods=["POST"])
 @jwt_required()
 def create_maintenance():
     data = request.get_json()
     
-    user_id = get_jwt_identity()
-    hotel = Hoteles.query.get(user_id)
+    user_email = get_jwt_identity()
+    hotel = Hoteles.query.filter_by(email=user_email).first()
+
 
     if not hotel:
         return jsonify({"msg": "Hotel no encontrado"}), 404
@@ -236,6 +231,7 @@ def create_maintenance():
         nombre=data["nombre"],
         email=data["email"],
         password=data["password"],
+        photo_url=data.get("photo_url"),
         hotel_id=hotel.id  # ← lo pone automáticamente
     )
 
@@ -246,11 +242,12 @@ def create_maintenance():
 
 
 #editar tecnico que so pertenece al hotel
-@api.route("/api/maintenance_by_hotel/<int:id>", methods=["PUT"])
+@api.route("/maintenance_by_hotel/<int:id>", methods=["PUT"])
 @jwt_required()
 def update_maintenance(id):
-    user_id = get_jwt_identity()
-    hotel = Hoteles.query.get(user_id)
+    user_email = get_jwt_identity()
+    hotel = Hoteles.query.filter_by(email=user_email).first()
+
     data = request.get_json()
 
     maintenance = Maintenance.query.get(id)
@@ -260,6 +257,8 @@ def update_maintenance(id):
     maintenance.nombre = data.get("nombre", maintenance.nombre)
     maintenance.email = data.get("email", maintenance.email)
     maintenance.password = data.get("password", maintenance.password)
+    maintenance.photo_url = data.get("photo_url", maintenance.photo_url)  
+
 
     db.session.commit()
     return jsonify(maintenance.serialize()), 200
@@ -267,11 +266,12 @@ def update_maintenance(id):
 
 #eliminar tecnico solo si pertenece al hotel
 
-@api.route("/api/maintenance_by_hotel/<int:id>", methods=["DELETE"])
+@api.route("/maintenance_by_hotel/<int:id>", methods=["DELETE"])
 @jwt_required()
 def delete_maintenance(id):
-    user_id = get_jwt_identity()
-    hotel = Hoteles.query.get(user_id)
+    user_email = get_jwt_identity()
+    hotel = Hoteles.query.filter_by(email=user_email).first()
+
 
     maintenance = Maintenance.query.get(id)
     if not maintenance or maintenance.hotel_id != hotel.id:
@@ -320,7 +320,9 @@ def create_housekeeper():
         nombre=data["nombre"],
         email=data["email"],
         password=data["password"],
-        id_branche=branch.id
+        id_branche=branch.id,
+        photo_url=data.get("photo_url")
+
     )
     db.session.add(nueva)
     db.session.commit()
@@ -329,11 +331,12 @@ def create_housekeeper():
 
 # editar housekeeper solo la sucursal es del hotel autenticado
 
-@api.route('/housekeeper/<int:id>', methods=['PUT'])
+@api.route('/housekeeper_by_hotel/<int:id>', methods=['PUT'])
 @jwt_required()
 def update_housekeeper(id):
     email = get_jwt_identity()
     hotel = Hoteles.query.filter_by(email=email).first()
+
     if not hotel:
         return jsonify({"msg": "Hotel no autorizado"}), 401
 
@@ -341,21 +344,27 @@ def update_housekeeper(id):
     if not hk:
         return jsonify({"msg": "Housekeeper no encontrada"}), 404
 
-    branch = Branches.query.get(hk.id_branche)
-    if not branch or branch.hotel_id != hotel.id:
-        return jsonify({"msg": "No tienes permiso para modificar esta housekeeper"}), 401
-
     data = request.get_json()
+    new_branche_id = data.get("id_branche")
+
+    # Validar que la nueva sucursal pertenezca al hotel
+    branch = Branches.query.get(new_branche_id)
+    if not branch or branch.hotel_id != hotel.id:
+        return jsonify({"msg": "No tienes permiso para asignar esta sucursal"}), 401
+
+    # Actualizar los campos del housekeeper
     hk.nombre = data.get("nombre", hk.nombre)
     hk.email = data.get("email", hk.email)
     hk.password = data.get("password", hk.password)
+    hk.photo_url = data.get("photo_url", hk.photo_url)
+
 
     db.session.commit()
     return jsonify(hk.serialize()), 200
 
 # eliminar housekeeper solo si pertenece al hotel autenticado
 
-@api.route('/housekeeper/<int:id>', methods=['DELETE'])
+@api.route('/housekeeper_by_hotel/<int:id>', methods=['DELETE'])
 @jwt_required()
 def delete_housekeeper(id):
     email = get_jwt_identity()
@@ -380,8 +389,8 @@ def delete_housekeeper(id):
 @api.route('/rooms_by_hotel', methods=['GET'])
 @jwt_required()
 def get_rooms_by_hotel():
-    email = get_jwt_identity()
-    hotel = Hoteles.query.filter_by(email=email).first()
+    hotel_email = get_jwt_identity()  # ← esto es un string (email)
+    hotel = Hoteles.query.filter_by(email=hotel_email).first()
 
     if not hotel:
         return jsonify({"msg": "Hotel no autorizado"}), 401
@@ -390,84 +399,119 @@ def get_rooms_by_hotel():
     branch_ids = [b.id for b in branches]
 
     rooms = Room.query.filter(Room.branch_id.in_(branch_ids)).all()
-    return jsonify([r.serialize() for r in rooms]), 200
+    # Añadir info de sucursal opcional
+    response = []
+    for room in rooms:
+        room_data = room.serialize()
+        branch = Branches.query.get(room.branch_id)
+        room_data["sucursal"] = {
+            "id": branch.id,
+            "nombre": branch.nombre
+        } if branch else None
+        response.append(room_data)
+
+    return jsonify(response), 200
 
 #crear habitaciones solo en branches del hotel autenticado
 
-@app.route('/api/rooms_by_hotel', methods=['POST'])
+@api.route('/rooms_by_hotel', methods=['POST'])
 @jwt_required()
 def create_room_by_hotel():
-    hotel_email = get_jwt_identity()  # Obtener el hotel_id desde el token
-    hotel_id = hotel_email['hotel_id']  # Suponiendo que el token contiene el 'hotel_id'
+    hotel_email = get_jwt_identity()
+    hotel = Hoteles.query.filter_by(email=hotel_email).first()
 
-    # Obtener el branch_id desde la solicitud
+    if not hotel:
+        return jsonify({'error': 'Hotel no autorizado'}), 401
+
     data = request.get_json()
-    branch_id = data.get('branch_id')  # El branch_id de la habitación
+    branch_id = data.get('branch_id')
+    nombre = data.get('nombre')
 
-    # Verifica que el branch_id pertenezca al hotel del usuario autenticado
-    branch = Branches.query.filter_by(id=branch_id, hotel_id=hotel_id).first()
-
+    branch = Branches.query.filter_by(id=branch_id, hotel_id=hotel.id).first()
     if not branch:
-        return jsonify({'error': 'Branch does not belong to the authenticated hotel'}), 400
+        return jsonify({'error': 'La sucursal no pertenece al hotel autenticado'}), 400
 
-    # Crear la nueva habitación asociada al branch
-    nueva_habitacion = Room(
-        nombre=data.get('nombre'),
-        branch_id=branch_id  # La habitación se asocia al branch_id
-    )
-    
-    db.session.add(nueva_habitacion)
+    # Validación: no repetir nombre en la misma sucursal
+    existing = Room.query.filter_by(nombre=nombre, branch_id=branch.id).first()
+    if existing:
+        return jsonify({'error': 'Ya existe una habitación con ese nombre en esta sucursal'}), 400
+
+    nueva_room = Room(nombre=nombre, branch_id=branch.id)
+    db.session.add(nueva_room)
     db.session.commit()
 
-    return jsonify({'message': 'Room created successfully'}), 201
+    return jsonify(nueva_room.serialize()), 201
+
+
 
 #editar habitacion verificando que la branche es del hotel
 
-@app.route('/api/rooms_by_hotel/<int:room_id>', methods=['PUT'])
+@api.route('/rooms_by_hotel/<int:room_id>', methods=['PUT'])
 @jwt_required()
 def update_room_by_hotel(room_id):
-    hotel_email = get_jwt_identity()  
-    hotel_id = hotel_email['hotel_id']  
+    hotel_email = get_jwt_identity()
+    hotel = Hoteles.query.filter_by(email=hotel_email).first()
 
-    # Obtener la habitación a actualizar
+    if not hotel:
+        return jsonify({'error': 'Hotel no autorizado'}), 401
+
     room = Room.query.get_or_404(room_id)
 
-    # Verificar que la habitación pertenece a una sucursal asociada al hotel autenticado
-    branch = Branches.query.filter_by(id=room.branch_id, hotel_id=hotel_id).first()
-    if not branch:
-        return jsonify({'error': 'Room does not belong to the authenticated hotel'}), 400
+    # Verificar que la habitación pertenece al hotel
+    current_branch = Branches.query.filter_by(id=room.branch_id, hotel_id=hotel.id).first()
+    if not current_branch:
+        return jsonify({'error': 'La habitación no pertenece al hotel autenticado'}), 400
 
-    # Actualizar los campos de la habitación
     data = request.get_json()
-    room.nombre = data.get('nombre', room.nombre)
-    room.branch_id = data.get('branch_id', room.branch_id)  # Se puede cambiar el branch_id si es necesario
+    new_nombre = data.get('nombre', room.nombre)
+    new_branch_id = data.get('branch_id', room.branch_id)
+
+    # Verificar que la nueva sucursal pertenece al hotel
+    new_branch = Branches.query.filter_by(id=new_branch_id, hotel_id=hotel.id).first()
+    if not new_branch:
+        return jsonify({'error': 'La nueva sucursal no pertenece al hotel autenticado'}), 400
+
+    # Validar que no haya otra habitación con ese mismo nombre en esa sucursal
+    duplicate = Room.query.filter(
+        Room.id != room.id,
+        Room.nombre == new_nombre,
+        Room.branch_id == new_branch_id
+    ).first()
+    if duplicate:
+        return jsonify({'error': 'Ya existe otra habitación con ese nombre en esta sucursal'}), 400
+
+    # Actualizar
+    room.nombre = new_nombre
+    room.branch_id = new_branch_id
 
     db.session.commit()
 
-    return jsonify({'message': 'Room updated successfully'}), 200
+    return jsonify(room.serialize()), 200
+
 
 
 #eliminar habitacion verificando que la branche sea del hotel
 
-@app.route('/api/rooms_by_hotel/<int:room_id>', methods=['DELETE'])
+@api.route('/rooms_by_hotel/<int:room_id>', methods=['DELETE'])
 @jwt_required()
 def delete_room_by_hotel(room_id):
-    hotel_email = get_jwt_identity()  # Obtener el hotel_id desde el token
-    hotel_id = hotel_email['hotel_id']  # Suponiendo que el token contiene el 'hotel_id'
+    hotel_email = get_jwt_identity()
+    hotel = Hoteles.query.filter_by(email=hotel_email).first()
 
-    # Obtener la habitación a eliminar
+    if not hotel:
+        return jsonify({'error': 'Hotel no autorizado'}), 401
+
     room = Room.query.get_or_404(room_id)
+    branch = Branches.query.filter_by(id=room.branch_id, hotel_id=hotel.id).first()
 
-    # Verificar que la habitación pertenece a una sucursal asociada al hotel autenticado
-    branch = Branches.query.filter_by(id=room.branch_id, hotel_id=hotel_id).first()
     if not branch:
-        return jsonify({'error': 'Room does not belong to the authenticated hotel'}), 400
+        return jsonify({'error': 'La habitación no pertenece al hotel autenticado'}), 400
 
-    # Eliminar la habitación
     db.session.delete(room)
     db.session.commit()
 
-    return jsonify({'message': 'Room deleted successfully'}), 200
+    return jsonify({'message': 'Habitación eliminada correctamente'}), 200
+
 
 
 #obtener todas las tareas del hotel autenticado
@@ -515,8 +559,8 @@ def create_housekeeper_task():
 
     task = HouseKeeperTask(
         nombre=data["nombre"],
-        photo=data["photo"],
-        condition=data["condition"],
+        photo_url=data.get("photo_url"),
+        condition=data.get("condition", ""),
         assignment_date=data["assignment_date"],
         submission_date=data["submission_date"],
         id_housekeeper=housekeeper.id,
@@ -525,6 +569,7 @@ def create_housekeeper_task():
 
     db.session.add(task)
     db.session.commit()
+    task = HouseKeeperTask.query.get(task.id)   
     return jsonify(task.serialize()), 201
 
 #editar tareas de housekeeper
@@ -544,7 +589,7 @@ def update_housekeeper_task(id):
     data = request.get_json()
 
     task.nombre = data.get("nombre", task.nombre)
-    task.photo = data.get("photo", task.photo)
+    task.photo_url = data.get("photo_url", task.photo_url)
     task.condition = data.get("condition", task.condition)
     task.assignment_date = data.get("assignment_date", task.assignment_date)
     task.submission_date = data.get("submission_date", task.submission_date)
@@ -631,7 +676,7 @@ def create_maintenancetask():
 
     task = MaintenanceTask(
         nombre=data["nombre"],
-        photo=data.get("photo", ""),
+        photo_url=data.get("photo_url", ""),
         condition=data["condition"],
         room_id=room.id,
         maintenance_id=maintenance.id,
@@ -659,7 +704,7 @@ def update_maintenancetask(id):
 
     data = request.get_json()
     task.nombre = data.get("nombre", task.nombre)
-    task.photo = data.get("photo", task.photo)
+    task.photo_url = data.get("photo_url", task.photo_url)
     task.condition = data.get("condition", task.condition)
 
     db.session.commit()
@@ -700,12 +745,18 @@ def get_rooms_by_housekeeper(housekeeper_id):
     rooms = Room.query.filter_by(branch_id=housekeeper.id_branche).all()
     return jsonify([room.serialize() for room in rooms]), 200
 
+# ruta para que cuando selecione la sucursal traiga solo las habitaciones de esa sucursal
+@api.route('/rooms_by_branch/<int:branch_id>', methods=['GET'])
+@jwt_required()
+def get_rooms_by_branch(branch_id):
+    email = get_jwt_identity()
+    hotel = Hoteles.query.filter_by(email=email).first()
+    branch = Branches.query.get(branch_id)
+    if not branch or branch.hotel_id != hotel.id:
+        return jsonify({"msg": "Sucursal no autorizada"}), 401
 
-
-
-
-
-
+    rooms = Room.query.filter_by(branch_id=branch_id).all()
+    return jsonify([r.serialize() for r in rooms]), 200
 
 
 

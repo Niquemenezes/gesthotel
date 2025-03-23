@@ -131,6 +131,7 @@ class Maintenance(db.Model):
     nombre = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(80), nullable=False)
+    photo_url = db.Column(db.String(300), nullable=True)
     hotel_id = db.Column(db.Integer, db.ForeignKey('hoteles.id'), nullable=False)
    
     hotel = db.relationship('Hoteles')
@@ -144,6 +145,7 @@ class Maintenance(db.Model):
           "nombre": self.nombre,
           "email": self.email,
           "password": self.password,
+          "photo_url": self.photo_url, 
           "hotel_id": self.hotel_id,
           "hotel": self.hotel.nombre if self.hotel else None
         }
@@ -154,6 +156,7 @@ class HouseKeeper(db.Model):
     nombre = db.Column(db.String(120), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
+    photo_url = db.Column(db.String(300), nullable=True)
     id_branche = db.Column(db.Integer, db.ForeignKey('branches.id'), nullable=True)
 
     branches = db.relationship('Branches')
@@ -167,7 +170,8 @@ class HouseKeeper(db.Model):
             "nombre": self.nombre,
             "email": self.email,
             "password": self.password,
-            "id_branche": self.id_branche,
+            "photo_url": self.photo_url,
+            "id_branche": self.id_branche,      
             
             
         }
@@ -176,8 +180,8 @@ class HouseKeeperTask(db.Model):
     __tablename__ = 'housekeepertask'
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
-    photo = db.Column(db.String(120), nullable=False)
-    condition = db.Column(db.String(80), nullable=False)
+    photo_url = db.Column(db.String(300), nullable=True)
+    condition = db.Column(db.String(80), nullable=True)
     assignment_date = db.Column(db.String(80), nullable=False)
     submission_date = db.Column(db.String(80), nullable=False)
     id_room = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)
@@ -193,7 +197,7 @@ class HouseKeeperTask(db.Model):
         return {
             "id": self.id,
             "nombre": self.nombre,
-            "photo": self.photo,
+            "photo_url": self.photo_url,
             "condition": self.condition,
             "assignment_date": self.assignment_date,
             "submission_date": self.submission_date,
@@ -206,7 +210,7 @@ class MaintenanceTask(db.Model):
     __tablename__ = 'maintenancetask'
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
-    photo = db.Column(db.String(255), nullable=True)
+    photo_url = db.Column(db.String(300), nullable=True)
     condition = db.Column(db.String(120), nullable=True)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)  # Cambiar a nullable=True
     maintenance_id = db.Column(db.Integer, db.ForeignKey('maintenance.id'), nullable=True)  # Cambiar a nullable=True
@@ -226,7 +230,7 @@ class MaintenanceTask(db.Model):
         return {
             "id": self.id,
             "nombre": self.nombre,
-            "photo": self.photo,
+            "photo_url": self.photo_url,
             "condition": self.condition,
             "room": self.room.serialize() if self.room else None,
             "maintenance": self.maintenance.serialize() if self.maintenance else None,

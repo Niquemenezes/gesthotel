@@ -2,27 +2,27 @@ import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../component/sidebar";
 import { Context } from "../store/appContext";
+import CloudinaryApiHotel from "../component/cloudinaryApiHotel"; 
 
 const Maintenance = () => {
 	const [maintenanceSeleccionado, setMaintenanceSeleccionado] = useState(null);
 	const [nombre, setNombre] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [photoUrl, setPhotoUrl] = useState("");
+	const [errorMessage, setErrorMessage] = useState("");
 	const [mostrarFormulario, setMostrarFormulario] = useState(false);
-
 	const { store, actions } = useContext(Context);
 	const navigate = useNavigate();
 
-	// Cargar técnicos al montar
 	useEffect(() => {
 		actions.getMaintenances();
 	}, []);
 
-	// Enviar formulario
 	const handleSubmit = (e) => {
 		e.preventDefault();
+		const data = { nombre, email, password, photo_url: photoUrl };
 
-		const data = { nombre, email, password };
 
 		if (maintenanceSeleccionado) {
 			actions.putMaintenance(maintenanceSeleccionado.id, data);
@@ -31,7 +31,7 @@ const Maintenance = () => {
 		}
 
 		resetFormulario();
-		navigate("/listaMaintenance"); // si quieres redirigir luego
+		navigate("/listaMaintenance");
 	};
 
 	const eliminar = (id) => {
@@ -43,6 +43,8 @@ const Maintenance = () => {
 		setNombre("");
 		setEmail("");
 		setPassword("");
+		setPhotoUrl("");
+		setErrorMessage("");
 		setMostrarFormulario(false);
 	};
 
@@ -65,32 +67,45 @@ const Maintenance = () => {
 					</button>
 				</div>
 
+				{/* Cabecera de tabla */}
 				<div className="row bg-light p-2 fw-bold border-bottom">
+					<div className="col">Foto</div>
 					<div className="col">Nombre</div>
 					<div className="col">Email</div>
 					<div className="col text-center">Acciones</div>
 				</div>
 
+				{/* Lista de técnicos */}
 				{store.maintenances?.map((mantenimiento) => (
-					<div
-						key={mantenimiento.id}
-						className="row p-2 border-bottom align-items-center"
-					>
+					<div key={mantenimiento.id} className="row p-2 border-bottom align-items-center">
+						<div className="col">
+							{mantenimiento.photo_url ? (
+								<img
+									src={mantenimiento.photo_url}
+									alt="foto técnico"
+									style={{
+										width: "50px",
+										height: "50px",
+										objectFit: "cover",
+										borderRadius: "50%",
+									}}
+								/>
+							) : (
+								<span className="text-muted">Sin foto</span>
+							)}
+						</div>
 						<div className="col">{mantenimiento.nombre}</div>
 						<div className="col">{mantenimiento.email}</div>
-
 						<div className="col d-flex justify-content-center">
 							<button
 								className="btn me-2"
-								style={{
-									backgroundColor: "#ac85eb",
-									borderColor: "#B7A7D1",
-								}}
+								style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
 								onClick={() => {
 									setMaintenanceSeleccionado(mantenimiento);
 									setNombre(mantenimiento.nombre);
 									setEmail(mantenimiento.email);
 									setPassword(mantenimiento.password || "");
+									setPhotoUrl(mantenimiento.photo_url || "");
 									setMostrarFormulario(true);
 								}}
 							>
@@ -98,10 +113,7 @@ const Maintenance = () => {
 							</button>
 							<button
 								className="btn"
-								style={{
-									backgroundColor: "#ac85eb",
-									borderColor: "#B7A7D1",
-								}}
+								style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
 								onClick={() => eliminar(mantenimiento.id)}
 							>
 								Eliminar
@@ -110,6 +122,7 @@ const Maintenance = () => {
 					</div>
 				))}
 
+				{/* Formulario de técnico */}
 				{mostrarFormulario && (
 					<div className="card p-4 mt-5">
 						<h3 className="text-center mb-4">
@@ -140,13 +153,34 @@ const Maintenance = () => {
 								placeholder="Contraseña"
 								required
 							/>
+
+							{/* Componente para cargar la imagen */}
+							<div className="mb-3">
+								<label htmlFor="photo" className="form-label">
+								Foto
+								</label>
+								<CloudinaryApiHotel setPhotoUrl={setPhotoUrl} setErrorMessage={setErrorMessage} />
+								{photoUrl && (
+									<div className="mt-2">
+										<img src={photoUrl} alt="Foto Tecnico" className="img-fluid" />
+									</div>
+								)}
+							</div>
+
+							{/* Preview de imagen */}
+							{photoUrl && (
+								<img
+									src={photoUrl}
+									alt="Preview"
+									className="img-thumbnail my-3"
+									style={{ width: "150px" }}
+								/>
+							)}
+
 							<button
 								type="submit"
 								className="btn w-100"
-								style={{
-									backgroundColor: "#ac85eb",
-									borderColor: "#B7A7D1",
-								}}
+								style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
 							>
 								{maintenanceSeleccionado ? "Guardar Cambios" : "Crear Técnico"}
 							</button>

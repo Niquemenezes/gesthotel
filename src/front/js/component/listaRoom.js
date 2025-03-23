@@ -1,119 +1,97 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
 import { Context } from "../store/appContext";
-import { useNavigate } from "react-router-dom";
+import Sidebar from "../component/sidebar";
 
 const ListaRoom = () => {
-  const [rooms, setRooms] = useState([]);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState(null);
-  const [eliminando, setEliminando] = useState(null); // ID de la habitación que se está eliminando
   const { store, actions } = useContext(Context);
-  const navigate = useNavigate();
-  // Función para obtener la URL del backend de forma segura
-  const getBackendUrl = () => {
-    const baseUrl = process.env.BACKEND_URL;
-    if (!baseUrl) {
-      console.error("Error: BACKEND_URL no está definido.");
-      setError("Error interno: No se ha configurado la URL del servidor.");
-      return null;
-    }
-    return baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+  const [nombre, setNombre] = useState("");
+  const [branchId, setBranchId] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [eliminando, setEliminando] = useState(null);
+
+  useEffect(() => {
+    actions.getRooms();
+    actions.getBranches(); // Para cargar las sucursales
+  }, []);
+
+  const resetForm = () => {
+    setNombre("");
+    setBranchId("");
+    setEditingId(null);
+    setShowForm(false);
   };
 
-  // Obtener habitaciones
-  useEffect(() => {
-    const cargarRooms = async () => {
-      const apiUrl = getBackendUrl();
-      if (!apiUrl) return;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const data = { nombre, branch_id: branchId };
 
-      setCargando(true);
-      setError(null);
-
-      try {
-        const response = await fetch(`${apiUrl}api/rooms`);
-        if (!response.ok) throw new Error("Error al cargar las habitaciones");
-
-        let data = await response.json();
-
-        // Si solo viene sucursal_id, obtener los nombres de las sucursales
-        for (let room of data) {
-          if (room.branch_id) {
-            const sucursalRes = await fetch(`${apiUrl}api/branches/${room.branch_id}`);
-            if (sucursalRes.ok) {
-              const sucursalData = await sucursalRes.json();
-              room.sucursal = sucursalData; // Agregar la sucursal manualmente
-            }
-          }
-        }
-
-        setRooms(data);
-        actions.setRooms(data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setCargando(false);
-      }
-    };
-
-    cargarRooms();
-  }, []);
-
-  // Eliminar habitación
-  const eliminarRoom = useCallback(async (id) => {
-    if (!window.confirm("¿Estás seguro de que deseas eliminar esta habitación?")) return;
-
-    const apiUrl = getBackendUrl();
-    if (!apiUrl) return;
-
-    setEliminando(id);
-
-    try {
-      const response = await fetch(`${apiUrl}api/rooms/${id}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error al eliminar la habitación.");
-      }
-
-      // Eliminar la habitación de la lista
-      setRooms((prevRooms) => prevRooms.filter((room) => room.id !== id));
-    } catch (error) {
-      alert(error.message);
-    } finally {
-      setEliminando(null);
+    if (editingId) {
+      await actions.createOrUpdateRoom(data, { id: editingId });
+    } else {
+      await actions.createOrUpdateRoom(data, null);
     }
-  }, []);
+
+    resetForm();
+  };
+
+  const handleEdit = (room) => {
+    setNombre(room.nombre);
+    setBranchId(room.branch_id || "");
+    setEditingId(room.id);
+    setShowForm(true);
+  };
+
+  const eliminarRoom = async (id) => {
+    if (!window.confirm("¿Estás segura/o de que quieres eliminar esta habitación?")) return;
+    setEliminando(id);
+    await actions.deleteRoom(id);
+    setEliminando(null);
+  };
 
   return (
-     
-    <div className="container">
-      <div className="d-flex justify-content-center align-items-center mb-4">
-        <Link to="/crearRoom" className="btn" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}>Crear Habitación</Link>
-      </div>
-      <h2 className="text-center my-3">Lista de Habitaciones</h2>
-      {(
-        <>
-          <div className="row bg-light p-2 fw-bold border-bottom">
-            <div className="col">Nombre</div>
-            <div className="col">Sucursal</div>
-            <div className="col text-center">Acciones</div>
-          </div>
-          {rooms?.map((room) => (
+    <div className="d-flex">
+      <Sidebar />
+      <div className="container">
+        <h2 className="text-center my-3">Lista de Habitaciones</h2>
+        <div className="d-flex justify-content-center align-items-center mb-4">
+  <button
+    className="btn"
+    style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+    onClick={() => {
+      resetForm();
+      setShowForm(true);
+    }}
+  >
+    Crear Habitación
+  </button>
+</div>
+
+        <div className="row bg-light p-2 fw-bold border-bottom">
+          <div className="col">Nombre</div>
+          <div className="col">Sucursal</div>
+          <div className="col text-center">Acciones</div>
+        </div>
+
+        {store.rooms.length === 0 ? (
+          <div className="text-center p-3">No hay habitaciones registradas.</div>
+        ) : (
+          store.rooms.map((room) => (
             <div key={room.id} className="row p-2 border-bottom align-items-center">
               <div className="col">{room.nombre}</div>
-              <div className="col">
-                {room.sucursal ? room.sucursal.nombre : "Sin sucursal"}
+              <div className="col">{room.branch || "Sin sucursal"}
               </div>
-              <div className="col d-flex justify-content-center">
-                <Link to={`/editarRoom/${room.id}`}>
-                  <button className="btn me-3" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}>Editar</button>
-                </Link>
+              <div className="col text-center">
                 <button
-                  className="btn" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                  className="btn me-2"
+                  style={{ backgroundColor: "#ac85eb" }}
+                  onClick={() => handleEdit(room)}
+                >
+                  Editar
+                </button>
+                <button
+                  className="btn"
+                  style={{ backgroundColor: "#ac85eb" }}
                   onClick={() => eliminarRoom(room.id)}
                   disabled={eliminando === room.id}
                 >
@@ -121,12 +99,53 @@ const ListaRoom = () => {
                 </button>
               </div>
             </div>
-          ))}
-        </>
-      )}
+          ))
+        )}
 
+        {/* Formulario al final de la página */}
+        {showForm && (
+          <div className="card p-4 mt-5 mb-5">
+            <h4 className="text-center mb-3">{editingId ? "Editar" : "Crear"} Habitación</h4>
+            <form onSubmit={handleSubmit}>
+              <input
+                type="text"
+                className="form-control mb-2"
+                placeholder="Nombre de la habitación"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                required
+              />
+              <select
+                className="form-select mb-3"
+                value={branchId}
+                onChange={(e) => setBranchId(e.target.value)}
+                required
+              >
+                <option value="">Seleccione una sucursal</option>
+                {store.branches.map((branch) => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.nombre}
+                  </option>
+                ))}
+              </select>
+              <div className="d-flex justify-content-between">
+                <button type="submit" className="btn" style={{ backgroundColor: "#ac85eb" }}>
+                  {editingId ? "Actualizar" : "Crear"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={resetForm}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+       
+      </div>
     </div>
-        
   );
 };
 
