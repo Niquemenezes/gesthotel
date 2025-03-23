@@ -7,7 +7,7 @@ const MaintenanceTask = () => {
   const [maintenanceTasks, setMaintenanceTasks] = useState([]);
   const [nombre, setNombre] = useState('');
   const [photo, setPhoto] = useState('');
-  const [estado, setEstado] = useState('PENDIENTE');  // Estado por defecto "PENDIENTE"
+  const [condition, setCondition] = useState('PENDIENTE');  // Estado por defecto "PENDIENTE"
   const [idRoom, setIdRoom] = useState('');
   const [idMaintenance, setIdMaintenance] = useState('');
   const [idHousekeeper, setIdHousekeeper] = useState('');
@@ -80,7 +80,7 @@ const MaintenanceTask = () => {
         body: JSON.stringify({
           nombre,
           photo: photo || '',
-          estado,  // Enviar el estado
+          condition,  // Enviar el estado
           room_id: idRoom,
           maintenance_id: idMaintenance || null,
           housekeeper_id: idHousekeeper,
@@ -117,7 +117,7 @@ const MaintenanceTask = () => {
         body: JSON.stringify({
           nombre,
           photo: photo || '',
-          estado,  // Enviar el estado
+          condition,  // Enviar el estado
           room_id: idRoom,
           maintenance_id: idMaintenance || null,
           housekeeper_id: idHousekeeper,
@@ -165,7 +165,7 @@ const MaintenanceTask = () => {
   const resetForm = () => {
     setNombre('');
     setPhoto('');
-    setEstado('PENDIENTE');  // Resetear a "PENDIENTE"
+    setCondition('PENDIENTE');  // Resetear a "PENDIENTE"
     setIdRoom('');
     setIdMaintenance('');
     setIdHousekeeper('');
@@ -185,7 +185,7 @@ const MaintenanceTask = () => {
     if (taskToEdit) {
       setNombre(taskToEdit.nombre);
       setPhoto(taskToEdit.photo);
-      setEstado(taskToEdit.estado || 'PENDIENTE');  // Usar el estado de la tarea
+      setCondition(taskToEdit.condition || 'PENDIENTE');  // Usar el estado de la tarea
       setIdRoom(taskToEdit.room.id);
       setIdMaintenance(taskToEdit.maintenance ? taskToEdit.maintenance.id : '');
       setIdHousekeeper(taskToEdit.housekeeper.id);
@@ -241,12 +241,12 @@ const MaintenanceTask = () => {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="estado">Estado</label>
+                  <label htmlFor="condition">Estado</label>
                   <select
                     className="form-control"
-                    id="estado"
-                    value={estado}
-                    onChange={(e) => setEstado(e.target.value)}
+                    id="condition"
+                    value={condition}
+                    onChange={(e) => setCondition(e.target.value)}
                   >
                     <option value="PENDIENTE">Pendiente</option>
                     <option value="EN_PROCESO">En Proceso</option>
@@ -355,7 +355,7 @@ const MaintenanceTask = () => {
               {maintenanceTasks.map((task) => (
                 <tr key={task.id}>
                   <td>{task.nombre}</td>
-                  <td>{task.estado || 'PENDIENTE'}</td> {/* Mostrar el estado correctamente */}
+                  <td>{task.condition || 'PENDIENTE'}</td> {/* Mostrar el estado correctamente */}
                   <td>{task.room?.nombre}</td>
                   <td>{task.maintenance?.nombre}</td>
                   <td>{task.housekeeper?.nombre}</td>

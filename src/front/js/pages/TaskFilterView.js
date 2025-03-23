@@ -43,9 +43,9 @@ const TaskFilterView = () => {
     }
   };
 
-  const filterTasksByStatus = (tasks, status) => {
-    if (status === 'all') return tasks;
-    return tasks.filter(task => task.status === status);
+  const filterTasksByCondition = (tasks, condition) => {
+    if (condition === 'all') return tasks;
+    return tasks.filter(task => task.condition === condition);
   };
 
   useEffect(() => {
@@ -65,11 +65,11 @@ const TaskFilterView = () => {
         </h2>
 
         <div className="mt-4">
-          {filterTasksByStatus(tasks, view).map((task) => (
+          {filterTasksByCondition(tasks, view).map((task) => (
             <div key={task.id} className="card mb-3 shadow-sm">
               <div className="card-body">
                 <p><strong>Nombre de la tarea:</strong> {task.nombre}</p>
-                <p><strong>Estado:</strong> {task.status}</p>
+                <p><strong>Condición:</strong> {task.condition}</p>
                 <p><strong>Habitación:</strong> {task.room_nombre || `Habitación ${task.room_id}`}</p>
                 <p><strong>Foto:</strong></p>
                 {task.photo && <img src={task.photo} alt={task.nombre} style={{ width: '100px', height: '100px' }} />}

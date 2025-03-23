@@ -214,7 +214,7 @@ class MaintenanceTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
     photo = db.Column(db.String(255), nullable=True)
-    status = db.Column(db.String(120), nullable=True)  # Cambio de condition a status
+    condition = db.Column(db.String(120), nullable=True)  # Cambio de condition a status
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)
     maintenance_id = db.Column(db.Integer, db.ForeignKey('maintenance.id'), nullable=True)
     housekeeper_id = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=True)
@@ -234,7 +234,7 @@ class MaintenanceTask(db.Model):
             "id": self.id,
             "nombre": self.nombre,
             "photo": self.photo,
-            "status": self.status,  # Se cambia condition por status
+            "condition": self.condition,  # Se cambia condition por status
             "room": self.room.serialize() if self.room else None,
             "maintenance": self.maintenance.serialize() if self.maintenance else None,
             "housekeeper": self.housekeeper.serialize() if self.housekeeper else None,

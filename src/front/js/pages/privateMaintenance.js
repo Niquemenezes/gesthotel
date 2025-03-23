@@ -79,7 +79,7 @@ const PrivateMaintenance = () => {
     setSelectedRoomId(null);
   };
 
-  const handleStatusChange = async (taskId, selectedRoomId, newStatus) => {
+  const handleConditionChange = async (taskId, selectedRoomId, newCondition) => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${backendUrl}api/maintenancetasks/${taskId}`, {
@@ -88,32 +88,32 @@ const PrivateMaintenance = () => {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ condition: newCondition }),
       });
 
       if (response.ok) {
         setTasks(prevTasks =>
           prevTasks.map(task =>
-            task.id === taskId ? { ...task, status: newStatus } : task
+            task.id === taskId ? { ...task, condition: newCondition } : task
           )
         );
 
         setGroupedTasks(prevGroupedTasks => ({
           ...prevGroupedTasks,
           [selectedRoomId]: prevGroupedTasks[selectedRoomId].map(task =>
-            task.id === taskId ? { ...task, status: newStatus } : task
+            task.id === taskId ? { ...task, condition: newCondition } : task
           ),
         }));
 
-        if (newStatus === 'FINALIZADA') {
+        if (newCondition === 'FINALIZADA') {
           handleBackToRooms();
         }
       } else {
-        alert('Error al cambiar el estado de la tarea');
+        alert('Error al cambiar la condición de la tarea');
       }
     } catch (error) {
-      console.error('Error al cambiar el estado:', error);
-      alert('Hubo un problema al cambiar el estado de la tarea');
+      console.error('Error al cambiar la condición:', error);
+      alert('Hubo un problema al cambiar la condición de la tarea');
     }
   };
 
@@ -143,23 +143,23 @@ const PrivateMaintenance = () => {
               <div key={task.id} className="card mb-3 shadow-sm">
                 <div className="card-body">
                   <p><strong>Nombre de la tarea:</strong> {task.nombre}</p>
-                  <p><strong>Estado:</strong> {task.status}</p>
+                  <p><strong>Condición:</strong> {task.condition}</p>
                   <p><strong>Foto:</strong></p>
                   {task.photo && <img src={task.photo} alt={task.nombre} style={{ width: '100px', height: '100px' }} />}
                   
                   <div className="mt-3 p-3 border rounded d-flex justify-content-around">
-                    <button className="btn btn-warning" onClick={() => handleStatusChange(task.id, selectedRoomId, 'PENDIENTE')} disabled={task.status === 'PENDIENTE'}>
+                    <button className="btn btn-warning" onClick={() => handleConditionChange(task.id, selectedRoomId, 'PENDIENTE')} disabled={task.condition === 'PENDIENTE'}>
                       Pendiente
                     </button>
-                    <button className="btn btn-info" onClick={() => handleStatusChange(task.id, selectedRoomId, 'EN PROCESO')} disabled={task.status === 'EN PROCESO'}>
+                    <button className="btn btn-info" onClick={() => handleConditionChange(task.id, selectedRoomId, 'EN PROCESO')} disabled={task.condition === 'EN PROCESO'}>
                       En Proceso
                     </button>
-                    <button className="btn btn-success" onClick={() => handleStatusChange(task.id, selectedRoomId, 'FINALIZADA')} disabled={task.status === 'FINALIZADA'}>
+                    <button className="btn btn-success" onClick={() => handleConditionChange(task.id, selectedRoomId, 'FINALIZADA')} disabled={task.condition === 'FINALIZADA'}>
                       Finalizada
                     </button>
                   </div>
 
-                  {task.status === 'FINALIZADA' && <input type="checkbox" checked readOnly style={{ width: '30px', height: '30px', backgroundColor: 'green', marginTop: '10px' }} />}
+                  {task.condition === 'FINALIZADA' && <input type="checkbox" checked readOnly style={{ width: '30px', height: '30px', backgroundColor: 'green', marginTop: '10px' }} />}
                 </div>
               </div>
             ))}

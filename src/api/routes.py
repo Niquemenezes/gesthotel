@@ -741,20 +741,20 @@ def create_maintenance_task():
     try:
         nombre = data.get('nombre')
         photo = data.get('photo', None)
-        status = data.get('status', 'PENDIENTE')  # Valor por defecto 'PENDIENTE'
+        condition = data.get('condition', 'PENDIENTE')  # Valor por defecto 'PENDIENTE'
         room_id = data.get('room_id', None)
         maintenance_id = data.get('maintenance_id', None)
         housekeeper_id = data.get('housekeeper_id', None)
         category_id = data.get('category_id', None)
 
         # Validar que el status sea uno de los valores permitidos
-        if status not in ['PENDIENTE', 'EN PROCESO', 'FINALIZADA']:
+        if condition not in ['PENDIENTE', 'EN PROCESO', 'FINALIZADA']:
             return jsonify({"message": "Estado no válido"}), 400
 
         new_task = MaintenanceTask(
             nombre=nombre,
             photo=photo,
-            status=status,
+            condition=condition,
             room_id=room_id,
             maintenance_id=maintenance_id,
             housekeeper_id=housekeeper_id,
@@ -786,10 +786,10 @@ def update_maintenance_task(id):
         maintenance_task.photo = data.get('photo', maintenance_task.photo)
         
         # Validar que el status sea uno de los valores permitidos
-        new_status = data.get('status', maintenance_task.status)
-        if new_status not in ['PENDIENTE', 'EN PROCESO', 'FINALIZADA']:
+        new_condition = data.get('condition', maintenance_task.condition)
+        if new_condition not in ['PENDIENTE', 'EN PROCESO', 'FINALIZADA']:
             return jsonify({"message": "Estado no válido"}), 400
-        maintenance_task.status = new_status
+        maintenance_task.condition = new_condition
 
         maintenance_task.room_id = data.get('room_id', maintenance_task.room_id)
         maintenance_task.maintenance_id = data.get('maintenance_id', maintenance_task.maintenance_id)
