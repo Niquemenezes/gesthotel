@@ -1,50 +1,70 @@
-import React, { useState, useContext } from "react";
+// src/front/js/component/AuthHotel.jsx
+import React, { useState } from "react";
 import SignupHotel from "../pages/signupHotel";
 import LoginHotel from "../pages/loginHotel";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Context } from "../store/appContext";
-import SidebarLogin from "../component/sidebarLogin";
+import "../../styles/login.css";
+import equipo from "../../img/equipo.png";
 
 const AuthHotel = () => {
-    const { store, actions } = useContext(Context);
     const [isSignup, setIsSignup] = useState(false);
 
-    // Cambiar entre login y signup
     const handleSignup = () => setIsSignup(true);
     const handleGoToLogin = () => setIsSignup(false);
 
     return (
-        <div style={{ display: "flex" }}>
-            {/* Sidebar */}
-            <SidebarLogin />
-            {/* Contenido principal */}
-            <img
-          src="https://res.cloudinary.com/dnftnyi5g/image/upload/v1742394623/image_white_walls_1_pci7z4.png"
-          alt="Adminitrativo del hotel"
-          style={{ width: "50%", borderRadius: "10px" }}
-        />
-            <div className="container" style={{ width: "500px" }}>
-                {/* Contenido de Login/Signup */}
-                <div className="d-flex flex-column align-items-center mt-5">
-                    {isSignup ? <SignupHotel /> : <LoginHotel />}
-                    <div className="mt-3">
-                        {isSignup ? (
-                            <button onClick={handleGoToLogin} className="btn btn-link custom-link">
-                                ¿Ya tienes cuenta? Inicia sesión
-                            </button>
-                        ) : (
-                            <button onClick={handleSignup} className="btn btn-link custom-link">
-                                ¿No tienes cuenta? Regístrate
-                            </button>
-                        )}
-                    </div>
-                  
+        <div className="container-fluid auth-fluid">
+        <div className="row w-100">
+          {/* Lado izquierdo: formulario */}
+          <div className="col-md-5 auth-left d-flex flex-column h-100">
+            <div className="auth-fluid-form-box my-auto">
+              <div className="card-body">
+                <div className="text-center mb-4">
+                  <h4 className="fw-bold">
+                    {isSignup ? "Crea tu cuenta" : "Bienvenido de nuevo"}
+                  </h4>
+                  <p className="text-muted">
+                    {isSignup
+                      ? "Regístrate para comenzar a gestionar tu hotel"
+                      : "Ingresa con tu cuenta para continuar"}
+                  </p>
                 </div>
+      
+                {/* Formulario */}
+                {isSignup ? <SignupHotel /> : <LoginHotel />}
+      
+                <div className="mt-3 text-center">
+                  {isSignup ? (
+                    <p>
+                      ¿Ya tienes cuenta?{" "}
+                      <button onClick={handleGoToLogin} className="btn btn-link p-0">
+                        Inicia sesión
+                      </button>
+                    </p>
+                  ) : (
+                    <p>
+                      ¿No tienes cuenta?{" "}
+                      <button onClick={handleSignup} className="btn btn-link p-0">
+                        Regístrate
+                      </button>
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
-            
-           
+          </div>
+      
+          {/* Lado derecho: imagen */}
+          <div className="col-md-7 auth-right d-none d-md-flex p-0">
+            <img
+              src={equipo}
+              alt="Equipo del hotel"
+              className="auth-img"
+            />
+          </div>
         </div>
-    );
+      </div>
+    )      
 };
 
 export default AuthHotel;

@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 509f3361fb87
+Revision ID: 7f548e650867
 Revises: 
-Create Date: 2025-03-19 04:24:20.480015
+Create Date: 2025-03-22 18:40:24.073098
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '509f3361fb87'
+revision = '7f548e650867'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -66,30 +66,28 @@ def upgrade():
     sa.ForeignKeyConstraint(['id_theme'], ['theme.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('housekeeper',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('nombre', sa.String(length=120), nullable=False),
-    sa.Column('email', sa.String(length=120), nullable=False),
-    sa.Column('password', sa.String(length=80), nullable=False),
-    sa.Column('hotel_id', sa.Integer(), nullable=True),
-    sa.Column('id_branche', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['hotel_id'], ['hoteles.id'], ),
-    sa.ForeignKeyConstraint(['id_branche'], ['branches.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email'),
-    sa.UniqueConstraint('nombre')
-    )
     op.create_table('maintenance',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nombre', sa.String(length=120), nullable=False),
     sa.Column('email', sa.String(length=80), nullable=False),
     sa.Column('password', sa.String(length=80), nullable=False),
-    sa.Column('hotel_id', sa.Integer(), nullable=True),
-    sa.Column('branch_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['branch_id'], ['branches.id'], ),
+    sa.Column('photo_url', sa.String(length=120), nullable=True),
+    sa.Column('hotel_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['hotel_id'], ['hoteles.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
+    )
+    op.create_table('housekeeper',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('nombre', sa.String(length=120), nullable=False),
+    sa.Column('email', sa.String(length=120), nullable=False),
+    sa.Column('password', sa.String(length=80), nullable=False),
+    sa.Column('photo_url', sa.String(length=120), nullable=True),
+    sa.Column('id_branche', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['id_branche'], ['branches.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('nombre')
     )
     op.create_table('room',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -101,7 +99,7 @@ def upgrade():
     op.create_table('housekeepertask',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nombre', sa.String(length=120), nullable=False),
-    sa.Column('photo', sa.String(length=120), nullable=False),
+    sa.Column('photo_url', sa.String(length=120), nullable=True),
     sa.Column('condition', sa.String(length=80), nullable=False),
     sa.Column('assignment_date', sa.String(length=80), nullable=False),
     sa.Column('submission_date', sa.String(length=80), nullable=False),
@@ -114,7 +112,7 @@ def upgrade():
     op.create_table('maintenancetask',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nombre', sa.String(length=120), nullable=False),
-    sa.Column('photo', sa.String(length=255), nullable=True),
+    sa.Column('photo_url', sa.String(length=120), nullable=True),
     sa.Column('condition', sa.String(length=120), nullable=True),
     sa.Column('room_id', sa.Integer(), nullable=True),
     sa.Column('maintenance_id', sa.Integer(), nullable=True),
@@ -134,8 +132,8 @@ def downgrade():
     op.drop_table('maintenancetask')
     op.drop_table('housekeepertask')
     op.drop_table('room')
-    op.drop_table('maintenance')
     op.drop_table('housekeeper')
+    op.drop_table('maintenance')
     op.drop_table('hoteltheme')
     op.drop_table('branches')
     op.drop_table('user')
