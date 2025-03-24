@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 7f548e650867
+Revision ID: a7e1e6609bbe
 Revises: 
-Create Date: 2025-03-22 18:40:24.073098
+Create Date: 2025-03-23 23:23:39.422314
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '7f548e650867'
+revision = 'a7e1e6609bbe'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -71,7 +71,7 @@ def upgrade():
     sa.Column('nombre', sa.String(length=120), nullable=False),
     sa.Column('email', sa.String(length=80), nullable=False),
     sa.Column('password', sa.String(length=80), nullable=False),
-    sa.Column('photo_url', sa.String(length=120), nullable=True),
+    sa.Column('photo_url', sa.String(length=300), nullable=True),
     sa.Column('hotel_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['hotel_id'], ['hoteles.id'], ),
     sa.PrimaryKeyConstraint('id'),
@@ -82,7 +82,7 @@ def upgrade():
     sa.Column('nombre', sa.String(length=120), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
     sa.Column('password', sa.String(length=80), nullable=False),
-    sa.Column('photo_url', sa.String(length=120), nullable=True),
+    sa.Column('photo_url', sa.String(length=300), nullable=True),
     sa.Column('id_branche', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['id_branche'], ['branches.id'], ),
     sa.PrimaryKeyConstraint('id'),
@@ -99,8 +99,8 @@ def upgrade():
     op.create_table('housekeepertask',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nombre', sa.String(length=120), nullable=False),
-    sa.Column('photo_url', sa.String(length=120), nullable=True),
-    sa.Column('condition', sa.String(length=80), nullable=False),
+    sa.Column('photo_url', sa.String(length=300), nullable=True),
+    sa.Column('condition', sa.String(length=80), nullable=True),
     sa.Column('assignment_date', sa.String(length=80), nullable=False),
     sa.Column('submission_date', sa.String(length=80), nullable=False),
     sa.Column('id_room', sa.Integer(), nullable=True),
@@ -112,7 +112,7 @@ def upgrade():
     op.create_table('maintenancetask',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nombre', sa.String(length=120), nullable=False),
-    sa.Column('photo_url', sa.String(length=120), nullable=True),
+    sa.Column('photo_url', sa.String(length=300), nullable=True),
     sa.Column('condition', sa.String(length=120), nullable=True),
     sa.Column('room_id', sa.Integer(), nullable=True),
     sa.Column('maintenance_id', sa.Integer(), nullable=True),

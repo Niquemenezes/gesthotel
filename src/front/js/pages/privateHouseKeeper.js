@@ -9,7 +9,7 @@ const PrivateHouseKeeper = () => {
   const [nombre, setNombre] = useState('');
   const [housekeeperId, setHousekeeperId] = useState(null);
   const navigate = useNavigate();
-
+  
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
 
   const getHousekeeperIdFromToken = () => {
@@ -93,7 +93,7 @@ const PrivateHouseKeeper = () => {
     };
 
     try {
-      const response = await fetch(`${backendUrl}api/maintenancetasks`, {
+      const response = await fetch(`${backendUrl}api/maintenancetasks`, { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -131,18 +131,16 @@ const PrivateHouseKeeper = () => {
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
       <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
-        <h2 className="text-center mb-4">Tareas de Housekeeper</h2>
+        <h2 className="text-center mb-4 ">Tareas de Housekeeper</h2>
         {!isRoomSelected && Object.keys(groupedTasks).length > 0 ? (
           Object.keys(groupedTasks).map((roomId) => {
             const roomTasks = groupedTasks[roomId];
             return (
               <div key={roomId} className="mb-3">
                 <button
-                  className="btn text-white"
-                  style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
-                >
+                  className="btn btn-primary mt-3 px-3 py-2"
                   onClick={() => handleRoomClick(roomId)}
-
+                >
                   <h5>Habitación: {roomTasks[0].room_nombre}</h5>
                 </button>
               </div>
@@ -155,7 +153,7 @@ const PrivateHouseKeeper = () => {
               <div key={task.id} className="card mb-3 shadow-sm">
                 <div className="card-body">
                   <p><strong>Tarea asignada:</strong> {task.nombre}</p>
-                  <p><strong>Condición:</strong> {task.condition}</p>
+                  <p><strong>Estado:</strong> {task.condition}</p>
                   <p><strong>Fecha de Asignación:</strong> {task.assignment_date}</p>
                   <p><strong>Fecha de Entrega:</strong> {task.submission_date}</p>
                   <div className="mt-3">
@@ -185,7 +183,7 @@ const PrivateHouseKeeper = () => {
                   </div>
                   <button
                     type="button"
-                    className="btn btn-block" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1", maxWidth: '100px', borderRadius: '5px' }}
+                    className="btn btn-block" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
                     onClick={createMaintenanceTask}
                   >
                     Crear Tarea
@@ -195,7 +193,7 @@ const PrivateHouseKeeper = () => {
             </div>
             <div className="mt-3">
               <button
-                className="btn w-100" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1", maxWidth: '100px', borderRadius: '5px' }}
+                className="btn  w-100" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
                 onClick={handleBackToRooms}
               >
                 Volver a ver todas las habitaciones
@@ -205,7 +203,7 @@ const PrivateHouseKeeper = () => {
         )}
         <div className="d-flex justify-content-center">
           <button
-            className="btn mt-3 px-5 py-2" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+            className="btn mt-3 px-5 py-2"style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
             onClick={handleLogout}
           >
             Cerrar sesión
