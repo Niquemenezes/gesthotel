@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import CloudinaryApiHotel from '../component/cloudinaryApiHotel'; // Asegúrate de tener el componente correcto importado
+import CloudinaryApiHotel from '../component/cloudinaryApiHotel';
 
 const PrivateHouseKeeper = () => {
   const [tasks, setTasks] = useState([]);
@@ -9,10 +9,10 @@ const PrivateHouseKeeper = () => {
   const [isRoomSelected, setIsRoomSelected] = useState(false);
   const [nombre, setNombre] = useState('');
   const [housekeeperId, setHousekeeperId] = useState(null);
-  const [taskPhotos, setTaskPhotos] = useState({}); // Estado para manejar las fotos individuales de cada tarea
-  const [maintenancePhoto, setMaintenancePhoto] = useState(''); // Foto para la tarea de mantenimiento
+  const [taskPhotos, setTaskPhotos] = useState({});
+  const [maintenancePhoto, setMaintenancePhoto] = useState('');
   const navigate = useNavigate();
-  
+
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
 
   const getHousekeeperIdFromToken = () => {
@@ -45,7 +45,10 @@ const PrivateHouseKeeper = () => {
         throw new Error('Error en la respuesta del servidor');
       }
       const data = await response.json();
-      const filteredTasks = data.filter(task => task.id_housekeeper === housekeeperId);
+
+      // Filtrar solo las tareas pendientes
+      const filteredTasks = data
+        .filter(task => task.id_housekeeper === housekeeperId && task.condition === 'Pendiente'); // Solo las tareas pendientes
       setTasks(filteredTasks);
     } catch (error) {
       console.error('Error al obtener las tareas:', error);
@@ -97,7 +100,7 @@ const PrivateHouseKeeper = () => {
     };
 
     try {
-      const response = await fetch(`${backendUrl}api/maintenancetasks`, { 
+      const response = await fetch(`${backendUrl}api/maintenancetasks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -123,7 +126,7 @@ const PrivateHouseKeeper = () => {
   const resetForm = () => {
     setNombre('');
     setTaskPhotos({});
-    setMaintenancePhoto(''); // Limpiar la foto de la tarea de mantenimiento
+    setMaintenancePhoto('');
   };
 
   const groupedTasks = tasks.reduce((acc, task) => {
@@ -134,24 +137,53 @@ const PrivateHouseKeeper = () => {
     return acc;
   }, {});
 
-  // Función para manejar la carga de fotos para las tareas de Housekeeper
   const handlePhotoChange = (taskId, photoUrl) => {
     setTaskPhotos(prevState => ({
       ...prevState,
-      [taskId]: photoUrl, // Guardamos la URL de la foto para la tarea específica
+      [taskId]: photoUrl,
     }));
   };
 
-  // Función para manejar la carga de fotos para la tarea de mantenimiento
   const handleMaintenancePhotoChange = (photoUrl) => {
-    console.log('URL de la foto de mantenimiento:', photoUrl); // Verifica la URL de la foto
-    setMaintenancePhoto(photoUrl); // Guardamos la URL de la foto para la tarea de mantenimiento
+    console.log('URL de la foto de mantenimiento:', photoUrl);
+    setMaintenancePhoto(photoUrl);
+  };
+
+  const handleStatusChange = async (taskId, newStatus) => {
+    const updatedTask = tasks.find(task => task.id === taskId);
+    updatedTask.condition = newStatus;
+
+    try {
+      const response = await fetch(`${backendUrl}api/housekeeper_task/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ condition: newStatus }),
+      });
+
+      if (response.ok) {
+        const updatedData = await response.json();
+        setTasks(prevTasks =>
+          prevTasks.filter(task => task.id !== taskId) // Eliminar la tarea completada de la lista
+        );
+        alert('Estado de la tarea actualizado con éxito');
+        handleFetchTasks(); // Volver a obtener las tareas actualizadas
+      } else {
+        const errorData = await response.json();
+        console.error('Error al actualizar el estado:', errorData.message);
+        alert('Error al actualizar el estado de la tarea');
+      }
+    } catch (error) {
+      console.error('Error al actualizar el estado:', error);
+      alert('Hubo un problema al actualizar el estado de la tarea.');
+    }
   };
 
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
       <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
-        <h2 className="text-center mb-4 ">Tareas de Housekeeper</h2>
+        <h2 className="text-center mb-4">Tareas de Housekeeper</h2>
         {!isRoomSelected && Object.keys(groupedTasks).length > 0 ? (
           Object.keys(groupedTasks).map((roomId) => {
             const roomTasks = groupedTasks[roomId];
@@ -173,21 +205,38 @@ const PrivateHouseKeeper = () => {
               <div key={task.id} className="card mb-3 shadow-sm">
                 <div className="card-body">
                   <p><strong>Tarea asignada:</strong> {task.nombre}</p>
-                  <p><strong>Estado:</strong> {task.condition}</p>
+                  <div className="d-flex justify-content-between mb-3">
+                    <div>
+                      <p className="mb-0 ms-2"><strong>Estado:</strong> {task.condition}</p>
+                    </div>
+                    <div className="form-check">
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={task.condition === 'Completada'}
+                        onChange={() => handleStatusChange(task.id, task.condition === 'Completada' ? 'Pendiente' : 'Completada')}
+                      />
+                      <label className="form-check-label" htmlFor={`task-${task.id}`}>
+                        {task.condition === 'Completada' ? 'Marcar como Pendiente' : 'Marcar como Completada'}
+                      </label>
+                    </div>
+                  </div>
+
                   <p><strong>Fecha de Asignación:</strong> {task.assignment_date}</p>
                   <p><strong>Fecha de Entrega:</strong> {task.submission_date}</p>
-                    <strong>Foto: </strong>
+
+                  <strong>Foto: </strong>
                   <div className="form-group mb-3">
-                    <CloudinaryApiHotel 
-                      taskId={task.id}  // Pasamos el ID de la tarea
-                      setPhotoUrl={handlePhotoChange} 
-                      setErrorMessage={() => { }} 
+                    <CloudinaryApiHotel
+                      taskId={task.id}
+                      setPhotoUrl={handlePhotoChange}
+                      setErrorMessage={() => { }}
                     />
                     {taskPhotos[task.id] && (
-                      <img 
-                        src={taskPhotos[task.id]} 
+                      <img
+                        src={taskPhotos[task.id]}
                         alt="Vista previa de la foto"
-                        style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }} 
+                        style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }}
                       />
                     )}
                   </div>
@@ -195,7 +244,6 @@ const PrivateHouseKeeper = () => {
               </div>
             ))}
 
-            {/* Tarea de Mantenimiento */}
             <div className="card shadow-lg">
               <div className="card-body">
                 <h5 className="card-title">Tarea de Mantenimiento</h5>
@@ -214,15 +262,15 @@ const PrivateHouseKeeper = () => {
                   <div className="form-group mb-3">
                     <strong>Foto: </strong>
                     <CloudinaryApiHotel
-                      taskId="maintenance"  // No es una tarea de housekeeper, así que le damos un identificador único
-                      setPhotoUrl={handleMaintenancePhotoChange}  // Guardamos la foto para la tarea de mantenimiento
-                      setErrorMessage={() => { }} 
+                      taskId="maintenance"
+                      setPhotoUrl={handleMaintenancePhotoChange}
+                      setErrorMessage={() => { }}
                     />
                     {maintenancePhoto && (
-                      <img 
-                        src={maintenancePhoto} 
+                      <img
+                        src={maintenancePhoto}
                         alt="Vista previa de la foto"
-                        style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }} 
+                        style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }}
                       />
                     )}
                   </div>
@@ -240,7 +288,7 @@ const PrivateHouseKeeper = () => {
 
             <div className="mt-3">
               <button
-                className="btn  w-100" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                className="btn w-100" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
                 onClick={handleBackToRooms}
               >
                 Volver a ver todas las habitaciones
@@ -250,7 +298,7 @@ const PrivateHouseKeeper = () => {
         )}
         <div className="d-flex justify-content-center">
           <button
-            className="btn mt-3 px-5 py-2"style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+            className="btn mt-3 px-5 py-2" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
             onClick={handleLogout}
           >
             Cerrar sesión

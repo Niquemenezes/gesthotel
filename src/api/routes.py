@@ -1152,6 +1152,26 @@ def delete_housekeeper_task(id):
 
     return jsonify({"message": "HouseKeeperTask deleted successfully"}), 200
 
+
+# Actualizar el estado de la tarea a 'terminado'
+@api.route('/housekeeper_task/mark_completed/<int:id>', methods=['PUT'])
+def mark_task_completed(id):
+    task = HouseKeeperTask.query.get(id)
+
+    if task is None:
+        return jsonify({"error": "HouseKeeperTask not found"}), 404
+    
+    # Cambiar el estado de la tarea a 'terminado'
+    task.condition = 'terminado'
+    
+    # Aquí puedes agregar la fecha de finalización si lo necesitas, por ejemplo:
+    task.submission_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    db.session.commit()
+
+    return jsonify(task.serialize()), 200
+
+
 @api.route('/maintenancetasks', methods=['GET'])
 def get_all_maintenance_tasks():
     """Obtener todas las tareas de mantenimiento"""
