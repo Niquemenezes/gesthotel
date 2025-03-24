@@ -92,12 +92,11 @@ const PrivateHouseKeeper = () => {
     const taskData = {
       nombre: nombre || undefined,
       room_id: selectedRoomId,
-      housekeeper_id: housekeeperId,
-      photo_url: maintenancePhoto || '', // Usamos la foto para la tarea de mantenimiento
+      housekeeper_id: housekeeperId
     };
 
     try {
-      const response = await fetch(`${backendUrl}api/maintenancetasks`, {
+      const response = await fetch(`${backendUrl}api/maintenancetasks`, { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -122,8 +121,6 @@ const PrivateHouseKeeper = () => {
 
   const resetForm = () => {
     setNombre('');
-    setTaskPhotos({});
-    setMaintenancePhoto(''); // Limpiar la foto de la tarea de mantenimiento
   };
 
   const groupedTasks = tasks.reduce((acc, task) => {
@@ -266,11 +263,11 @@ const PrivateHouseKeeper = () => {
                     />
                   </div>
 
-                  <div className="form-group mb-3">
+                  {/* <div className="form-group mb-3">
                     <strong>Foto: </strong>
                     <CloudinaryApiHotel
-                      taskId="maintenance"  // No es una tarea de housekeeper, así que le damos un identificador único
-                      setPhotoUrl={handleMaintenancePhotoChange}  // Guardamos la foto para la tarea de mantenimiento
+                      taskId="maintenance"
+                      setPhotoUrl={handleMaintenancePhotoChange}
                       setErrorMessage={() => { }}
                     />
                     {maintenancePhoto && (
@@ -280,7 +277,7 @@ const PrivateHouseKeeper = () => {
                         style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }}
                       />
                     )}
-                  </div>
+                  </div> */}
 
                   <button
                     type="button"

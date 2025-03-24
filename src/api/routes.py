@@ -1202,7 +1202,7 @@ def create_maintenance_task():
     try:
         nombre = data.get('nombre')
         photo = data.get('photo', None)
-        status = data.get('status', None)  # Cambio de condition a status
+        condition = data.get('condition', None)
         room_id = data.get('room_id', None)
         maintenance_id = data.get('maintenance_id', None)
         housekeeper_id = data.get('housekeeper_id', None)
@@ -1211,7 +1211,7 @@ def create_maintenance_task():
         new_task = MaintenanceTask(
             nombre=nombre,
             photo=photo,
-            status=status,  # Cambio de condition a status
+            condition=condition,
             room_id=room_id,
             maintenance_id=maintenance_id,
             housekeeper_id=housekeeper_id,
@@ -1271,6 +1271,41 @@ def delete_maintenance_task(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": "Error al eliminar la tarea de mantenimiento", "error": str(e)}), 400
+    
+
+@app.route('/api/creartarea', methods=['POST'])
+def create_maintenance_task_v2():
+    data = request.get_json()
+
+    # Validación básica de datos
+    if not data.get('nombre'):
+        return jsonify({"message": "El nombre de la tarea es obligatorio"}), 400
+    if not data.get('room_id'):
+        return jsonify({"message": "La habitación es obligatoria"}), 400
+    if not data.get('housekeeper_id'):
+        return jsonify({"message": "El ID del housekeeper es obligatorio"}), 400
+
+    # Si no hay foto, establecemos photo_url como None
+    # photo_url = data.get('photo_url', None)
+
+    try:
+        # Crear la tarea de mantenimiento
+        new_task = MaintenanceTask(
+            nombre=data['nombre'],
+            room_id=data['room_id'],
+            housekeeper_id=data['housekeeper_id'],
+            # photo_url=photo_url
+        )
+        db.session.add(new_task)
+        db.session.commit()
+
+        return jsonify(new_task.serialize()), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Error al crear la tarea de mantenimiento", "error": str(e)}), 400
+
+
 
 
 # @api.route('/rooms', methods=['GET'])
