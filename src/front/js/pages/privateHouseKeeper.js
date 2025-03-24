@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import CloudinaryApiHotel from '../component/cloudinaryApiHotel'; // Asegúrate de tener el componente correcto importado
 
 const PrivateHouseKeeper = () => {
   const [tasks, setTasks] = useState([]);
@@ -8,6 +9,8 @@ const PrivateHouseKeeper = () => {
   const [isRoomSelected, setIsRoomSelected] = useState(false);
   const [nombre, setNombre] = useState('');
   const [housekeeperId, setHousekeeperId] = useState(null);
+  const [taskPhotos, setTaskPhotos] = useState({}); // Estado para manejar las fotos individuales de cada tarea
+  const [maintenancePhoto, setMaintenancePhoto] = useState(''); // Foto para la tarea de mantenimiento
   const navigate = useNavigate();
   
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
@@ -89,7 +92,8 @@ const PrivateHouseKeeper = () => {
     const taskData = {
       nombre: nombre || undefined,
       room_id: selectedRoomId,
-      housekeeper_id: housekeeperId
+      housekeeper_id: housekeeperId,
+      photo_url: maintenancePhoto || '', // Usamos la foto para la tarea de mantenimiento
     };
 
     try {
@@ -118,6 +122,8 @@ const PrivateHouseKeeper = () => {
 
   const resetForm = () => {
     setNombre('');
+    setTaskPhotos({});
+    setMaintenancePhoto(''); // Limpiar la foto de la tarea de mantenimiento
   };
 
   const groupedTasks = tasks.reduce((acc, task) => {
@@ -127,6 +133,20 @@ const PrivateHouseKeeper = () => {
     acc[task.id_room].push(task);
     return acc;
   }, {});
+
+  // Función para manejar la carga de fotos para las tareas de Housekeeper
+  const handlePhotoChange = (taskId, photoUrl) => {
+    setTaskPhotos(prevState => ({
+      ...prevState,
+      [taskId]: photoUrl, // Guardamos la URL de la foto para la tarea específica
+    }));
+  };
+
+  // Función para manejar la carga de fotos para la tarea de mantenimiento
+  const handleMaintenancePhotoChange = (photoUrl) => {
+    console.log('URL de la foto de mantenimiento:', photoUrl); // Verifica la URL de la foto
+    setMaintenancePhoto(photoUrl); // Guardamos la URL de la foto para la tarea de mantenimiento
+  };
 
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
@@ -156,17 +176,26 @@ const PrivateHouseKeeper = () => {
                   <p><strong>Estado:</strong> {task.condition}</p>
                   <p><strong>Fecha de Asignación:</strong> {task.assignment_date}</p>
                   <p><strong>Fecha de Entrega:</strong> {task.submission_date}</p>
-                  <div className="mt-3">
                     <strong>Foto: </strong>
-                    {task.photo ? (
-                      <img src={task.photo} alt="Tarea" style={{ maxWidth: '100px', borderRadius: '5px' }} />
-                    ) : (
-                      <span>Sin foto</span>
+                  <div className="form-group mb-3">
+                    <CloudinaryApiHotel 
+                      taskId={task.id}  // Pasamos el ID de la tarea
+                      setPhotoUrl={handlePhotoChange} 
+                      setErrorMessage={() => { }} 
+                    />
+                    {taskPhotos[task.id] && (
+                      <img 
+                        src={taskPhotos[task.id]} 
+                        alt="Vista previa de la foto"
+                        style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }} 
+                      />
                     )}
                   </div>
                 </div>
               </div>
             ))}
+
+            {/* Tarea de Mantenimiento */}
             <div className="card shadow-lg">
               <div className="card-body">
                 <h5 className="card-title">Tarea de Mantenimiento</h5>
@@ -181,6 +210,23 @@ const PrivateHouseKeeper = () => {
                       placeholder="Ingresa la tarea de mantenimiento..."
                     />
                   </div>
+
+                  <div className="form-group mb-3">
+                    <strong>Foto: </strong>
+                    <CloudinaryApiHotel
+                      taskId="maintenance"  // No es una tarea de housekeeper, así que le damos un identificador único
+                      setPhotoUrl={handleMaintenancePhotoChange}  // Guardamos la foto para la tarea de mantenimiento
+                      setErrorMessage={() => { }} 
+                    />
+                    {maintenancePhoto && (
+                      <img 
+                        src={maintenancePhoto} 
+                        alt="Vista previa de la foto"
+                        style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }} 
+                      />
+                    )}
+                  </div>
+
                   <button
                     type="button"
                     className="btn btn-block" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
@@ -191,6 +237,7 @@ const PrivateHouseKeeper = () => {
                 </form>
               </div>
             </div>
+
             <div className="mt-3">
               <button
                 className="btn  w-100" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}

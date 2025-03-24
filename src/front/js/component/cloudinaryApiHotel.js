@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 
-
-const CloudinaryApiHotel = ({ setPhotoUrl, setErrorMessage }) => {
+const CloudinaryApiHotel = ({ setPhotoUrl, setErrorMessage, taskId }) => {
   const [errorMessage, setLocalErrorMessage] = useState("");
 
   const handleFileChange = (event) => {
@@ -21,7 +20,7 @@ const CloudinaryApiHotel = ({ setPhotoUrl, setErrorMessage }) => {
         .then((data) => {
           console.log("Respuesta Cloudinary:", data);
           if (data.secure_url) {
-            setPhotoUrl(data.secure_url);
+            setPhotoUrl(taskId, data.secure_url);  // Llamar a setPhotoUrl pasando taskId y la URL
           } else {
             setErrorMessage("No se recibió la URL de la imagen");
           }
@@ -32,7 +31,6 @@ const CloudinaryApiHotel = ({ setPhotoUrl, setErrorMessage }) => {
         });
     }
   };
-  
 
   return (
     <div>
@@ -41,6 +39,5 @@ const CloudinaryApiHotel = ({ setPhotoUrl, setErrorMessage }) => {
     </div>
   );
 };
-
 
 export default CloudinaryApiHotel;

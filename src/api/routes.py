@@ -1066,7 +1066,7 @@ def create_housekeeper_task():
     data = request.get_json()
     
     # Validate if all required fields are in the request
-    if not data.get('nombre') or not data.get('photo') or not data.get('condition') or not data.get('assignment_date') or not data.get('submission_date'):
+    if not data.get('nombre') or not data.get('photo_url') or not data.get('condition') or not data.get('assignment_date') or not data.get('submission_date'):
         return jsonify({"error": "Missing required data"}), 400
 
     # Check if room and housekeeper IDs are valid
@@ -1079,7 +1079,7 @@ def create_housekeeper_task():
     # Create new HouseKeeperTask
     new_task = HouseKeeperTask(
         nombre=data['nombre'],
-        photo=data['photo'],
+        photo_url=data['photo_url'],  # Correct usage of 'photo_url'
         condition=data['condition'],
         assignment_date=data['assignment_date'],
         submission_date=data['submission_date'],
@@ -1091,6 +1091,7 @@ def create_housekeeper_task():
     db.session.commit()
 
     return jsonify(new_task.serialize()), 201
+
 
 # READ all HouseKeeperTasks
 @api.route('/housekeeper_tasks', methods=['GET'])
