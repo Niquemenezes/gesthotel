@@ -28,12 +28,13 @@ import HouseKeeperTask from './pages/HouseKeeperTask';
 import LoginHotel from "./pages/loginHotel";
 import SignupHotel from "./pages/signupHotel";
 import PrivateHotel from "./pages/privateHotel";
-import AuthHotel from "./component/authhotel";
+import AuthLayout from "./component/authLayout";
 import MaintenanceTask from './pages/maintenanceTask';
 import LoginMaintenance from "./pages/loginMaintenance";
 import PrivateMaintenance from './pages/privateMaintenance';
 import ProtectedPrivateMaintenance from './pages/ProtectedPrivateMaintenance';
 import { Footer } from "./component/footer";
+
 
 
 
@@ -50,7 +51,7 @@ const Layout = () => {
         <div>
             <BrowserRouter basename={basename}>
                 <ScrollToTop>
-                <Navbar />
+                    <Navbar />
                     <Routes>
                         <Route element={<Home />} path="/" />
                         <Route element={<ListaCat />} path="/listaCat" />
@@ -71,15 +72,15 @@ const Layout = () => {
                         <Route element={<ProtectedPrivateHouseKeeper><PrivateHouseKeeper /></ProtectedPrivateHouseKeeper>} path="/privateHouseKeeper" />
                         <Route element={<HouseKeeperTask />} path="/HouseKeeperTask" />
                         <Route element={<PrivateHotel />} path="/privateHotel" />
-                        <Route element={<SignupHotel />} path="/signupHotel" />
                         <Route element={<LoginHotel />} path="/loginHotel" />
-                        <Route element={<AuthHotel />} path="/authhotel" />
+                        <Route element={<SignupHotel />} path="/signupHotel" />
+                        <Route element={<AuthLayout />} path="/authLayout" />
                         <Route element={<MaintenanceTask />} path="/maintenanceTask" />
                         <Route element={<LoginMaintenance />} path="/loginMaintenance" />
                         <Route element={<ProtectedPrivateMaintenance><PrivateMaintenance /></ProtectedPrivateMaintenance>} path="/privateMaintenance" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
-                    <Footer/>
+                    <Footer />
                 </ScrollToTop>
             </BrowserRouter>
         </div>

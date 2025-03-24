@@ -8,11 +8,11 @@ export const Navbar = () => {
 
   const handleLogout = () => {
     actions.logout();
-    navigate("/authhotel");
+    navigate("/loginHotel");
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light" style={{ backgroundColor: "#9b5de5" }}>
+    <nav className="navbar navbar-expand-lg navbar-light" style={{ backgroundColor: "#6b72dd" }}>
       <div className="container-fluid">
         <Link className="navbar-brand text-white fs-2" to="/">APIHOTEL</Link>
         <button className="btn btn-light mt-3" onClick={handleLogout}>Logout</button>

@@ -1,123 +1,42 @@
-:root {
-  --ct-body-font-family: 'Segoe UI', sans-serif;
-  --ct-body-font-size: 0.9rem;
-  --ct-body-font-weight: 400;
-  --ct-body-line-height: 1.5;
-  --ct-body-color: #212529;
-  --ct-input-bg: #fff;
-  --ct-secondary-bg: #fff;
-  --ct-border-color: #ced4da;
-  --ct-border-width: 1px;
-  --ct-card-color: #212529;
-  --ct-card-spacer-x: 1.5rem;
-  --ct-card-spacer-y: 1.5rem;
-}
-
-/* Layout principal */
-.auth-fluid {
-  display: flex;
-  min-height: 100vh;
-  flex-direction: row;
-  align-items: stretch;
-  background-color: #f4f6f9;
-}
-
-/* Formulario */
 .auth-left {
+  width: 100%;
   max-width: 480px;
-  width: 100%;
+  background-color: #fff;
   padding: 3rem;
-  background-color: var(--ct-secondary-bg);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.auth-fluid-form-box {
-  width: 100%;
-  z-index: 2;
-  position: relative;
-}
-
-.card-body {
-  flex: 1 1 auto;
-  padding: var(--ct-card-spacer-y) var(--ct-card-spacer-x);
-  color: var(--ct-card-color);
-}
-
-/* Imagen */
-.auth-right {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
 }
 
 .auth-img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Estilo inputs */
-.form-control {
-  display: block;
-  width: 100%;
-  padding: 0.45rem 0.9rem;
-  font-size: 0.9rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: var(--ct-body-color);
-  background-color: var(--ct-input-bg);
-  border: var(--ct-border-width) solid var(--ct-border-color);
-  border-radius: 0.25rem;
-}
-
-/* Botón principal */
-.btn {
-  font-size: 0.9rem;
-  background-color: #727cf5;
-  color: white;
-  border: none;
-  transition: background-color 0.3s ease;
-  cursor: pointer;
-}
-
-.btn:hover {
-  background-color: #8891f8;
-  color: white;
-}
-
-/* Otros estilos */
-.form-check-label {
-  font-size: 0.875rem;
-}
-
-.form-label {
-  color: gray;
-}
-
-.fw-bold {
-  color: gray;
-}
-
-.text-muted {
-  color: gray;
-}
-
-.auth-img {
-  width: 100%;
-  height: 100vh; /* Tamaño proporcional a la pantalla */
+  height: 100vh;
   object-fit: cover;
   object-position: center;
 }
-/* Responsive */
-@media (max-width: 768px) {
-  .auth-right {
-    display: none !important;
-  }
 
-  .auth-left {
-    max-width: 100%;
-    padding: 2rem;
-  }
+.auth-fluid {
+  background-color: #f8f9fa;
+}
+
+.auth-fluid-form-box .card-body {
+  padding: 0;
+}
+
+.btn-primary {
+  background-color: #6b72dd;
+  border: none;
+}
+.btn-primary:hover {
+  background-color: #5b68e4;
+}
+.h2{
+  color:gray
+}
+.link-lila {
+  color: #5672d1; /* Lila oscuro */
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.link-lila:hover {
+  color: #574db6; /* Un poco más oscuro al pasar el mouse */
+  text-decoration: underline;
 }

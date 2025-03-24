@@ -11,7 +11,7 @@ const SidebarLogin = () => {
                 <h4 className="text-white mb-4">Hotel Dashboard</h4>
                 <ul className="navbar-nav ms-auto">
                     <li className="nav-item m-2">
-                        <Link className="nav-link text-white fs-5" to="/authhotel">Hotel Login</Link>
+                        <Link className="nav-link text-white fs-5" to="/loginHotel">Hotel Login</Link>
                     </li>
                     <li className="nav-item m-3">
                         <Link className="nav-link text-white fs-5" to="/loginHouseKeeper">Housekeeper Login</Link>
