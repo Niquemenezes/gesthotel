@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
 
 const PrivateMaintenance = () => {
   const [tasks, setTasks] = useState([]);
   const [groupedTasks, setGroupedTasks] = useState({});
   const [isRoomSelected, setIsRoomSelected] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
+  const [taskPhotos, setTaskPhotos] = useState({}); // { taskId: photoUrl }
+  const [errorMessages, setErrorMessages] = useState({}); // { taskId: errorMessage }
   const navigate = useNavigate();
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
@@ -82,39 +85,68 @@ const PrivateMaintenance = () => {
   const handleConditionChange = async (taskId, selectedRoomId, newCondition) => {
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/loginMaintenance');
+        return;
+      }
+  
+      // 1. Actualización optimista inmediata en el frontend
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task.id === taskId ? { ...task, condition: newCondition } : task
+        )
+      );
+  
+      setGroupedTasks(prevGroupedTasks => ({
+        ...prevGroupedTasks,
+        [selectedRoomId]: prevGroupedTasks[selectedRoomId].map(task =>
+          task.id === taskId ? { ...task, condition: newCondition } : task
+        ),
+      }));
+  
+      // 2. Petición al backend
       const response = await fetch(`${backendUrl}api/maintenancetasks/${taskId}`, {
         method: 'PUT',
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ condition: newCondition }),
+        body: JSON.stringify({ 
+          condition: newCondition,
+          maintenance_id: jwtDecode(token).maintenance_id,
+          photo: taskPhotos[taskId] || null // Incluir la foto si existe
+        }),
       });
-
-      if (response.ok) {
-        setTasks(prevTasks =>
-          prevTasks.map(task =>
-            task.id === taskId ? { ...task, condition: newCondition } : task
-          )
-        );
-
-        setGroupedTasks(prevGroupedTasks => ({
-          ...prevGroupedTasks,
-          [selectedRoomId]: prevGroupedTasks[selectedRoomId].map(task =>
-            task.id === taskId ? { ...task, condition: newCondition } : task
-          ),
-        }));
-
-        if (newCondition === 'FINALIZADA') {
-          handleBackToRooms();
-        }
-      } else {
-        alert('Error al cambiar la condición de la tarea');
+  
+      // 3. Si falla la petición, recargamos los datos originales
+      if (!response.ok) {
+        fetchMaintenanceTasks();
+        return;
       }
+  
+      // 4. Si es FINALIZADA, volver a la vista de habitaciones
+      if (newCondition === 'FINALIZADA') {
+        setTimeout(handleBackToRooms, 500);
+      }
+  
     } catch (error) {
-      console.error('Error al cambiar la condición:', error);
-      alert('Hubo un problema al cambiar la condición de la tarea');
+      console.error('Error:', error);
+      fetchMaintenanceTasks(); // Sincronizar con el estado actual del backend
     }
+  };
+
+  const handlePhotoUpload = (taskId, photoUrl) => {
+    setTaskPhotos(prev => ({
+      ...prev,
+      [taskId]: photoUrl
+    }));
+  };
+
+  const handlePhotoError = (taskId, errorMessage) => {
+    setErrorMessages(prev => ({
+      ...prev,
+      [taskId]: errorMessage
+    }));
   };
 
   return (
@@ -126,10 +158,12 @@ const PrivateMaintenance = () => {
           Object.keys(groupedTasks).map((roomId) => {
             const roomTasks = groupedTasks[roomId];
             const roomName = roomTasks[0].room_nombre || `Habitación ${roomId}`;
-
             return (
               <div key={roomId} className="mb-3">
-                <button className="btn btn-primary mt-3 px-3 py-2" onClick={() => handleRoomClick(roomId)}>
+                <button 
+                  className="btn btn-primary mt-3 px-3 py-2" 
+                  onClick={() => handleRoomClick(roomId)}
+                >
                   <h5>Habitación: {roomName}</h5>
                 </button>
               </div>
@@ -138,59 +172,107 @@ const PrivateMaintenance = () => {
         ) : null}
 
         {isRoomSelected && (
-          <div className="mt-4">
-            {groupedTasks[selectedRoomId] && groupedTasks[selectedRoomId].map((task) => (
-              <div key={task.id} className="card mb-3 shadow-sm">
-                <div className="card-body">
-                  <p><strong>Nombre de la tarea:</strong> {task.nombre}</p>
-                  <p><strong>Condición:</strong> {task.condition}</p>
-                  <p><strong>Foto:</strong></p>
-                  {task.photo && <img src={task.photo} alt={task.nombre} style={{ width: '100px', height: '100px' }} />}
-                  
-                  <div className="mt-3 p-3 border rounded d-flex justify-content-around">
-                    <button className="btn btn-warning" onClick={() => handleConditionChange(task.id, selectedRoomId, 'PENDIENTE')} disabled={task.condition === 'PENDIENTE'}>
-                      Pendiente
-                    </button>
-                    <button className="btn btn-info" onClick={() => handleConditionChange(task.id, selectedRoomId, 'EN PROCESO')} disabled={task.condition === 'EN PROCESO'}>
-                      En Proceso
-                    </button>
-                    <button className="btn btn-success" onClick={() => handleConditionChange(task.id, selectedRoomId, 'FINALIZADA')} disabled={task.condition === 'FINALIZADA'}>
-                      Finalizada
-                    </button>
+          <>
+            <div className="mt-4">
+              {groupedTasks[selectedRoomId]?.map((task) => (
+                <div key={task.id} className="card mb-3 shadow-sm">
+                  <div className="card-body">
+                    <p><strong>Nombre:</strong> {task.nombre}</p>
+                    <p><strong>Estado actual:</strong> 
+                      <span className={`badge ${
+                        task.condition === 'PENDIENTE' ? 'bg-warning' :
+                        task.condition === 'EN PROCESO' ? 'bg-info' : 'bg-success'
+                      } ms-2`}>
+                        {task.condition}
+                      </span>
+                    </p>
+
+                    {/* Componente Cloudinary para cada tarea */}
+                    <div className="mb-3">
+                      <label htmlFor="photo" className="form-label">Foto</label>
+                      <CloudinaryApiHotel 
+                        setPhotoUrl={(url) => handlePhotoUpload(task.id, url)}
+                        setErrorMessage={(msg) => handlePhotoError(task.id, msg)}
+                      />
+                      {(taskPhotos[task.id] || task.photo) && (
+                        <div className="mt-2">
+                          <img 
+                            src={taskPhotos[task.id] || task.photo} 
+                            alt={`Tarea ${task.nombre}`} 
+                            className="img-thumbnail"
+                            style={{ maxWidth: '200px' }}
+                          />
+                        </div>
+                      )}
+                      {errorMessages[task.id] && (
+                        <div className="text-danger small mt-1">{errorMessages[task.id]}</div>
+                      )}
+                    </div>
+                    
+                    <div className="mt-3 p-3 border rounded d-flex justify-content-around">
+                      {['PENDIENTE', 'EN PROCESO', 'FINALIZADA'].map((status) => (
+                        <button
+                          key={status}
+                          className={`btn ${
+                            status === 'PENDIENTE' ? 'btn-warning' :
+                            status === 'EN PROCESO' ? 'btn-info' : 'btn-success'
+                          }`}
+                          onClick={() => handleConditionChange(task.id, selectedRoomId, status)}
+                          disabled={task.condition === status}
+                        >
+                          {status}
+                        </button>
+                      ))}
+                    </div>
+
+                    {task.condition === 'FINALIZADA' && (
+                      <div className="text-center mt-2">
+                        <i className="bi bi-check-circle-fill text-success fs-4"></i>
+                        <span className="ms-2">Tarea completada</span>
+                      </div>
+                    )}
                   </div>
-
-                  {task.condition === 'FINALIZADA' && <input type="checkbox" checked readOnly style={{ width: '30px', height: '30px', backgroundColor: 'green', marginTop: '10px' }} />}
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
 
-        {isRoomSelected && (
-          <div className="mt-3">
-            <button className="btn btn-primary w-100" onClick={handleBackToRooms}>
-              Volver a ver todas las habitaciones
+            <button 
+              className="btn btn-secondary w-100 mt-3" 
+              onClick={handleBackToRooms}
+            >
+              ← Volver a habitaciones
             </button>
-          </div>
+          </>
         )}
 
-        <div className="d-flex justify-content-center">
-          <button className="btn btn-primary mt-3 px-5 py-2" onClick={handleLogout}>
+        <div className="mt-4 border-top pt-3">
+          <button 
+            className="btn btn-outline-danger w-100" 
+            onClick={handleLogout}
+          >
             Cerrar sesión
           </button>
         </div>
 
-        {/* Botones de filtrado */}
         <div className="card mt-4 p-3">
           <h5 className="text-center">Filtrar tareas</h5>
           <div className="d-flex justify-content-around">
-            <button className="btn btn-primary" onClick={() => navigate('/task-filter', { state: { view: 'all' } })}>
+            <button 
+              className="btn btn-primary" 
+              onClick={() => navigate('/task-filter', { state: { view: 'all' } })}
+            >
               Todas
             </button>
-            <button className="btn btn-warning" onClick={() => navigate('/task-filter', { state: { view: 'PENDIENTE' } })}>
+            <button 
+              className="btn btn-warning" 
+              onClick={() => navigate('/task-filter', { state: { view: 'PENDIENTE' } })}
+            >
               Pendientes
             </button>
-            <button className="btn btn-success" onClick={() => navigate('/task-filter', { state: { view: 'FINALIZADA' } })}>
+            <button 
+              className="btn btn-success" 
+              onClick={() => navigate('/task-filter', { state: { view: 'FINALIZADA' } })}
+            >
               Finalizadas
             </button>
           </div>

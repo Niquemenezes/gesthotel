@@ -9,7 +9,7 @@ import { Home } from "./pages/home";
 import { Demo } from "./pages/demo";
 import { Single } from "./pages/single";
 import { ListaCat } from "./pages/listaCat";
-import { ListaRooms } from "./pages/listaRooms";
+
 import injectContext from "./store/appContext";
 import { Navbar } from "./component/navbar";
 import EditarCategoria from "./component/editarCategoria";
@@ -17,8 +17,7 @@ import CrearCategoria from "./component/crearCategoria";
 import ListaCategoria from "./component/listaCategoria";
 import Hoteles from "./component/listaHoteles";
 import Branches from "./component/listaBranches";
-import EditarRoom from "./component/editarRoom";
-import CrearRoom from "./component/crearRoom";
+
 import ListaRoom from "./component/listaRoom";
 import Maintenance from "./component/listaMaintenance";
 import LoginHouseKeeper from "./pages/loginHouseKeeper";
@@ -35,6 +34,7 @@ import PrivateMaintenance from './pages/privateMaintenance';
 import ProtectedPrivateMaintenance from './pages/ProtectedPrivateMaintenance';
 import { Footer } from "./component/footer";
 import TaskFilterView from './pages/TaskFilterView'; // Importar el nuevo componente
+
 
 const Layout = () => {
     // Basename: Usado si el proyecto está en un subdirectorio, configurado en .env
@@ -63,9 +63,6 @@ const Layout = () => {
                         <Route element={<ThemeForm />} path="/theme" />
                         <Route element={<HotelTheme />} path="/hotelTheme" />
                         <Route element={<Branches />} path="/listaBranches" />
-                        <Route element={<ListaRooms />} path="/listaRooms" />
-                        <Route element={<EditarRoom />} path="/editarRoom/:id" />
-                        <Route element={<CrearRoom />} path="/crearRoom" />
                         <Route element={<ListaRoom />} path="/listaRoom" />
                         <Route element={<Maintenance />} path="/listaMaintenance" />
                         <Route element={<HouseKeeper />} path="/houseKeeper" />

@@ -1,61 +1,77 @@
 import React, { useState, useContext } from "react";
 import { Context } from "../store/appContext";
 import { Navigate } from "react-router-dom";
+
 const SignupHotel = () => {
     const { actions } = useContext(Context);
-    const [nombre, setNombre] = useState(""); // Nuevo estado para el nombre
+    const [nombre, setNombre] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [redirectoToLogin, setRedirectToLogin] = useState(false);
+    const [redirect, setRedirect] = useState(false);
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        actions.signup(nombre, email, password); // Pasamos el nombre junto con el email y la contraseña
-        setRedirectToLogin(true); //redirige al login despues de crear el usuario
+        actions.signup(nombre, email, password);
+        setRedirect(true);
     };
-    if (redirectoToLogin) {
-        return <Navigate to="/loginhotel" />;
-    }
+
+    if (redirect) return <Navigate to="/loginhotel" />;
+
     return (
-      <div className="container" style={{ width: "500px" }}>
-            <div className="card p-4" style={{ width: "100%", maxWidth: "400px" }}>
-                <h2>Crear Cuenta</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                        <label className="form-label">Nombre</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            value={nombre}
-                            onChange={(e) => setNombre(e.target.value)} // Actualiza el estado de nombre
-                            required
-                        />
-                    </div>
-                    <div className="mb-3">
-                        <label className="form-label">Email address</label>
-                        <input
-                            type="email"
-                            className="form-control"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className="mb-3">
-                        <label className="form-label">Password</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <button type="submit" className="btn"style={{ backgroundColor: "#AC85EB", borderColor: "#B7A7D1" }}>
-                        Registro
-                    </button>
-                </form>
+        <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+                <label htmlFor="name" className="form-label">Nombre del hotel</label>
+                <input
+                    type="text"
+                    id="name"
+                    className="form-control form-control-lg"
+                    placeholder="Introduce el nombre del hotel"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    required
+                />
             </div>
-        </div>
+
+            <div className="mb-3">
+                <label htmlFor="email" className="form-label">Correo electrónico</label>
+                <input
+                    type="email"
+                    id="email"
+                    className="form-control form-control-lg"
+                    placeholder="Introduce tu correo"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
+            </div>
+
+            <div className="mb-3">
+                <label htmlFor="password" className="form-label">Contraseña</label>
+                <input
+                    type="password"
+                    id="password"
+                    className="form-control form-control-lg"
+                    placeholder="Crea una contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+            </div>
+
+            <div className="form-check mb-4">
+                <input type="checkbox" className="form-check-input" id="checkbox-signup" required />
+                <label className="form-check-label" htmlFor="checkbox-signup">
+                    Acepto los Términos y Condiciones
+                </label>
+            </div>
+
+            <div className="mb-0 d-grid text-center">
+                <button type="submit" className="btn">
+                    Registrarse
+                </button>
+            </div>
+        </form>
     );
 };
+
 export default SignupHotel;

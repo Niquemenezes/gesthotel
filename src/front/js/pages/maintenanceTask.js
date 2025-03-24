@@ -1,386 +1,239 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useContext } from 'react';
+import { Context } from "../store/appContext";
 import Sidebar from "../component/sidebar";
+import CloudinaryApiHotel from "../component/cloudinaryApiHotel"; 
+
 
 const MaintenanceTask = () => {
-  const [maintenanceTasks, setMaintenanceTasks] = useState([]);
+  const { store, actions } = useContext(Context);
   const [nombre, setNombre] = useState('');
   const [photo, setPhoto] = useState('');
   const [condition, setCondition] = useState('PENDIENTE');  // Estado por defecto "PENDIENTE"
   const [idRoom, setIdRoom] = useState('');
   const [idMaintenance, setIdMaintenance] = useState('');
-  const [idHousekeeper, setIdHousekeeper] = useState('');
-  const [idCategory, setIdCategory] = useState('');
-  const [rooms, setRooms] = useState([]);
-  const [maintenances, setMaintenances] = useState([]);
-  const [housekeepers, setHousekeepers] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [selectedBranch, setSelectedBranch] = useState('');
 
-  const navigate = useNavigate();
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
-  
-  // Cargar todas las tareas de mantenimiento
-  const loadMaintenanceTasks = async () => {
-    try {
-      const response = await fetch(`${backendUrl}api/maintenancetasks`);
-      if (response.ok) {
-        const data = await response.json();
-        setMaintenanceTasks(data);
-      } else {
-        console.error('Error al obtener las tareas de mantenimiento:', response.status);
-      }
-    } catch (error) {
-      console.error('Error al obtener las tareas de mantenimiento:', error);
-    }
-  };
-
-  // Cargar las habitaciones, mantenimientos, housekeepers y categorías
-  const loadOptions = async () => {
-    try {
-      const [roomsResponse, maintenancesResponse, housekeepersResponse, categoriesResponse] = await Promise.all([
-        fetch(`${backendUrl}api/rooms`),
-        fetch(`${backendUrl}api/maintenance`),
-        fetch(`${backendUrl}api/housekeepers`),
-        fetch(`${backendUrl}api/categories`),
-      ]);
-
-      if (roomsResponse.ok && maintenancesResponse.ok && housekeepersResponse.ok && categoriesResponse.ok) {
-        const roomsData = await roomsResponse.json();
-        const maintenancesData = await maintenancesResponse.json();
-        const housekeepersData = await housekeepersResponse.json();
-        const categoriesData = await categoriesResponse.json();
-
-        setRooms(roomsData);
-        setMaintenances(maintenancesData);
-        setHousekeepers(housekeepersData);
-        setCategories(categoriesData);
-      } else {
-        console.error('Error al obtener las opciones:', roomsResponse.status);
-      }
-    } catch (error) {
-      console.error('Error al obtener las opciones:', error);
-    }
-  };
-
-  // Crear una nueva tarea de mantenimiento
-  const createMaintenanceTask = async () => {
-    if (!nombre || !idRoom || !idHousekeeper) {
-      alert('Por favor, completa todos los campos');
-      return;
-    }
-
-    try {
-      const response = await fetch(`${backendUrl}api/maintenancetasks`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          nombre,
-          photo: photo || '',
-          condition,  // Enviar el estado
-          room_id: idRoom,
-          maintenance_id: idMaintenance || null,
-          housekeeper_id: idHousekeeper,
-          category_id: idCategory || null,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMaintenanceTasks((prevTasks) => [...prevTasks, data]);
-        resetForm();
-      } else {
-        const errorData = await response.json();
-        console.error('Error al crear la tarea de mantenimiento:', errorData.message);
-      }
-    } catch (error) {
-      console.error('Error al crear la tarea de mantenimiento:', error);
-    }
-  };
-
-  // Actualizar una tarea de mantenimiento
-  const updateMaintenanceTask = async () => {
-    if (!nombre || !idRoom || !idHousekeeper || !editingId) {
-      alert('Por favor, completa todos los campos para editar');
-      return;
-    }
-
-    try {
-      const response = await fetch(`${backendUrl}api/maintenancetasks/${editingId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          nombre,
-          photo: photo || '',
-          condition,  // Enviar el estado
-          room_id: idRoom,
-          maintenance_id: idMaintenance || null,
-          housekeeper_id: idHousekeeper,
-          category_id: idCategory || null,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMaintenanceTasks(
-          maintenanceTasks.map((item) => (item.id === editingId ? data : item))
-        );
-        resetForm();
-      } else {
-        const errorData = await response.json();
-        console.error('Error al editar la tarea de mantenimiento:', errorData.message);
-      }
-    } catch (error) {
-      console.error('Error al editar la tarea de mantenimiento:', error);
-    }
-  };
-
-  // Eliminar una tarea de mantenimiento
-  const deleteMaintenanceTask = async (id) => {
-    const isConfirmed = window.confirm('¿Estás seguro de que quieres eliminar esta tarea de mantenimiento?');
-    if (!isConfirmed) return;
-
-    try {
-      const response = await fetch(`${backendUrl}api/maintenancetasks/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setMaintenanceTasks(maintenanceTasks.filter((item) => item.id !== id));
-      } else {
-        const errorData = await response.json();
-        console.error('Error al eliminar la tarea de mantenimiento:', errorData.message);
-      }
-    } catch (error) {
-      console.error('Error al eliminar la tarea de mantenimiento:', error);
-    }
-  };
-
-  // Restablecer el formulario
   const resetForm = () => {
     setNombre('');
     setPhoto('');
     setCondition('PENDIENTE');  // Resetear a "PENDIENTE"
     setIdRoom('');
     setIdMaintenance('');
-    setIdHousekeeper('');
-    setIdCategory('');
+    setSelectedBranch('');
     setEditingId(null);
   };
 
-  // Cargar datos cuando el componente se monta
-  useEffect(() => {
-    loadMaintenanceTasks();
-    loadOptions();
-  }, []);
 
-  // Editar una tarea de mantenimiento
-  const editMaintenanceTask = (id) => {
-    const taskToEdit = maintenanceTasks.find((task) => task.id === id);
-    if (taskToEdit) {
-      setNombre(taskToEdit.nombre);
-      setPhoto(taskToEdit.photo);
-      setCondition(taskToEdit.condition || 'PENDIENTE');  // Usar el estado de la tarea
-      setIdRoom(taskToEdit.room.id);
-      setIdMaintenance(taskToEdit.maintenance ? taskToEdit.maintenance.id : '');
-      setIdHousekeeper(taskToEdit.housekeeper.id);
-      setIdCategory(taskToEdit.category ? taskToEdit.category.id : '');
-      setEditingId(id);
+  const handleCreateOrUpdate = () => {
+    if (!nombre || !idRoom || !idMaintenance) {
+      alert('Por favor, completa todos los campos obligatorios');
+      return;
     }
+
+    const payload = {
+      nombre,
+      photo_url: photo,
+      condition,
+      room_id: idRoom,
+      maintenance_id: idMaintenance || null,
+    };
+
+    if (editingId) {
+      actions.updateMaintenanceTask(editingId, payload);
+    } else {
+      actions.createMaintenanceTask(payload);
+    }
+
+    resetForm();
   };
 
-  // Cancelar la edición de una tarea
+  const editMaintenanceTask = (task) => {
+    setNombre(task.nombre);
+    setPhoto(task.photo_url || '');
+    setCondition(task.condition || '');
+    setIdRoom(task.room_id);
+    setIdMaintenance(task.maintenance_id || '');
+    setSelectedBranch(task.room?.branch?.id || '');
+    setEditingId(task.id);
+  };
+
+
   const cancelEdit = () => {
     resetForm();
   };
 
+  const handleDelete = (id) => {
+    if (window.confirm('¿Estás segura/o de que quieres eliminar esta tarea?')) {
+      actions.deleteMaintenanceTask(id);
+    }
+  };
+
+  useEffect(() => {
+    actions.getMaintenanceTasks();
+    actions.getBranches();
+    actions.getRooms();
+    actions.getMaintenances();
+    actions.getHousekeepers();
+    actions.getRoomsByBranch();
+  }, []);
+
+
+
   return (
-    <>
-      <div className="d-flex">
-        {/* Sidebar */}
-        <Sidebar/>
+    <div className="d-flex">
+      <Sidebar />
+      <div className="container">
+        <h1>Gestión de Tareas de Mantenimiento</h1>
+        <div className="card mb-4">
+          <div className="card-body">
+            <h5 className="card-title">{editingId ? 'Editar' : 'Crear'} Tarea de Mantenimiento</h5>
+            <form>
+              <div className="form-group">
+                <label>Nombre</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={nombre}
+                  onChange={e => setNombre(e.target.value)}
+                />
+              </div>
 
-        <div className="container">
-          <h1>Gestión de Tareas de Mantenimiento</h1>
-          <div className="card">
-            <div className="card-body">
-              <h5 className="card-title">{editingId ? 'Editar' : 'Crear'} Tarea de Mantenimiento</h5>
-              <form>
-                <div className="form-group">
-                  <label htmlFor="nombre">Nombre</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="nombre"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                  />
+              <div className="form-group">
+                <label>Foto (subir imagen)</label>
+                <CloudinaryApiHotel
+                  setPhotoUrl={setPhoto}
+                  setErrorMessage={(msg) => console.error("Error de Cloudinary:", msg)}
+                />
+              </div>
+
+              {photo && (
+                <div className="mt-2">
+                  <label>Vista previa:</label>
+                  <img src={photo} alt="preview" style={{ width: "100%", maxWidth: "300px", borderRadius: "10px" }} />
                 </div>
+              )}
 
-                <div className="form-group">
-                  <label htmlFor="photo">Foto</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="photo"
-                    value={photo}
-                    onChange={(e) => setPhoto(e.target.value)}
-                    placeholder="URL de la foto o archivo (opcional)"
-                  />
-                  {/* Si necesitas permitir subir archivos desde el sistema, puedes añadir esto: */}
-                  <input
-                    type="file"
-                    className="form-control mt-2"
-                    onChange={(e) => setPhoto(URL.createObjectURL(e.target.files[0]))}
-                  />
-                </div>
 
-                <div className="form-group">
-                  <label htmlFor="condition">Estado</label>
-                  <select
-                    className="form-control"
-                    id="condition"
-                    value={condition}
-                    onChange={(e) => setCondition(e.target.value)}
-                  >
-                    <option value="PENDIENTE">Pendiente</option>
-                    <option value="EN_PROCESO">En Proceso</option>
-                    <option value="FINALIZADO">Finalizado</option>
-                  </select>
-                </div>
+              <div className="form-group">
+                <label>Estado en que se encuentra</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={condition}
+                  onChange={e => setCondition(e.target.value)}
+                />
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="idRoom">Habitación</label>
-                  <select
-                    className="form-control"
-                    id="idRoom"
-                    value={idRoom}
-                    onChange={(e) => setIdRoom(e.target.value)}
-                  >
-                    <option value="">Selecciona una habitación</option>
-                    {rooms.map((room) => (
-                      <option key={room.id} value={room.id}>
-                        {room.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div className="form-group">
+                <label>Sucursal</label>
+                <select
+                  className="form-control"
+                  value={selectedBranch}
+                  onChange={(e) => {
+                    setSelectedBranch(e.target.value);
+                    actions.getRoomsByBranch(e.target.value);
+                  }}
+                >
+                  <option value="">Selecciona una sucursal</option>
+                  {Array.isArray(store.branches) && store.branches.map(branch => (
+                    <option key={branch.id} value={branch.id}>{branch.nombre}</option>
+                  ))}
+                </select>
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="idMaintenance">Mantenimiento</label>
-                  <select
-                    className="form-control"
-                    id="idMaintenance"
-                    value={idMaintenance}
-                    onChange={(e) => setIdMaintenance(e.target.value)}
-                  >
-                    <option value="">Selecciona un mantenimiento</option>
-                    {maintenances.map((maintenance) => (
-                      <option key={maintenance.id} value={maintenance.id}>
-                        {maintenance.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div className="form-group">
+                <label>Habitación</label>
+                <select
+                  className="form-control"
+                  value={idRoom}
+                  onChange={e => setIdRoom(e.target.value)}
+                >
+                  <option value="">Selecciona una habitación</option>
+                  {Array.isArray(store.rooms) && store.rooms.map(room => (
+                    <option key={room.id} value={room.id}>{room.nombre}</option>
+                  ))}
+                </select>
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="idHousekeeper">Housekeeper</label>
-                  <select
-                    className="form-control"
-                    id="idHousekeeper"
-                    value={idHousekeeper}
-                    onChange={(e) => setIdHousekeeper(e.target.value)}
-                  >
-                    <option value="">Selecciona un housekeeper</option>
-                    {housekeepers.map((housekeeper) => (
-                      <option key={housekeeper.id} value={housekeeper.id}>
-                        {housekeeper.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div className="form-group">
+                <label>Técnico de Mantenimiento</label>
+                <select
+                  className="form-control"
+                  value={idMaintenance}
+                  onChange={e => setIdMaintenance(e.target.value)}
+                >
+                  <option value="">Selecciona un técnico</option>
+                  {Array.isArray(store.maintenances) && store.maintenances.map(m => (
+                    <option key={m.id} value={m.id}>{m.nombre}</option>
+                  ))}
+                </select>
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="idCategory">Categoría</label>
-                  <select
-                    className="form-control"
-                    id="idCategory"
-                    value={idCategory}
-                    onChange={(e) => setIdCategory(e.target.value)}
-                  >
-                    <option value="">Selecciona una categoría</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
+              <button
+                type="button"
+                className="btn mt-3"
+                style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                onClick={handleCreateOrUpdate}
+              >
+                {editingId ? "Actualizar" : "Crear"} Tarea
+              </button>
+              {editingId && (
                 <button
                   type="button"
-                  className="btn" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
-                  onClick={editingId ? updateMaintenanceTask : createMaintenanceTask}
+                  className="btn mt-3 ml-2"
+                  style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                  onClick={cancelEdit}
                 >
-                  {editingId ? 'Actualizar' : 'Crear'} Tarea
+                  Cancelar
                 </button>
-                {editingId && (
-                  <button type="button" className="btn" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }} onClick={cancelEdit}>
-                    Cancelar
-                  </button>
-                )}
-              </form>
-            </div>
-          </div>
+              )}
+            </form>
 
-          <h2>Tareas de Mantenimiento</h2>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Estado</th> {/* Ahora "Estado" debe mostrarse correctamente */}
-                <th>Habitación</th>
-                <th>Mantenimiento</th>
-                <th>Housekeeper</th>
-                <th>Categoría</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {maintenanceTasks.map((task) => (
-                <tr key={task.id}>
-                  <td>{task.nombre}</td>
-                  <td>{task.condition || 'PENDIENTE'}</td> {/* Mostrar el estado correctamente */}
-                  <td>{task.room?.nombre}</td>
-                  <td>{task.maintenance?.nombre}</td>
-                  <td>{task.housekeeper?.nombre}</td>
-                  <td>{task.category?.nombre}</td>
-                  <td>
-                    <button
-                      className="btn btn-sm" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
-                      onClick={() => editMaintenanceTask(task.id)}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      className="btn btn-sm ml-2" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
-                      onClick={() => deleteMaintenanceTask(task.id)}
-                    >
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          </div>
         </div>
+
+        <h2>Tareas de Mantenimiento</h2>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Estado</th>
+              <th>Sucursal</th>
+              <th>Habitación</th>
+              <th>Técnico</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {Array.isArray(store.maintenanceTasks) && store.maintenanceTasks.map(task => (
+              <tr key={task.id}>
+                <td>{task.nombre}</td>
+                <td>{task.condition}</td>
+                <td>
+                  {
+                    store.branches.find(branch => branch.id === task.room?.branch_id)?.nombre || "-"
+                  }
+                </td>
+
+                <td>{task.room_nombre || task.room?.nombre}</td>
+                <td>{task.maintenance?.nombre || "-"}</td>
+                <td>
+                  <button className="btn btn-sm" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }} onClick={() => editMaintenanceTask(task)}>
+                    Editar
+                  </button>
+                  <button className="btn btn-sm ml-2" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }} onClick={() => handleDelete(task.id)}>
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+
+        </table>
       </div>
-    </>
+    </div>
   );
 };
 
