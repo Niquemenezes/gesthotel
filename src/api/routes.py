@@ -1096,8 +1096,15 @@ def create_housekeeper_task():
 # READ all HouseKeeperTasks
 @api.route('/housekeeper_tasks', methods=['GET'])
 def get_all_housekeeper_tasks():
-    tasks = HouseKeeperTask.query.all()
+    status = request.args.get('status')  # Obtener el parámetro de estado de la query string
+    
+    if status:
+        tasks = HouseKeeperTask.query.filter_by(condition=status).all()  # Filtrar por estado
+    else:
+        tasks = HouseKeeperTask.query.all()  # Si no se especifica el estado, devuelve todas las tareas
+    
     return jsonify([task.serialize() for task in tasks]), 200
+
 
 # READ a single HouseKeeperTask by ID
 @api.route('/housekeeper_task/<int:id>', methods=['GET'])

@@ -45,7 +45,7 @@ const PrivateHouseKeeper = () => {
         throw new Error('Error en la respuesta del servidor');
       }
       const data = await response.json();
-      const filteredTasks = data.filter(task => task.id_housekeeper === housekeeperId);
+      const filteredTasks = data.filter(task => task.id_housekeeper === housekeeperId && task.condition === 'Pendiente'); // Filtramos las tareas pendientes
       setTasks(filteredTasks);
     } catch (error) {
       console.error('Error al obtener las tareas:', error);
@@ -164,9 +164,15 @@ const PrivateHouseKeeper = () => {
 
       if (response.ok) {
         const updatedData = await response.json();
-        setTasks(prevTasks =>
-          prevTasks.map(task => task.id === taskId ? updatedData : task)
-        );
+        // Si el estado es "Completada", filtramos la tarea
+        if (newStatus === 'Completada') {
+          setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+        } else {
+          // Si no está "Completada", solo actualizamos la tarea
+          setTasks(prevTasks =>
+            prevTasks.map(task => task.id === taskId ? updatedData : task)
+          );
+        }
         alert('Estado de la tarea actualizado con éxito');
       } else {
         const errorData = await response.json();
