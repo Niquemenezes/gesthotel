@@ -62,24 +62,49 @@ const PrivateHouseKeeper = () => {
   }, [housekeeperId]);
 
   const handleFetchMaintenanceTasks = async () => {
+    const token = localStorage.getItem('token');
+    let housekeeperId = null;
+  
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        housekeeperId = decoded.housekeeper_id;  // Obtienes el housekeeper_id del token
+      } catch (error) {
+        console.error('Error al decodificar el token:', error);
+        alert('Hubo un error al obtener el ID del housekeeper');
+        return;
+      }
+    }
+  
+    if (!housekeeperId) return;  // Asegúrate de que el housekeeper_id esté presente
+  
     try {
-      const response = await fetch(`${backendUrl}api/maintenancetasks`);
+      // Aquí pasas el housekeeper_id y room_id como parámetros
+      const response = await fetch(`${backendUrl}api/maintenancetasks/filter?housekeeper_id=${housekeeperId}&room_id=${selectedRoomId}`);
+      
       if (!response.ok) {
         throw new Error('Error al obtener las tareas de mantenimiento');
       }
+  
       const data = await response.json();
-      // Filtramos solo las tareas de mantenimiento que estén pendientes
+      
+      // Filtramos por tareas pendientes si es necesario (opcional)
       const filteredMaintenanceTasks = data.filter(task => task.condition === 'Pendiente');
-      setMaintenanceTasks(filteredMaintenanceTasks); // Guardamos las tareas de mantenimiento filtradas
+      setMaintenanceTasks(filteredMaintenanceTasks); // Guardamos las tareas filtradas en el estado
+      
     } catch (error) {
       console.error('Error al obtener las tareas de mantenimiento:', error);
       alert('Hubo un error al obtener las tareas de mantenimiento');
     }
   };
+  
 
   useEffect(() => {
-    handleFetchMaintenanceTasks(); // Cargar las tareas de mantenimiento cuando el componente se monte
-  }, []);
+    if (housekeeperId && selectedRoomId) {
+      handleFetchMaintenanceTasks();
+    }
+  }, [housekeeperId, selectedRoomId]);
+  
 
   const handleRoomClick = (roomId) => {
     setSelectedRoomId(roomId);

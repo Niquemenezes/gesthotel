@@ -1186,6 +1186,39 @@ def get_all_maintenance_tasks():
     return jsonify([task.serialize() for task in maintenance_tasks]), 200
 
 
+
+@api.route('/maintenancetasks/filter', methods=['GET'])
+def get_maintenance_tasks_filtered():
+    """Obtener tareas de mantenimiento filtradas por housekeeper_id y room_id"""
+    
+    # Obtenemos los parámetros de la query string
+    housekeeper_id = request.args.get('housekeeper_id', type=int)  # El id del housekeeper
+    room_id = request.args.get('room_id', type=int)  # El id de la habitación
+    
+    # Verificamos si se proporciona al menos un parámetro para filtrar
+    if not housekeeper_id and not room_id:
+        return jsonify({"message": "Se requiere al menos housekeeper_id o room_id para filtrar."}), 400
+    
+    # Iniciamos la consulta
+    query = MaintenanceTask.query
+    
+    # Filtramos por housekeeper_id si está presente
+    if housekeeper_id:
+        query = query.filter(MaintenanceTask.housekeeper_id == housekeeper_id)
+    
+    # Filtramos por room_id si está presente
+    if room_id:
+        query = query.filter(MaintenanceTask.room_id == room_id)
+    
+    # Obtenemos las tareas filtradas
+    maintenance_tasks = query.all()
+    
+    # Devolvemos las tareas en formato JSON
+    return jsonify([task.serialize() for task in maintenance_tasks]), 200
+
+
+
+
 @api.route('/maintenancetasks/<int:id>', methods=['GET'])
 def get_maintenance_task(id):
     """Obtener una tarea de mantenimiento específica por ID"""
