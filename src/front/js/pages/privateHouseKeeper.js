@@ -12,8 +12,8 @@ const PrivateHouseKeeper = () => {
   const [housekeeperId, setHousekeeperId] = useState(null);
   const [taskPhotos, setTaskPhotos] = useState({}); // Estado para manejar las fotos individuales de cada tarea
   const [maintenancePhoto, setMaintenancePhoto] = useState(''); // Foto para la tarea de mantenimiento
-  const [maintenanceCondition, setMaintenanceCondition] = useState('Pendiente');
-  const [showMaintenanceTasks, setShowMaintenanceTasks] = useState(true); // Estado para mostrar/ocultar las tareas de mantenimiento
+  const [maintenanceCondition, setMaintenanceCondition] = useState('PENDIENTE');
+  const [showMaintenanceTasks, setShowMaintenanceTasks] = useState(false); // Estado para mostrar/ocultar las tareas de mantenimiento
   const navigate = useNavigate();
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
@@ -48,7 +48,7 @@ const PrivateHouseKeeper = () => {
         throw new Error('Error en la respuesta del servidor');
       }
       const data = await response.json();
-      const filteredTasks = data.filter(task => task.id_housekeeper === housekeeperId && task.condition === 'Pendiente'); // Filtramos las tareas pendientes
+      const filteredTasks = data.filter(task => task.id_housekeeper === housekeeperId && task.condition === 'PENDIENTE'); // Filtramos las tareas pendientes
       setTasks(filteredTasks);
     } catch (error) {
       console.error('Error al obtener las tareas:', error);
@@ -90,7 +90,7 @@ const PrivateHouseKeeper = () => {
       const data = await response.json();
       
       // Filtramos por tareas pendientes si es necesario (opcional)
-      const filteredMaintenanceTasks = data.filter(task => task.condition === 'Pendiente');
+      const filteredMaintenanceTasks = data.filter(task => task.condition === 'PENDIENTE');
       setMaintenanceTasks(filteredMaintenanceTasks); // Guardamos las tareas filtradas en el estado
     } catch (error) {
       console.error('Error al obtener las tareas de mantenimiento:', error);
@@ -143,6 +143,8 @@ const PrivateHouseKeeper = () => {
       photo_url: maintenancePhoto,  // Aquí pasamos la URL de la foto
     };
 
+      console.log('Datos de la tarea de mantenimiento:', taskData);
+
     try {
       const response = await fetch(`${backendUrl}api/maintenancetasks`, {
         method: 'POST',
@@ -175,7 +177,7 @@ const PrivateHouseKeeper = () => {
 
   const resetForm = () => {
     setNombre('');
-    setMaintenanceCondition('Pendiente'); // Reseteamos la condición a 'Pendiente'
+    setMaintenanceCondition('PENDIENTE'); // Reseteamos la condición a 'Pendiente'
     setMaintenancePhoto('');
   };
 
@@ -221,11 +223,11 @@ const PrivateHouseKeeper = () => {
 
       if (response.ok) {
         const updatedData = await response.json();
-        // Si el estado es "Completada", filtramos la tarea
-        if (newStatus === 'Completada') {
+        // Si el estado es "FINALIZADA", filtramos la tarea
+        if (newStatus === 'FINALIZADA') {
           setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
         } else {
-          // Si no está "Completada", solo actualizamos la tarea
+          // Si no está "FINALIZADA", solo actualizamos la tarea
           setTasks(prevTasks =>
             prevTasks.map(task => task.id === taskId ? updatedData : task)
           );
@@ -279,11 +281,11 @@ const PrivateHouseKeeper = () => {
                       <input
                         type="checkbox"
                         className="form-check-input"
-                        checked={task.condition === 'Completada'} // Marcar el checkbox si la tarea está completada
-                        onChange={() => handleStatusChange(task.id, task.condition === 'Completada' ? 'Pendiente' : 'Completada')} // Alternar entre 'Completada' y 'Pendiente'
+                        checked={task.condition === 'FINALIZADA'} // Marcar el checkbox si la tarea está FINALIZADA
+                        onChange={() => handleStatusChange(task.id, task.condition === 'FINALIZADA' ? 'PENDIENTE' : 'FINALIZADA')} // Alternar entre 'FINALIZADA' y 'Pendiente'
                       />
                       <label className="form-check-label" htmlFor={`task-${task.id}`}>
-                        {task.condition === 'Completada' ? 'Marcar como Pendiente' : 'Marcar como Completada'}
+                        {task.condition === 'FINALIZADA' ? 'Marcar como PENDIENTE' : 'Marcar como FINALIZADA'}
                       </label>
                     </div>
                   </div>
@@ -371,7 +373,7 @@ const PrivateHouseKeeper = () => {
                           {maintenanceTasks.map(task => (
                             <div key={task.id} className="list-group-item d-flex justify-content-between align-items-center">
                               <span>{task.nombre}</span>
-                              <span className={`badge ${task.condition === 'Pendiente' ? 'bg-primary' : 'bg-primary'} ms-2`}>
+                              <span className={`badge ${task.condition === 'PENDIENTE' ? 'bg-primary' : 'bg-primary'} ms-2`}>
                                 {task.condition}
                               </span>
                             </div>

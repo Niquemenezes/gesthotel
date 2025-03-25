@@ -101,24 +101,28 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			signup: (nombre, email, password) => {
-				const requestOptions = {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(
-						{
-							"nombre": nombre,
-							"email": email,
-							"password": password
-						}
-					)
-				};
-
-				fetch(process.env.BACKEND_URL + "/api/signuphotel", requestOptions)
-					.then(response => response.text())
-					.then((result) => console.log(result))
-
+			
+			signup: async (nombre, email, password) => {
+				try {
+					const res = await fetch(process.env.BACKEND_URL + "/api/signuphotel", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ nombre, email, password })
+					});
+			
+					if (!res.ok) {
+						const errorText = await res.text();
+						console.error("Error en el registro:", errorText);
+						return false;
+					}
+			
+					return true;
+				} catch (err) {
+					console.error("Error en signup:", err);
+					return false;
+				}
 			},
+			
 
 			// Para hoteles
 			getHoteles: async () => {

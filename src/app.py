@@ -8,64 +8,83 @@ from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from dotenv import load_dotenv
 
-# Configuration
+# Cargar variables de entorno
+load_dotenv()
+
+# Configuración
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../public/')
 db_url = os.getenv("DATABASE_URL")
 
-# Initialize the Flask app
+# Inicializar app Flask
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
-# Initialize JWT Manager (should be after app initialization)
+# CORS para permitir acceso desde React
+
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
+
+
+# JWT
 jwt = JWTManager(app)
 
-# Database configuration
+# Configuración base de datos
 if db_url:
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize database and migrate
+# Inicializar base de datos y migraciones
 MIGRATE = Migrate(app, db, compare_type=True)
 db.init_app(app)
 
-# Set up admin and commands
+# Admin y comandos
 setup_admin(app)
 setup_commands(app)
 
-# Register API routes
+# Rutas API principales
 app.register_blueprint(api, url_prefix='/api')
 
-# Handle/serialize errors like a JSON object
+# Registrar la ruta del chatbot
+# src/app.py
+
+from api.chatbot import chatbot_api
+app.register_blueprint(chatbot_api, url_prefix="/api")
+
+
+# Manejo de errores
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
-# Generate sitemap with all your endpoints
+# Sitemap
 @app.route('/')
 def sitemap():
     if ENV == "development":
         return generate_sitemap(app)
     return send_from_directory(static_file_dir, 'index.html')
 
-# Serve any other files as static files
+# Archivos estáticos (SPA frontend)
 @app.route('/<path:path>', methods=['GET', 'POST'])
 def serve_any_other_file(path):
     file_path = os.path.join(static_file_dir, path)
     if not os.path.isfile(file_path):
         path = 'index.html'
     response = send_from_directory(static_file_dir, path)
-    response.cache_control.max_age = 0  # Avoid cache memory
+    response.cache_control.max_age = 0
     return response
 
+# Ruta simple de prueba
 @app.route("/home")
 def home():
     return "API funcionando correctamente"
 
-# Run the app (only once)
+# Ejecutar app
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
