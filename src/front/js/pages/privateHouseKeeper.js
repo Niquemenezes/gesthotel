@@ -176,7 +176,7 @@ const PrivateHouseKeeper = () => {
   const resetForm = () => {
     setNombre('');
     setMaintenanceCondition('Pendiente'); // Reseteamos la condición a 'Pendiente'
-    setPhotoUrl(''); // Limpiamos la URL de la foto también
+    setMaintenancePhoto('');
   };
 
   const groupedTasks = tasks.reduce((acc, task) => {
