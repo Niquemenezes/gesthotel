@@ -81,14 +81,10 @@ const Layout = () => {
                         <Route element={<h1>Not found!</h1>} path="*" />
                         <Route element={<TaskFilterView />} path="/task-filter" />
                         <Route element={<h1>Not found!</h1>} />
-                    
-                   
-                    <Chatbot />
-                   
-                        {/* Nueva ruta para TaskFilterView */}
                       
                     </Routes>
-                    <Footer />
+                    <Chatbot />
+                   
                 </ScrollToTop>
                 </BrowserRouter>
                 <Footer />

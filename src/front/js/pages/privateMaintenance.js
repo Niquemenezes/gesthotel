@@ -16,8 +16,6 @@ import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
   const [errorMessages, setErrorMessages] = useState({});
   const navigate = useNavigate();
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
-<<<<<<< HEAD
-=======
 
   // Guardar fotos persistentes en localStorage
   useEffect(() => {
@@ -32,7 +30,6 @@ import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
     localStorage.setItem('maintenanceTaskPhotos', JSON.stringify(photosToSave));
   }, [taskPhotos, tasks]);
 
->>>>>>> develop
   const fetchMaintenanceTasks = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -100,12 +97,8 @@ import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
     setIsRoomSelected(false);
     setSelectedRoomId(null);
   };
-<<<<<<< HEAD
-  const handleConditionChange = async (taskId, selectedRoomId, newCondition,) => {
-=======
 
   const handleConditionChange = async (taskId, selectedRoomId, newCondition) => {
->>>>>>> develop
     try {
       const token = localStorage.getItem('token');
       if (!token) {
