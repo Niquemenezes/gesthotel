@@ -13,6 +13,7 @@ const PrivateHouseKeeper = () => {
   const [taskPhotos, setTaskPhotos] = useState({}); // Estado para manejar las fotos individuales de cada tarea
   const [maintenancePhoto, setMaintenancePhoto] = useState(''); // Foto para la tarea de mantenimiento
   const [maintenanceCondition, setMaintenanceCondition] = useState('Pendiente');
+  const [showMaintenanceTasks, setShowMaintenanceTasks] = useState(true); // Estado para mostrar/ocultar las tareas de mantenimiento
   const navigate = useNavigate();
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
@@ -91,7 +92,6 @@ const PrivateHouseKeeper = () => {
       // Filtramos por tareas pendientes si es necesario (opcional)
       const filteredMaintenanceTasks = data.filter(task => task.condition === 'Pendiente');
       setMaintenanceTasks(filteredMaintenanceTasks); // Guardamos las tareas filtradas en el estado
-      
     } catch (error) {
       console.error('Error al obtener las tareas de mantenimiento:', error);
       alert('Hubo un error al obtener las tareas de mantenimiento');
@@ -104,7 +104,6 @@ const PrivateHouseKeeper = () => {
       handleFetchMaintenanceTasks();
     }
   }, [housekeeperId, selectedRoomId]);
-  
 
   const handleRoomClick = (roomId) => {
     setSelectedRoomId(roomId);
@@ -237,10 +236,14 @@ const PrivateHouseKeeper = () => {
     }
   };
 
+  const toggleMaintenanceTasks = () => {
+    setShowMaintenanceTasks(prevState => !prevState); // Alterna entre mostrar/ocultar las tareas de mantenimiento
+  };
+
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
       <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
-        <h2 className="text-center mb-4">Tareas de Housekeeper</h2>
+        <h2 className="text-center mb-4">Tareas de Camarera</h2>
         {!isRoomSelected && Object.keys(groupedTasks).length > 0 ? (
           Object.keys(groupedTasks).map((roomId) => {
             const roomTasks = groupedTasks[roomId];
@@ -301,67 +304,89 @@ const PrivateHouseKeeper = () => {
                 </div>
               </div>
             ))}
-
-            {/* Tarea de Mantenimiento */}
-            <div className="card shadow-lg">
-              <div className="card-body">
-                <h5 className="card-title">Tarea de Mantenimiento</h5>
-                <form>
-                  <div className="form-group mb-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="nombre"
-                      value={nombre}
-                      onChange={(e) => setNombre(e.target.value)}
-                      placeholder="Ingresa la tarea de mantenimiento..."
-                    />
-                  </div>
-
-                  <div className="form-group mb-3">
-                    <strong>Foto: </strong>
-                    <CloudinaryApiHotel
-                      taskId="maintenance"
-                      setPhotoUrl={handleMaintenancePhotoChange}
-                      setErrorMessage={() => { }}
-                    />
-                    {maintenancePhoto && (
-                      <img
-                        src={maintenancePhoto}
-                        alt="Vista previa de la foto"
-                        style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }}
-                      />
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    className="btn btn-block" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
-                    onClick={createMaintenanceTask}
-                  >
-                    Crear Tarea
-                  </button>
-
-                  {/* Listado de tareas de mantenimiento */}
-                  <div className="mt-4">
-                    <h4>Listado de Tareas de Mantenimiento</h4>
-                    {maintenanceTasks.length > 0 ? (
-                      <ul>
-                        {maintenanceTasks.map(task => (
-                          <li key={task.id}>{task.nombre} - {task.condition}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p>No hay tareas de mantenimiento disponibles.</p>
-                    )}
-                  </div>
-                </form>
-              </div>
+            
+            {/* Tareas de mantenimiento */}
+            <div className="mt-3">
+              <button
+                className="btn btn-primary"
+                // style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }}
+                onClick={toggleMaintenanceTasks}
+              >
+                {showMaintenanceTasks ? 'Ocultar tareas de mantenimiento' : 'Mostrar tareas de mantenimiento'}
+              </button>
             </div>
+
+            {showMaintenanceTasks && (
+              <div className="card shadow-lg mt-4">
+                <div className="card-body">
+                  <h5 className="card-title">Tarea de Mantenimiento</h5>
+                  <form>
+                    <div className="form-group mb-3">
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="nombre"
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
+                        placeholder="Ingresa la tarea de mantenimiento..."
+                      />
+                    </div>
+
+                    <div className="form-group mb-3">
+                      <strong>Foto: </strong>
+                      <CloudinaryApiHotel
+                        taskId="maintenance"
+                        setPhotoUrl={handleMaintenancePhotoChange}
+                        setErrorMessage={() => { }}
+                      />
+                      {maintenancePhoto && (
+                        <img
+                          src={maintenancePhoto}
+                          alt="Vista previa de la foto"
+                          style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }}
+                        />
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      className="btn btn-block"
+                      style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                      onClick={createMaintenanceTask}
+                    >
+                      Crear Tarea
+                    </button>
+
+                    {/* Listado de tareas de mantenimiento */}
+                    <div className="mt-4">
+                      <h4 className="mb-3">Listado de Tareas de Mantenimiento</h4>
+                      {maintenanceTasks.length > 0 ? (
+                        <div className="list-group">
+                          {maintenanceTasks.map(task => (
+                            <div key={task.id} className="list-group-item d-flex justify-content-between align-items-center">
+                              <span>{task.nombre}</span>
+                              <span className={`badge ${task.condition === 'Pendiente' ? 'bg-primary' : 'bg-primary'} ms-2`}>
+                                {task.condition}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="alert alert-info" role="alert">
+                          No hay tareas de mantenimiento disponibles.
+                        </div>
+                      )}
+                    </div>
+
+                  </form>
+                </div>
+              </div>
+            )}
 
             <div className="mt-3">
               <button
-                className="btn  w-100" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                className="btn  w-100"
+                style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
                 onClick={handleBackToRooms}
               >
                 Volver a ver todas las habitaciones
@@ -371,7 +396,8 @@ const PrivateHouseKeeper = () => {
         )}
         <div className="d-flex justify-content-center">
           <button
-            className="btn mt-3 px-5 py-2" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+            className="btn mt-3 px-5 py-2"
+            style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
             onClick={handleLogout}
           >
             Cerrar sesión
