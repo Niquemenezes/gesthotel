@@ -2,17 +2,20 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-from flask import Flask, request, jsonify, url_for, Blueprint
+# Rutas y utilidades propias
 from api.utils import generate_sitemap, APIException
-from flask_cors import CORS
 from api.models import db, User, Hoteles, Theme, Category, HotelTheme, Branches, Maintenance, HouseKeeper, HouseKeeperTask, MaintenanceTask, Room
-import datetime
-import jwt
+from flask_cors import CORS
+from flask import Flask, request, jsonify, Blueprint
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, create_access_token
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_jwt_extended import JWTManager
-from flask_jwt_extended import create_access_token
-# from datetime import datetime
+import datetime
+from api.utils import generate_sitemap, APIException
+import jwt
+import os
+import openai
+
+
 
 # Blueprint para los endpoints de la API
 api = Blueprint('api', __name__)
@@ -24,6 +27,9 @@ app.config['JWT_SECRET_KEY'] = 'tu_clave_secreta'  # Cambia esto por una clave s
 SECRET_KEY = "your_secret_key"
 # Permitir solicitudes CORS a esta API
 CORS(api)
+
+# Clave de OpenAI desde variables de entorno
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Endpoint de prueba para la API
 @api.route('/hello', methods=['POST', 'GET'])
@@ -643,7 +649,7 @@ def get_maintenancetasks_by_hotel():
     ).all()
 
     # Opcional: incluir también tareas creadas por housekeepers
-    filtered = [t for t in tasks if (t.housekeeper_id is None or t.housekeeper_id in housekeeper_ids)]
+    filtered = [t for t in tasks if (t.housekeeper_id is None or t.housekeeper_id in housekeeper_ids)] 
 
     return jsonify([t.serialize() for t in filtered]), 200
 
@@ -1333,3 +1339,4 @@ def signuphotel():
 def privatehotel():
     current_user = get_jwt_identity() #obtiene la identidad del usuario desde el token
     return jsonify(logget_in_as=current_user), 200
+

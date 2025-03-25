@@ -9,7 +9,6 @@ import { Home } from "./pages/home";
 import { Demo } from "./pages/demo";
 import { Single } from "./pages/single";
 import { ListaCat } from "./pages/listaCat";
-
 import injectContext from "./store/appContext";
 import { Navbar } from "./component/navbar";
 import EditarCategoria from "./component/editarCategoria";
@@ -17,7 +16,6 @@ import CrearCategoria from "./component/crearCategoria";
 import ListaCategoria from "./component/listaCategoria";
 import Hoteles from "./component/listaHoteles";
 import Branches from "./component/listaBranches";
-
 import ListaRoom from "./component/listaRoom";
 import Maintenance from "./component/listaMaintenance";
 import LoginHouseKeeper from "./pages/loginHouseKeeper";
@@ -27,12 +25,16 @@ import HouseKeeperTask from './pages/HouseKeeperTask';
 import LoginHotel from "./pages/loginHotel";
 import SignupHotel from "./pages/signupHotel";
 import PrivateHotel from "./pages/privateHotel";
-import AuthHotel from "./component/authhotel";
+import AuthLayout from "./component/authLayout";
 import MaintenanceTask from './pages/maintenanceTask';
 import LoginMaintenance from "./pages/loginMaintenance";
 import PrivateMaintenance from './pages/privateMaintenance';
 import ProtectedPrivateMaintenance from './pages/ProtectedPrivateMaintenance';
 import { Footer } from "./component/footer";
+import Chatbot from "./component/chatBot";
+
+
+
 import TaskFilterView from './pages/TaskFilterView'; // Importar el nuevo componente
 
 
@@ -70,19 +72,22 @@ const Layout = () => {
                         <Route element={<ProtectedPrivateHouseKeeper><PrivateHouseKeeper /></ProtectedPrivateHouseKeeper>} path="/privateHouseKeeper" />
                         <Route element={<HouseKeeperTask />} path="/HouseKeeperTask" />
                         <Route element={<PrivateHotel />} path="/privateHotel" />
-                        <Route element={<SignupHotel />} path="/signupHotel" />
                         <Route element={<LoginHotel />} path="/loginHotel" />
-                        <Route element={<AuthHotel />} path="/authhotel" />
+                        <Route element={<SignupHotel />} path="/signupHotel" />
+                        <Route element={<AuthLayout />} path="/authLayout" />
                         <Route element={<MaintenanceTask />} path="/maintenanceTask" />
                         <Route element={<LoginMaintenance />} path="/loginMaintenance" />
                         <Route element={<ProtectedPrivateMaintenance><PrivateMaintenance /></ProtectedPrivateMaintenance>} path="/privateMaintenance" />
-                        {/* Nueva ruta para TaskFilterView */}
+                        <Route element={<h1>Not found!</h1>} path="*" />
                         <Route element={<TaskFilterView />} path="/task-filter" />
                         <Route element={<h1>Not found!</h1>} />
+                      
                     </Routes>
-                    <Footer />
+                    <Chatbot />
+                   
                 </ScrollToTop>
-            </BrowserRouter>
+                </BrowserRouter>
+                <Footer />
         </div>
     );
 };

@@ -1,0 +1,33 @@
+
+    .chatbot-card {
+      width: 320px;
+      height: 430px;
+      border-radius: 15px;
+      background: #fff;
+    }
+    .chat-box {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 0.75rem;
+      height: 220px;
+      overflow-y: auto;
+      background: #f9f9f9;
+    }
+    .chat-msg {
+      margin-bottom: 0.6rem;
+      padding: 0.4rem 0.6rem;
+      border-radius: 10px;
+      max-width: 80%;
+      font-size: 0.9rem;
+    }
+    .chat-msg.user {
+      background-color: #d1e7dd;
+      text-align: right;
+      margin-left: auto;
+    }
+    .chat-msg.assistant {
+      background-color: #e2e3e5;
+      text-align: left;
+      margin-right: auto;
+    }
+  

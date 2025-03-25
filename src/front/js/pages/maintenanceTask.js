@@ -4,6 +4,7 @@ import Sidebar from "../component/sidebar";
 import CloudinaryApiHotel from "../component/cloudinaryApiHotel"; 
 
 
+
 const MaintenanceTask = () => {
   const { store, actions } = useContext(Context);
   const [nombre, setNombre] = useState('');
@@ -189,8 +190,7 @@ const MaintenanceTask = () => {
                 </button>
               )}
             </form>
-
-          </div>
+           </div>
         </div>
 
         <h2>Tareas de Mantenimiento</h2>

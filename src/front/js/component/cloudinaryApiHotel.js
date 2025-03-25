@@ -6,7 +6,7 @@ const CloudinaryApiHotel = ({ setPhotoUrl, setErrorMessage }) => {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    console.log("Archivo seleccionado:", file); // 👈 Esto debería mostrar el archivo
+    console.log("Archivo seleccionado:", file); //Esto debería mostrar el archivo
   
     if (file) {
       const formData = new FormData();

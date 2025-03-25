@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
 
-const PrivateMaintenance = () => {
+ const PrivateMaintenance = () => {
   const [tasks, setTasks] = useState([]);
   const [groupedTasks, setGroupedTasks] = useState({});
   const [isRoomSelected, setIsRoomSelected] = useState(false);
@@ -15,7 +15,6 @@ const PrivateMaintenance = () => {
   });
   const [errorMessages, setErrorMessages] = useState({});
   const navigate = useNavigate();
-
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
 
   // Guardar fotos persistentes en localStorage
@@ -39,24 +38,19 @@ const PrivateMaintenance = () => {
         navigate('/loginMaintenance');
         return;
       }
-
       const decodedToken = jwtDecode(token);
       const maintenanceId = decodedToken.maintenance_id;
-
       const response = await fetch(`${backendUrl}api/maintenancetasks`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
       if (!response.ok) {
         alert('Error al obtener las tareas de mantenimiento');
         return;
       }
-
       const data = await response.json();
       const filteredTasks = data.filter(task => task.maintenance_id === maintenanceId);
-
       setTasks(filteredTasks);
       setGroupedTasks(groupTasksByRoom(filteredTasks));
 
@@ -73,7 +67,6 @@ const PrivateMaintenance = () => {
       alert('Hubo un problema al obtener las tareas de mantenimiento');
     }
   };
-
   const groupTasksByRoom = (tasks) => {
     return tasks.reduce((acc, task) => {
       if (!acc[task.room_id]) {
@@ -83,7 +76,6 @@ const PrivateMaintenance = () => {
       return acc;
     }, {});
   };
-
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -92,18 +84,15 @@ const PrivateMaintenance = () => {
     }
     fetchMaintenanceTasks();
   }, []);
-
   const handleLogout = () => {
     // Limpiar solo el token, mantener las fotos persistentes
     localStorage.removeItem('token');
     navigate('/loginMaintenance');
   };
-
   const handleRoomClick = (roomId) => {
     setSelectedRoomId(roomId);
     setIsRoomSelected(true);
   };
-
   const handleBackToRooms = () => {
     setIsRoomSelected(false);
     setSelectedRoomId(null);
@@ -231,7 +220,6 @@ const PrivateMaintenance = () => {
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
       <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
         <h2 className="text-center mb-4 text-primary">Tareas de Mantenimiento</h2>
-
         {!isRoomSelected && Object.keys(groupedTasks).length > 0 ? (
           Object.keys(groupedTasks).map((roomId) => {
             const roomTasks = groupedTasks[roomId];
@@ -248,7 +236,6 @@ const PrivateMaintenance = () => {
             );
           })
         ) : null}
-
         {isRoomSelected && (
           <>
             <div className="mt-4">
@@ -358,5 +345,4 @@ const PrivateMaintenance = () => {
     </div>
   );
 };
-
 export default PrivateMaintenance;
