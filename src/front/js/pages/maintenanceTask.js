@@ -4,11 +4,12 @@ import Sidebar from "../component/sidebar";
 import CloudinaryApiHotel from "../component/cloudinaryApiHotel"; 
 
 
+
 const MaintenanceTask = () => {
   const { store, actions } = useContext(Context);
   const [nombre, setNombre] = useState('');
   const [photo, setPhoto] = useState('');
-  const [estado, setEstado] = useState('PENDIENTE');  // Estado por defecto "PENDIENTE"
+  const [condition, setCondition] = useState('PENDIENTE');  // Estado por defecto "PENDIENTE"
   const [idRoom, setIdRoom] = useState('');
   const [idMaintenance, setIdMaintenance] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -17,7 +18,7 @@ const MaintenanceTask = () => {
   const resetForm = () => {
     setNombre('');
     setPhoto('');
-    setEstado('PENDIENTE');  // Resetear a "PENDIENTE"
+    setCondition('PENDIENTE');  // Resetear a "PENDIENTE"
     setIdRoom('');
     setIdMaintenance('');
     setSelectedBranch('');
@@ -189,8 +190,7 @@ const MaintenanceTask = () => {
                 </button>
               )}
             </form>
-
-          </div>
+           </div>
         </div>
 
         <h2>Tareas de Mantenimiento</h2>

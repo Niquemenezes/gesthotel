@@ -10,7 +10,6 @@ import { Home } from "./pages/home";
 import { Demo } from "./pages/demo";
 import { Single } from "./pages/single";
 import { ListaCat } from "./pages/listaCat";
-
 import injectContext from "./store/appContext";
 import { Navbar } from "./component/navbar";
 import EditarCategoria from "./component/editarCategoria";
@@ -18,7 +17,6 @@ import CrearCategoria from "./component/crearCategoria";
 import ListaCategoria from "./component/listaCategoria";
 import Hoteles from "./component/listaHoteles";
 import Branches from "./component/listaBranches";
-
 import ListaRoom from "./component/listaRoom";
 import Maintenance from "./component/listaMaintenance";
 import LoginHouseKeeper from "./pages/loginHouseKeeper";
@@ -34,6 +32,12 @@ import LoginMaintenance from "./pages/loginMaintenance";
 import PrivateMaintenance from './pages/privateMaintenance';
 import ProtectedPrivateMaintenance from './pages/ProtectedPrivateMaintenance';
 import { Footer } from "./component/footer";
+import Chatbot from "./component/Chatbot";
+
+
+
+
+
 
 
 
@@ -78,7 +82,8 @@ const Layout = () => {
                         <Route element={<MaintenanceTask />} path="/maintenanceTask" />
                         <Route element={<LoginMaintenance />} path="/loginMaintenance" />
                         <Route element={<ProtectedPrivateMaintenance><PrivateMaintenance /></ProtectedPrivateMaintenance>} path="/privateMaintenance" />
-                        <Route element={<h1>Not found!</h1>} />
+                        <Route element={<Chatbot />} path="/asistente" />
+                        <Route element={<h1>Not found!</h1>} path="*" />
                     </Routes>
                     <Footer />
                 </ScrollToTop>
