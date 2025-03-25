@@ -38,11 +38,6 @@ import Chatbot from "./component/chatBot";
 
 
 
-
-
-
-
-
 const Layout = () => {
     // Basename: Usado si el proyecto está en un subdirectorio, configurado en .env
     const basename = process.env.BASENAME || "";
@@ -85,9 +80,10 @@ const Layout = () => {
                         <Route element={<h1>Not found!</h1>} path="*" />
                     </Routes>
                     <Chatbot />
-                    <Footer />
+                   
                 </ScrollToTop>
-            </BrowserRouter>
+                </BrowserRouter>
+                <Footer />
         </div>
     );
 };

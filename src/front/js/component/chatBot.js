@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "../../styles/chatbot.css";
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,12 +29,12 @@ const Chatbot = () => {
       } else {
         setConversation((prev) => [
           ...prev,
-          { role: "assistant", content: "❌ Error al procesar la respuesta del asistente." },
+          { role: "assistant", content: "Error al procesar la respuesta del asistente." },
         ]);
         if (data.error) setError(data.error);
       }
     } catch (err) {
-      setError("❌ Error de conexión con el servidor.");
+      setError("Error de conexión con el servidor.");
     } finally {
       setMessage("");
       setLoading(false);
@@ -88,39 +89,7 @@ const Chatbot = () => {
 
           {error && <div className="alert alert-danger mt-2">{error}</div>}
 
-          <style>{`
-            .chatbot-card {
-              width: 320px;
-              height: 430px;
-              border-radius: 15px;
-              background: #fff;
-            }
-            .chat-box {
-              border: 1px solid #ccc;
-              border-radius: 8px;
-              padding: 0.75rem;
-              height: 220px;
-              overflow-y: auto;
-              background: #f9f9f9;
-            }
-            .chat-msg {
-              margin-bottom: 0.6rem;
-              padding: 0.4rem 0.6rem;
-              border-radius: 10px;
-              max-width: 80%;
-              font-size: 0.9rem;
-            }
-            .chat-msg.user {
-              background-color: #d1e7dd;
-              text-align: right;
-              margin-left: auto;
-            }
-            .chat-msg.assistant {
-              background-color: #e2e3e5;
-              text-align: left;
-              margin-right: auto;
-            }
-          `}</style>
+          
         </div>
       ) : (
         <button

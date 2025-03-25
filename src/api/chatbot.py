@@ -12,9 +12,9 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @chatbot_api.route('/chat', methods=['POST'])
 def chat():
-    print("⚡ Petición recibida en /chat")
+    print(" Petición recibida en /chat")
     data = request.get_json()
-    print("🟢 Mensaje recibido:", data)
+    print(" Mensaje recibido:", data)
     data = request.get_json()
     user_message = data.get("message", "")
 

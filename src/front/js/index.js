@@ -9,6 +9,8 @@ import "../styles/index.css";
 //import your own components
 import Layout from "./layout";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+
 
 
 //render your react application
