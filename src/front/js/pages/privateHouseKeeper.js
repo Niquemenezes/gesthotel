@@ -139,7 +139,8 @@ const PrivateHouseKeeper = () => {
       nombre: nombre || undefined,
       room_id: selectedRoomId,
       housekeeper_id: housekeeperId,
-      condition: maintenanceCondition // Usamos el estado de condition aquí
+      condition: maintenanceCondition, // Usamos el estado de condition aquí
+      photo_url: maintenancePhoto,  // Aquí pasamos la URL de la foto
     };
 
     try {
@@ -164,7 +165,7 @@ const PrivateHouseKeeper = () => {
       } else {
         const errorData = await response.json();
         console.error('Error al crear la tarea de mantenimiento:', errorData.message);
-        alert('Error al crear la tarea de mantenimiento: ' + errorData.message);
+        alert('Error al crear la tarea de mantenimiento: ' + JSON.stringify(errorData));
       }
     } catch (error) {
       console.error('Error al crear la tarea de mantenimiento:', error);
@@ -175,6 +176,7 @@ const PrivateHouseKeeper = () => {
   const resetForm = () => {
     setNombre('');
     setMaintenanceCondition('Pendiente'); // Reseteamos la condición a 'Pendiente'
+    setPhotoUrl(''); // Limpiamos la URL de la foto también
   };
 
   const groupedTasks = tasks.reduce((acc, task) => {
@@ -194,9 +196,13 @@ const PrivateHouseKeeper = () => {
   };
 
   // Función para manejar la carga de fotos para la tarea de mantenimiento
-  const handleMaintenancePhotoChange = (photoUrl) => {
+  const handleMaintenancePhotoChange = (taskId, photoUrl) => {
     console.log('URL de la foto de mantenimiento:', photoUrl); // Verifica la URL de la foto
-    setMaintenancePhoto(photoUrl); // Guardamos la URL de la foto para la tarea de mantenimiento
+    setMaintenancePhoto(photoUrl);
+    // setMaintenancePhoto(prevState => ({
+    //   ...prevState,
+    //   [taskId]: photoUrl,
+    // }));
   };
 
   // Función para actualizar el estado de una tarea de housekeeper
