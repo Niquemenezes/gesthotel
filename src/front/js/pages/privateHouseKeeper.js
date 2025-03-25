@@ -119,7 +119,7 @@ const PrivateHouseKeeper = () => {
     };
 
     try {
-      const response = await fetch(`${backendUrl}api/maintenancetasks`, { 
+      const response = await fetch(`${backendUrl}api/maintenancetasks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +130,13 @@ const PrivateHouseKeeper = () => {
       if (response.ok) {
         const data = await response.json();
         alert('Tarea de mantenimiento creada con éxito');
+
+        // Actualizar el estado local con la nueva tarea
+        setMaintenanceTasks((prevTasks) => [...prevTasks, data]); // Agregamos la nueva tarea al estado
+
+        // Resetear el formulario
         resetForm();
+
       } else {
         const errorData = await response.json();
         console.error('Error al crear la tarea de mantenimiento:', errorData.message);
