@@ -8,11 +8,28 @@ const PrivateMaintenance = () => {
   const [groupedTasks, setGroupedTasks] = useState({});
   const [isRoomSelected, setIsRoomSelected] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
-  const [taskPhotos, setTaskPhotos] = useState({}); // { taskId: photoUrl }
-  const [errorMessages, setErrorMessages] = useState({}); // { taskId: errorMessage }
+  const [taskPhotos, setTaskPhotos] = useState(() => {
+    // Cargar fotos persistentes desde localStorage
+    const savedPhotos = localStorage.getItem('maintenanceTaskPhotos');
+    return savedPhotos ? JSON.parse(savedPhotos) : {};
+  });
+  const [errorMessages, setErrorMessages] = useState({});
   const navigate = useNavigate();
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
+
+  // Guardar fotos persistentes en localStorage
+  useEffect(() => {
+    const photosToSave = {};
+    Object.keys(taskPhotos).forEach(taskId => {
+      const task = tasks.find(t => t.id === parseInt(taskId));
+      // Solo guardar fotos de tareas finalizadas
+      if (task && task.condition === 'FINALIZADA') {
+        photosToSave[taskId] = taskPhotos[taskId];
+      }
+    });
+    localStorage.setItem('maintenanceTaskPhotos', JSON.stringify(photosToSave));
+  }, [taskPhotos, tasks]);
 
   const fetchMaintenanceTasks = async () => {
     try {
@@ -42,6 +59,15 @@ const PrivateMaintenance = () => {
 
       setTasks(filteredTasks);
       setGroupedTasks(groupTasksByRoom(filteredTasks));
+
+      // Combinar fotos del backend con las locales persistentes
+      const updatedPhotos = { ...taskPhotos };
+      filteredTasks.forEach(task => {
+        if (task.photo_url) {
+          updatedPhotos[task.id] = task.photo_url;
+        }
+      });
+      setTaskPhotos(updatedPhotos);
     } catch (error) {
       console.error('Error al obtener las tareas:', error);
       alert('Hubo un problema al obtener las tareas de mantenimiento');
@@ -68,6 +94,7 @@ const PrivateMaintenance = () => {
   }, []);
 
   const handleLogout = () => {
+    // Limpiar solo el token, mantener las fotos persistentes
     localStorage.removeItem('token');
     navigate('/loginMaintenance');
   };
@@ -90,21 +117,77 @@ const PrivateMaintenance = () => {
         return;
       }
   
-      // 1. Actualización optimista inmediata en el frontend
+      const currentPhoto = taskPhotos[taskId] || tasks.find(t => t.id === taskId)?.photo_url || null;
+      const updatedTask = {
+        condition: newCondition,
+        photo_url: currentPhoto
+      };
+
       setTasks(prevTasks => 
         prevTasks.map(task => 
-          task.id === taskId ? { ...task, condition: newCondition } : task
+          task.id === taskId ? { ...task, ...updatedTask } : task
         )
       );
   
-      setGroupedTasks(prevGroupedTasks => ({
-        ...prevGroupedTasks,
-        [selectedRoomId]: prevGroupedTasks[selectedRoomId].map(task =>
-          task.id === taskId ? { ...task, condition: newCondition } : task
+      setGroupedTasks(prevGroupedTasks => {
+        const updated = { ...prevGroupedTasks };
+        Object.keys(updated).forEach(roomId => {
+          updated[roomId] = updated[roomId].map(task =>
+            task.id === taskId ? { ...task, ...updatedTask } : task
+          );
+        });
+        return updated;
+      });
+
+      const response = await fetch(`${backendUrl}api/maintenancetasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedTask),
+      });
+  
+      if (!response.ok) throw new Error('Error al actualizar');
+      
+      const updatedTaskFromBackend = await response.json();
+      
+      if (updatedTaskFromBackend.photo_url) {
+        setTaskPhotos(prev => ({
+          ...prev,
+          [taskId]: updatedTaskFromBackend.photo_url
+        }));
+      }
+  
+      if (newCondition === 'FINALIZADA') {
+        setTimeout(handleBackToRooms, 500);
+      }
+  
+    } catch (error) {
+      console.error('Error:', error);
+      fetchMaintenanceTasks();
+    }
+  };
+
+  const handlePhotoUpload = async (taskId, photoUrl) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const newPhotos = { ...taskPhotos, [taskId]: photoUrl };
+      setTaskPhotos(newPhotos);
+      
+      setTasks(prev => prev.map(t => 
+        t.id === taskId ? { ...t, photo_url: photoUrl } : t
+      ));
+
+      setGroupedTasks(prev => ({
+        ...prev,
+        [selectedRoomId]: prev[selectedRoomId].map(t =>
+          t.id === taskId ? { ...t, photo_url: photoUrl } : t
         ),
       }));
-  
-      // 2. Petición al backend
+      
       const response = await fetch(`${backendUrl}api/maintenancetasks/${taskId}`, {
         method: 'PUT',
         headers: {
@@ -112,41 +195,36 @@ const PrivateMaintenance = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          condition: newCondition,
-          maintenance_id: jwtDecode(token).maintenance_id,
-          photo: taskPhotos[taskId] || null // Incluir la foto si existe
+          photo_url: photoUrl,
+          condition: tasks.find(t => t.id === taskId)?.condition || 'PENDIENTE'
         }),
       });
-  
-      // 3. Si falla la petición, recargamos los datos originales
-      if (!response.ok) {
-        fetchMaintenanceTasks();
-        return;
-      }
-  
-      // 4. Si es FINALIZADA, volver a la vista de habitaciones
-      if (newCondition === 'FINALIZADA') {
-        setTimeout(handleBackToRooms, 500);
-      }
-  
+
+      if (!response.ok) throw new Error('Error al guardar foto');
+      
+      const updatedTask = await response.json();
+      setTaskPhotos(prev => ({ ...prev, [taskId]: updatedTask.photo_url }));
+
     } catch (error) {
-      console.error('Error:', error);
-      fetchMaintenanceTasks(); // Sincronizar con el estado actual del backend
+      console.error('Error al guardar foto:', error);
+      setErrorMessages(prev => ({ ...prev, [taskId]: 'Error al guardar foto' }));
     }
   };
 
-  const handlePhotoUpload = (taskId, photoUrl) => {
-    setTaskPhotos(prev => ({
-      ...prev,
-      [taskId]: photoUrl
-    }));
+  const handlePhotoError = (taskId, errorMessage) => {
+    setErrorMessages(prev => ({ ...prev, [taskId]: errorMessage }));
   };
 
-  const handlePhotoError = (taskId, errorMessage) => {
-    setErrorMessages(prev => ({
-      ...prev,
-      [taskId]: errorMessage
-    }));
+  const handleFilterTasks = (view) => {
+    navigate('/task-filter', { 
+      state: { 
+        view,
+        tasks: tasks.map(task => ({
+          ...task,
+          photo: taskPhotos[task.id] || task.photo_url || null
+        }))
+      } 
+    });
   };
 
   return (
@@ -187,17 +265,16 @@ const PrivateMaintenance = () => {
                       </span>
                     </p>
 
-                    {/* Componente Cloudinary para cada tarea */}
                     <div className="mb-3">
                       <label htmlFor="photo" className="form-label">Foto</label>
                       <CloudinaryApiHotel 
                         setPhotoUrl={(url) => handlePhotoUpload(task.id, url)}
                         setErrorMessage={(msg) => handlePhotoError(task.id, msg)}
                       />
-                      {(taskPhotos[task.id] || task.photo) && (
+                      {(taskPhotos[task.id] || task.photo_url) && (
                         <div className="mt-2">
                           <img 
-                            src={taskPhotos[task.id] || task.photo} 
+                            src={taskPhotos[task.id] || task.photo_url} 
                             alt={`Tarea ${task.nombre}`} 
                             className="img-thumbnail"
                             style={{ maxWidth: '200px' }}
@@ -259,19 +336,19 @@ const PrivateMaintenance = () => {
           <div className="d-flex justify-content-around">
             <button 
               className="btn btn-primary" 
-              onClick={() => navigate('/task-filter', { state: { view: 'all' } })}
+              onClick={() => handleFilterTasks('all')}
             >
               Todas
             </button>
             <button 
               className="btn btn-warning" 
-              onClick={() => navigate('/task-filter', { state: { view: 'PENDIENTE' } })}
+              onClick={() => handleFilterTasks('PENDIENTE')}
             >
               Pendientes
             </button>
             <button 
               className="btn btn-success" 
-              onClick={() => navigate('/task-filter', { state: { view: 'FINALIZADA' } })}
+              onClick={() => handleFilterTasks('FINALIZADA')}
             >
               Finalizadas
             </button>

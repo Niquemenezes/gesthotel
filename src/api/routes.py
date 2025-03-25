@@ -1174,20 +1174,19 @@ def create_maintenance_task():
 
     try:
         nombre = data.get('nombre')
-        photo = data.get('photo', None)
-        condition = data.get('condition', 'PENDIENTE')  # Valor por defecto 'PENDIENTE'
+        photo_url = data.get('photo_url', None)  # Cambiado a photo_url para coincidir con el modelo
+        condition = data.get('condition', 'PENDIENTE')
         room_id = data.get('room_id', None)
         maintenance_id = data.get('maintenance_id', None)
         housekeeper_id = data.get('housekeeper_id', None)
         category_id = data.get('category_id', None)
 
-        # Validar que el status sea uno de los valores permitidos
         if condition not in ['PENDIENTE', 'EN PROCESO', 'FINALIZADA']:
             return jsonify({"message": "Estado no válido"}), 400
 
         new_task = MaintenanceTask(
             nombre=nombre,
-            photo=photo,
+            photo_url=photo_url,  # Usando photo_url
             condition=condition,
             room_id=room_id,
             maintenance_id=maintenance_id,
@@ -1220,9 +1219,11 @@ def update_maintenance_task(id):
         if 'nombre' in data:
             maintenance_task.nombre = data['nombre']
             
-        if 'photo' in data:
-            maintenance_task.photo_url = data['photo']  # Usar photo_url que es el nombre correcto en el modelo
+        # Manejo mejorado de la foto - siempre actualizar si viene en el request
+        if 'photo_url' in data:
+            maintenance_task.photo_url = data['photo_url'] if data['photo_url'] else None
             
+        # Manejo robusto del campo condition
         if 'condition' in data:
             new_condition = data['condition']
             if new_condition not in ['PENDIENTE', 'EN PROCESO', 'FINALIZADA']:
@@ -1234,6 +1235,10 @@ def update_maintenance_task(id):
         for field in optional_fields:
             if field in data:
                 setattr(maintenance_task, field, data[field])
+
+        # Forzar la actualización del timestamp (si tu modelo lo tiene)
+        if hasattr(maintenance_task, 'updated_at'):
+            maintenance_task.updated_at = datetime.utcnow()
 
         db.session.commit()
 
@@ -1253,8 +1258,7 @@ def update_maintenance_task(id):
         db.session.rollback()
         return jsonify({
             "message": "Error al actualizar la tarea",
-            "error": str(e),
-            "received_data": data  # Para debugging
+            "error": str(e)
         }), 400
 
 
