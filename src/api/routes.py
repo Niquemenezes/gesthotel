@@ -1201,7 +1201,7 @@ def create_maintenance_task():
 
     try:
         nombre = data.get('nombre')
-        photo = data.get('photo', None)
+        photo_url = data.get('photo_url', None)
         condition = data.get('condition', None)
         room_id = data.get('room_id', None)
         maintenance_id = data.get('maintenance_id', None)
@@ -1210,7 +1210,7 @@ def create_maintenance_task():
 
         new_task = MaintenanceTask(
             nombre=nombre,
-            photo=photo,
+            photo_url=photo_url,
             condition=condition,
             room_id=room_id,
             maintenance_id=maintenance_id,
@@ -1240,7 +1240,7 @@ def update_maintenance_task(id):
 
     try:
         maintenance_task.nombre = data.get('nombre', maintenance_task.nombre)
-        maintenance_task.photo = data.get('photo', maintenance_task.photo)
+        maintenance_task.photo_url = data.get('photo', maintenance_task.photo_url)
         maintenance_task.status = data.get('status', maintenance_task.status)  # Cambio de condition a status
         maintenance_task.room_id = data.get('room_id', maintenance_task.room_id)
         maintenance_task.maintenance_id = data.get('maintenance_id', maintenance_task.maintenance_id)

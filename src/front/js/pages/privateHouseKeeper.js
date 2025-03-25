@@ -5,12 +5,14 @@ import CloudinaryApiHotel from '../component/cloudinaryApiHotel'; // Asegúrate 
 
 const PrivateHouseKeeper = () => {
   const [tasks, setTasks] = useState([]);
+  const [maintenanceTasks, setMaintenanceTasks] = useState([]); // Tareas de mantenimiento
   const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [isRoomSelected, setIsRoomSelected] = useState(false);
   const [nombre, setNombre] = useState('');
   const [housekeeperId, setHousekeeperId] = useState(null);
   const [taskPhotos, setTaskPhotos] = useState({}); // Estado para manejar las fotos individuales de cada tarea
   const [maintenancePhoto, setMaintenancePhoto] = useState(''); // Foto para la tarea de mantenimiento
+  const [maintenanceCondition, setMaintenanceCondition] = useState('Pendiente');
   const navigate = useNavigate();
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
@@ -59,6 +61,26 @@ const PrivateHouseKeeper = () => {
     }
   }, [housekeeperId]);
 
+  const handleFetchMaintenanceTasks = async () => {
+    try {
+      const response = await fetch(`${backendUrl}api/maintenancetasks`);
+      if (!response.ok) {
+        throw new Error('Error al obtener las tareas de mantenimiento');
+      }
+      const data = await response.json();
+      // Filtramos solo las tareas de mantenimiento que estén pendientes
+      const filteredMaintenanceTasks = data.filter(task => task.condition === 'Pendiente');
+      setMaintenanceTasks(filteredMaintenanceTasks); // Guardamos las tareas de mantenimiento filtradas
+    } catch (error) {
+      console.error('Error al obtener las tareas de mantenimiento:', error);
+      alert('Hubo un error al obtener las tareas de mantenimiento');
+    }
+  };
+
+  useEffect(() => {
+    handleFetchMaintenanceTasks(); // Cargar las tareas de mantenimiento cuando el componente se monte
+  }, []);
+
   const handleRoomClick = (roomId) => {
     setSelectedRoomId(roomId);
     setIsRoomSelected(true);
@@ -92,7 +114,8 @@ const PrivateHouseKeeper = () => {
     const taskData = {
       nombre: nombre || undefined,
       room_id: selectedRoomId,
-      housekeeper_id: housekeeperId
+      housekeeper_id: housekeeperId,
+      condition: maintenanceCondition // Usamos el estado de condition aquí
     };
 
     try {
@@ -121,6 +144,7 @@ const PrivateHouseKeeper = () => {
 
   const resetForm = () => {
     setNombre('');
+    setMaintenanceCondition('Pendiente'); // Reseteamos la condición a 'Pendiente'
   };
 
   const groupedTasks = tasks.reduce((acc, task) => {
@@ -263,7 +287,7 @@ const PrivateHouseKeeper = () => {
                     />
                   </div>
 
-                  {/* <div className="form-group mb-3">
+                  <div className="form-group mb-3">
                     <strong>Foto: </strong>
                     <CloudinaryApiHotel
                       taskId="maintenance"
@@ -277,7 +301,7 @@ const PrivateHouseKeeper = () => {
                         style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }}
                       />
                     )}
-                  </div> */}
+                  </div>
 
                   <button
                     type="button"
@@ -286,6 +310,20 @@ const PrivateHouseKeeper = () => {
                   >
                     Crear Tarea
                   </button>
+
+                  {/* Listado de tareas de mantenimiento */}
+                  <div className="mt-4">
+                    <h4>Listado de Tareas de Mantenimiento</h4>
+                    {maintenanceTasks.length > 0 ? (
+                      <ul>
+                        {maintenanceTasks.map(task => (
+                          <li key={task.id}>{task.nombre} - {task.condition}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>No hay tareas de mantenimiento disponibles.</p>
+                    )}
+                  </div>
                 </form>
               </div>
             </div>
