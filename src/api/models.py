@@ -210,14 +210,14 @@ class MaintenanceTask(db.Model):
     __tablename__ = 'maintenancetask'
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
-    photo_url = db.Column(db.String(300), nullable=True)
+    photo_url = db.Column(db.String(500), nullable=True)  # Longitud aumentada a 500
     condition = db.Column(db.String(120), nullable=True)
-    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)  # Cambiar a nullable=True
-    maintenance_id = db.Column(db.Integer, db.ForeignKey('maintenance.id'), nullable=True)  # Cambiar a nullable=True
-    housekeeper_id = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=True)  # Cambiar a nullable=True
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)  # Cambiar a nullable=True
+    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)
+    maintenance_id = db.Column(db.Integer, db.ForeignKey('maintenance.id'), nullable=True)
+    housekeeper_id = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
 
-    # Relaciones
+    # Relaciones (se mantienen igual)
     room = db.relationship('Room')
     maintenance = db.relationship('Maintenance')
     housekeeper = db.relationship('HouseKeeper')
@@ -230,7 +230,7 @@ class MaintenanceTask(db.Model):
         return {
             "id": self.id,
             "nombre": self.nombre,
-            "photo_url": self.photo_url,
+            "photo_url": self.photo_url if self.photo_url else None,  # Aseguramos devolver null si no hay foto
             "condition": self.condition,
             "room": self.room.serialize() if self.room else None,
             "maintenance": self.maintenance.serialize() if self.maintenance else None,

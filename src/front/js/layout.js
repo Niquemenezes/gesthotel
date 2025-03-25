@@ -1,4 +1,3 @@
-// src/layout.js
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ScrollToTop from "./component/scrollToTop";
@@ -36,6 +35,7 @@ import Chatbot from "./component/chatBot";
 
 
 
+import TaskFilterView from './pages/TaskFilterView'; // Importar el nuevo componente
 
 
 const Layout = () => {
@@ -46,6 +46,7 @@ const Layout = () => {
     if (!process.env.BACKEND_URL || process.env.BACKEND_URL === "") {
         return <BackendURL />;
     }
+
     return (
         <div>
             <BrowserRouter basename={basename}>
@@ -78,9 +79,16 @@ const Layout = () => {
                         <Route element={<LoginMaintenance />} path="/loginMaintenance" />
                         <Route element={<ProtectedPrivateMaintenance><PrivateMaintenance /></ProtectedPrivateMaintenance>} path="/privateMaintenance" />
                         <Route element={<h1>Not found!</h1>} path="*" />
-                    </Routes>
+                        <Route element={<TaskFilterView />} path="/task-filter" />
+                        <Route element={<h1>Not found!</h1>} />
+                    
+                   
                     <Chatbot />
                    
+                        {/* Nueva ruta para TaskFilterView */}
+                      
+                    </Routes>
+                    <Footer />
                 </ScrollToTop>
                 </BrowserRouter>
                 <Footer />
