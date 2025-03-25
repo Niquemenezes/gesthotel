@@ -1,4 +1,3 @@
-// src/layout.js
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ScrollToTop from "./component/scrollToTop";
@@ -34,8 +33,7 @@ import LoginMaintenance from "./pages/loginMaintenance";
 import PrivateMaintenance from './pages/privateMaintenance';
 import ProtectedPrivateMaintenance from './pages/ProtectedPrivateMaintenance';
 import { Footer } from "./component/footer";
-
-
+import TaskFilterView from './pages/TaskFilterView'; // Importar el nuevo componente
 
 
 const Layout = () => {
@@ -46,11 +44,12 @@ const Layout = () => {
     if (!process.env.BACKEND_URL || process.env.BACKEND_URL === "") {
         return <BackendURL />;
     }
+
     return (
         <div>
             <BrowserRouter basename={basename}>
                 <ScrollToTop>
-                <Navbar />
+                    <Navbar />
                     <Routes>
                         <Route element={<Home />} path="/" />
                         <Route element={<ListaCat />} path="/listaCat" />
@@ -77,9 +76,11 @@ const Layout = () => {
                         <Route element={<MaintenanceTask />} path="/maintenanceTask" />
                         <Route element={<LoginMaintenance />} path="/loginMaintenance" />
                         <Route element={<ProtectedPrivateMaintenance><PrivateMaintenance /></ProtectedPrivateMaintenance>} path="/privateMaintenance" />
+                        {/* Nueva ruta para TaskFilterView */}
+                        <Route element={<TaskFilterView />} path="/task-filter" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
-                    <Footer/>
+                    <Footer />
                 </ScrollToTop>
             </BrowserRouter>
         </div>

@@ -1169,21 +1169,25 @@ def get_maintenance_task(id):
 
 @api.route('/maintenancetasks', methods=['POST'])
 def create_maintenance_task():
+    """Crear una nueva tarea de mantenimiento"""
     data = request.get_json()
 
     try:
         nombre = data.get('nombre')
-        photo = data.get('photo', None)
-        status = data.get('status', None)  # Cambio de condition a status
+        photo_url = data.get('photo_url', None)  # Cambiado a photo_url para coincidir con el modelo
+        condition = data.get('condition', 'PENDIENTE')
         room_id = data.get('room_id', None)
         maintenance_id = data.get('maintenance_id', None)
         housekeeper_id = data.get('housekeeper_id', None)
         category_id = data.get('category_id', None)
 
+        if condition not in ['PENDIENTE', 'EN PROCESO', 'FINALIZADA']:
+            return jsonify({"message": "Estado no válido"}), 400
+
         new_task = MaintenanceTask(
             nombre=nombre,
-            photo=photo,
-            status=status,  # Cambio de condition a status
+            photo_url=photo_url,  # Usando photo_url
+            condition=condition,
             room_id=room_id,
             maintenance_id=maintenance_id,
             housekeeper_id=housekeeper_id,
@@ -1211,21 +1215,51 @@ def update_maintenance_task(id):
     data = request.get_json()
 
     try:
-        maintenance_task.nombre = data.get('nombre', maintenance_task.nombre)
-        maintenance_task.photo = data.get('photo', maintenance_task.photo)
-        maintenance_task.status = data.get('status', maintenance_task.status)  # Cambio de condition a status
-        maintenance_task.room_id = data.get('room_id', maintenance_task.room_id)
-        maintenance_task.maintenance_id = data.get('maintenance_id', maintenance_task.maintenance_id)
-        maintenance_task.housekeeper_id = data.get('housekeeper_id', maintenance_task.housekeeper_id)
-        maintenance_task.category_id = data.get('category_id', maintenance_task.category_id)
+        # Actualización condicional de campos
+        if 'nombre' in data:
+            maintenance_task.nombre = data['nombre']
+            
+        # Manejo mejorado de la foto - siempre actualizar si viene en el request
+        if 'photo_url' in data:
+            maintenance_task.photo_url = data['photo_url'] if data['photo_url'] else None
+            
+        # Manejo robusto del campo condition
+        if 'condition' in data:
+            new_condition = data['condition']
+            if new_condition not in ['PENDIENTE', 'EN PROCESO', 'FINALIZADA']:
+                return jsonify({"message": "Estado no válido. Valores permitidos: PENDIENTE, EN PROCESO, FINALIZADA"}), 400
+            maintenance_task.condition = new_condition
+
+        # Campos opcionales (solo actualizar si vienen en el request)
+        optional_fields = ['room_id', 'maintenance_id', 'housekeeper_id', 'category_id']
+        for field in optional_fields:
+            if field in data:
+                setattr(maintenance_task, field, data[field])
+
+        # Forzar la actualización del timestamp (si tu modelo lo tiene)
+        if hasattr(maintenance_task, 'updated_at'):
+            maintenance_task.updated_at = datetime.utcnow()
 
         db.session.commit()
 
-        return jsonify(maintenance_task.serialize()), 200
+        return jsonify({
+            "message": "Tarea actualizada exitosamente",
+            "task": maintenance_task.serialize()
+        }), 200
 
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({
+            "message": "Error de integridad en la base de datos",
+            "error": str(e.orig)
+        }), 400
+        
     except Exception as e:
         db.session.rollback()
-        return jsonify({"message": "Error al actualizar la tarea de mantenimiento", "error": str(e)}), 400
+        return jsonify({
+            "message": "Error al actualizar la tarea",
+            "error": str(e)
+        }), 400
 
 
 @api.route('/maintenancetasks/<int:id>', methods=['DELETE'])
