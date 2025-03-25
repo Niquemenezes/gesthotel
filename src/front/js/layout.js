@@ -32,7 +32,7 @@ import LoginMaintenance from "./pages/loginMaintenance";
 import PrivateMaintenance from './pages/privateMaintenance';
 import ProtectedPrivateMaintenance from './pages/ProtectedPrivateMaintenance';
 import { Footer } from "./component/footer";
-import Chatbot from "./component/Chatbot";
+import Chatbot from "./component/chatBot";
 
 
 
@@ -82,9 +82,9 @@ const Layout = () => {
                         <Route element={<MaintenanceTask />} path="/maintenanceTask" />
                         <Route element={<LoginMaintenance />} path="/loginMaintenance" />
                         <Route element={<ProtectedPrivateMaintenance><PrivateMaintenance /></ProtectedPrivateMaintenance>} path="/privateMaintenance" />
-                        <Route element={<Chatbot />} path="/asistente" />
                         <Route element={<h1>Not found!</h1>} path="*" />
                     </Routes>
+                    <Chatbot />
                     <Footer />
                 </ScrollToTop>
             </BrowserRouter>

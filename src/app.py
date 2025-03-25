@@ -23,7 +23,10 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 # CORS para permitir acceso desde React
-CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "*"}}, allow_headers=["Content-Type", "Authorization"])
+
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
+
 
 # JWT
 jwt = JWTManager(app)
@@ -48,8 +51,11 @@ setup_commands(app)
 app.register_blueprint(api, url_prefix='/api')
 
 # Registrar la ruta del chatbot
+# src/app.py
+
 from api.chatbot import chatbot_api
-app.register_blueprint(chatbot_api)
+app.register_blueprint(chatbot_api, url_prefix="/api")
+
 
 # Manejo de errores
 @app.errorhandler(APIException)
