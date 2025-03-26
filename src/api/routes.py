@@ -1072,7 +1072,7 @@ def create_housekeeper_task():
     data = request.get_json()
     
     # Validate if all required fields are in the request
-    if not data.get('nombre') or not data.get('photo') or not data.get('condition') or not data.get('assignment_date') or not data.get('submission_date'):
+    if not data.get('nombre') or not data.get('photo_url') or not data.get('condition') or not data.get('assignment_date') or not data.get('submission_date'):
         return jsonify({"error": "Missing required data"}), 400
 
     # Check if room and housekeeper IDs are valid
@@ -1085,7 +1085,7 @@ def create_housekeeper_task():
     # Create new HouseKeeperTask
     new_task = HouseKeeperTask(
         nombre=data['nombre'],
-        photo=data['photo'],
+        photo_url=data['photo_url'],  # Correct usage of 'photo_url'
         condition=data['condition'],
         assignment_date=data['assignment_date'],
         submission_date=data['submission_date'],
@@ -1098,11 +1098,19 @@ def create_housekeeper_task():
 
     return jsonify(new_task.serialize()), 201
 
+
 # READ all HouseKeeperTasks
 @api.route('/housekeeper_tasks', methods=['GET'])
 def get_all_housekeeper_tasks():
-    tasks = HouseKeeperTask.query.all()
+    status = request.args.get('status')  # Obtener el parámetro de estado de la query string
+    
+    if status:
+        tasks = HouseKeeperTask.query.filter_by(condition=status).all()  # Filtrar por estado
+    else:
+        tasks = HouseKeeperTask.query.all()  # Si no se especifica el estado, devuelve todas las tareas
+    
     return jsonify([task.serialize() for task in tasks]), 200
+
 
 # READ a single HouseKeeperTask by ID
 @api.route('/housekeeper_task/<int:id>', methods=['GET'])
@@ -1157,11 +1165,64 @@ def delete_housekeeper_task(id):
 
     return jsonify({"message": "HouseKeeperTask deleted successfully"}), 200
 
+
+# Actualizar el estado de la tarea a 'terminado'
+@api.route('/housekeeper_task/mark_completed/<int:id>', methods=['PUT'])
+def mark_task_completed(id):
+    task = HouseKeeperTask.query.get(id)
+
+    if task is None:
+        return jsonify({"error": "HouseKeeperTask not found"}), 404
+    
+    # Cambiar el estado de la tarea a 'terminado'
+    task.condition = 'terminado'
+    
+    # Aquí puedes agregar la fecha de finalización si lo necesitas, por ejemplo:
+    task.submission_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    db.session.commit()
+
+    return jsonify(task.serialize()), 200
+
+
 @api.route('/maintenancetasks', methods=['GET'])
 def get_all_maintenance_tasks():
     """Obtener todas las tareas de mantenimiento"""
     maintenance_tasks = MaintenanceTask.query.all()
     return jsonify([task.serialize() for task in maintenance_tasks]), 200
+
+
+
+@api.route('/maintenancetasks/filter', methods=['GET'])
+def get_maintenance_tasks_filtered():
+    """Obtener tareas de mantenimiento filtradas por housekeeper_id y room_id"""
+    
+    # Obtenemos los parámetros de la query string
+    housekeeper_id = request.args.get('housekeeper_id', type=int)  # El id del housekeeper
+    room_id = request.args.get('room_id', type=int)  # El id de la habitación
+    
+    # Verificamos si se proporciona al menos un parámetro para filtrar
+    if not housekeeper_id and not room_id:
+        return jsonify({"message": "Se requiere al menos housekeeper_id o room_id para filtrar."}), 400
+    
+    # Iniciamos la consulta
+    query = MaintenanceTask.query
+    
+    # Filtramos por housekeeper_id si está presente
+    if housekeeper_id:
+        query = query.filter(MaintenanceTask.housekeeper_id == housekeeper_id)
+    
+    # Filtramos por room_id si está presente
+    if room_id:
+        query = query.filter(MaintenanceTask.room_id == room_id)
+    
+    # Obtenemos las tareas filtradas
+    maintenance_tasks = query.all()
+    
+    # Devolvemos las tareas en formato JSON
+    return jsonify([task.serialize() for task in maintenance_tasks]), 200
+
+
 
 
 @api.route('/maintenancetasks/<int:id>', methods=['GET'])
@@ -1283,6 +1344,41 @@ def delete_maintenance_task(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": "Error al eliminar la tarea de mantenimiento", "error": str(e)}), 400
+    
+
+@app.route('/api/creartarea', methods=['POST'])
+def create_maintenance_task_v2():
+    data = request.get_json()
+
+    # Validación básica de datos
+    if not data.get('nombre'):
+        return jsonify({"message": "El nombre de la tarea es obligatorio"}), 400
+    if not data.get('room_id'):
+        return jsonify({"message": "La habitación es obligatoria"}), 400
+    if not data.get('housekeeper_id'):
+        return jsonify({"message": "El ID del housekeeper es obligatorio"}), 400
+
+    # Si no hay foto, establecemos photo_url como None
+    # photo_url = data.get('photo_url', None)
+
+    try:
+        # Crear la tarea de mantenimiento
+        new_task = MaintenanceTask(
+            nombre=data['nombre'],
+            room_id=data['room_id'],
+            housekeeper_id=data['housekeeper_id'],
+            # photo_url=photo_url
+        )
+        db.session.add(new_task)
+        db.session.commit()
+
+        return jsonify(new_task.serialize()), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Error al crear la tarea de mantenimiento", "error": str(e)}), 400
+
+
 
 
 # @api.route('/rooms', methods=['GET'])

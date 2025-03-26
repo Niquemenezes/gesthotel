@@ -7,10 +7,10 @@ import { Context } from "../store/appContext";
 const HouseKeeperTask = () => {
   const { store, actions } = useContext(Context);
   const { housekeepers, rooms, houseKeeperTasks } = store;
-
+  // const [condition, setCondition] = useState('Pendiente');
   const [nombre, setNombre] = useState('');
   const [photo, setPhoto] = useState('');
-  const [assignmentDate, setAssignmentDate] = useState('');
+  const [assignmentDate, setAssignmentDate] = useState(new Date().toISOString().split('T')[0]);
   const [submissionDate, setSubmissionDate] = useState('');
   const [idRoom, setIdRoom] = useState('');
   const [idHousekeeper, setIdHousekeeper] = useState('');
@@ -124,15 +124,15 @@ const HouseKeeperTask = () => {
               <input className="form-control" value={nombre} onChange={(e) => setNombre(e.target.value)} />
             </div>
 
-            <CloudinaryApiHotel setPhotoUrl={setPhoto} setErrorMessage={() => {}} />
+            <CloudinaryApiHotel setPhotoUrl={setPhoto} setErrorMessage={() => { }} />
             {photo && (
               <img src={photo} alt="Preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }} />
             )}
 
-            <div className="form-group">
+            {/* <div className="form-group">
               <label>Fecha de Asignación</label>
               <input type="date" className="form-control" value={assignmentDate} onChange={(e) => setAssignmentDate(e.target.value)} />
-            </div>
+            </div> */}
 
             <div className="form-group">
               <label>Fecha de Entrega</label>

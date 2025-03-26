@@ -1,14 +1,8 @@
 """empty message
 
-<<<<<<<< HEAD:migrations/versions/8e0c8d8f2034_.py
-Revision ID: 8e0c8d8f2034
+Revision ID: fbfe27805271
 Revises: 
-Create Date: 2025-03-25 13:03:37.911974
-========
-Revision ID: e16bc04a5dc2
-Revises: 
-Create Date: 2025-03-24 18:22:28.263473
->>>>>>>> develop:migrations/versions/e16bc04a5dc2_.py
+Create Date: 2025-03-25 21:55:32.706947
 
 """
 from alembic import op
@@ -16,11 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-<<<<<<<< HEAD:migrations/versions/8e0c8d8f2034_.py
-revision = '8e0c8d8f2034'
-========
-revision = 'e16bc04a5dc2'
->>>>>>>> develop:migrations/versions/e16bc04a5dc2_.py
+revision = 'fbfe27805271'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -122,7 +112,7 @@ def upgrade():
     op.create_table('maintenancetask',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nombre', sa.String(length=120), nullable=False),
-    sa.Column('photo_url', sa.String(length=300), nullable=True),
+    sa.Column('photo_url', sa.String(length=500), nullable=True),
     sa.Column('condition', sa.String(length=120), nullable=True),
     sa.Column('room_id', sa.Integer(), nullable=True),
     sa.Column('maintenance_id', sa.Integer(), nullable=True),
