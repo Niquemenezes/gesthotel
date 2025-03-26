@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import CloudinaryApiHotel from '../component/cloudinaryApiHotel'; // Asegúrate de tener el componente correcto importado
-
+import CloudinaryApiHotel from '../component/cloudinaryApiHotel';
 const PrivateHouseKeeper = () => {
   const [tasks, setTasks] = useState([]);
-  const [maintenanceTasks, setMaintenanceTasks] = useState([]); // Tareas de mantenimiento
+  const [maintenanceTasks, setMaintenanceTasks] = useState([]);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [isRoomSelected, setIsRoomSelected] = useState(false);
   const [nombre, setNombre] = useState('');
   const [housekeeperId, setHousekeeperId] = useState(null);
-  const [taskPhotos, setTaskPhotos] = useState({}); // Estado para manejar las fotos individuales de cada tarea
-  const [maintenancePhoto, setMaintenancePhoto] = useState(''); // Foto para la tarea de mantenimiento
+  const [maintenancePhoto, setMaintenancePhoto] = useState('');
   const [maintenanceCondition, setMaintenanceCondition] = useState('PENDIENTE');
-  const [showMaintenanceTasks, setShowMaintenanceTasks] = useState(false); // Estado para mostrar/ocultar las tareas de mantenimiento
+  const [showMaintenanceTasks, setShowMaintenanceTasks] = useState(false);
+  const [photo, setPhoto] = useState('');
   const navigate = useNavigate();
-
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
-
   const getHousekeeperIdFromToken = () => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -32,16 +29,13 @@ const PrivateHouseKeeper = () => {
       navigate('/loginHouseKeeper');
     }
   };
-
   useEffect(() => {
     getHousekeeperIdFromToken();
   }, []);
-
   const handleFetchTasks = async () => {
     if (housekeeperId === null) {
       return;
     }
-
     try {
       const response = await fetch(`${backendUrl}api/housekeeper_tasks`);
       if (!response.ok) {
@@ -55,17 +49,14 @@ const PrivateHouseKeeper = () => {
       alert('Error al obtener las tareas, por favor intente más tarde.');
     }
   };
-
   useEffect(() => {
     if (housekeeperId !== null) {
       handleFetchTasks();
     }
   }, [housekeeperId]);
-
   const handleFetchMaintenanceTasks = async () => {
     const token = localStorage.getItem('token');
     let housekeeperId = null;
-  
     if (token) {
       try {
         const decoded = jwtDecode(token);
@@ -76,19 +67,14 @@ const PrivateHouseKeeper = () => {
         return;
       }
     }
-  
     if (!housekeeperId) return;  // Asegúrate de que el housekeeper_id esté presente
-  
     try {
       // Aquí pasas el housekeeper_id y room_id como parámetros
       const response = await fetch(`${backendUrl}api/maintenancetasks/filter?housekeeper_id=${housekeeperId}&room_id=${selectedRoomId}`);
-      
       if (!response.ok) {
         throw new Error('Error al obtener las tareas de mantenimiento');
       }
-  
       const data = await response.json();
-      
       // Filtramos por tareas pendientes si es necesario (opcional)
       const filteredMaintenanceTasks = data.filter(task => task.condition === 'PENDIENTE');
       setMaintenanceTasks(filteredMaintenanceTasks); // Guardamos las tareas filtradas en el estado
@@ -97,33 +83,26 @@ const PrivateHouseKeeper = () => {
       alert('Hubo un error al obtener las tareas de mantenimiento');
     }
   };
-  
-
   useEffect(() => {
     if (housekeeperId && selectedRoomId) {
       handleFetchMaintenanceTasks();
     }
   }, [housekeeperId, selectedRoomId]);
-
   const handleRoomClick = (roomId) => {
     setSelectedRoomId(roomId);
     setIsRoomSelected(true);
   };
-
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/loginHouseKeeper');
   };
-
   const handleBackToRooms = () => {
     setIsRoomSelected(false);
     setSelectedRoomId(null);
   };
-
   const createMaintenanceTask = async () => {
     const token = localStorage.getItem('token');
     let housekeeperId = null;
-
     if (token) {
       try {
         const decoded = jwtDecode(token);
@@ -134,7 +113,6 @@ const PrivateHouseKeeper = () => {
         return;
       }
     }
-
     const taskData = {
       nombre: nombre || undefined,
       room_id: selectedRoomId,
@@ -142,9 +120,7 @@ const PrivateHouseKeeper = () => {
       condition: maintenanceCondition, // Usamos el estado de condition aquí
       photo_url: maintenancePhoto,  // Aquí pasamos la URL de la foto
     };
-
-      console.log('Datos de la tarea de mantenimiento:', taskData);
-
+    console.log('Datos de la tarea de mantenimiento:', taskData);
     try {
       const response = await fetch(`${backendUrl}api/maintenancetasks`, {
         method: 'POST',
@@ -153,17 +129,13 @@ const PrivateHouseKeeper = () => {
         },
         body: JSON.stringify(taskData),
       });
-
       if (response.ok) {
         const data = await response.json();
         alert('Tarea de mantenimiento creada con éxito');
-
         // Actualizar el estado local con la nueva tarea
         setMaintenanceTasks((prevTasks) => [...prevTasks, data]); // Agregamos la nueva tarea al estado
-
         // Resetear el formulario
         resetForm();
-
       } else {
         const errorData = await response.json();
         console.error('Error al crear la tarea de mantenimiento:', errorData.message);
@@ -174,13 +146,11 @@ const PrivateHouseKeeper = () => {
       alert('Hubo un problema al enviar la solicitud. Por favor, inténtalo de nuevo.');
     }
   };
-
   const resetForm = () => {
     setNombre('');
     setMaintenanceCondition('PENDIENTE'); // Reseteamos la condición a 'Pendiente'
     setMaintenancePhoto('');
   };
-
   const groupedTasks = tasks.reduce((acc, task) => {
     if (!acc[task.id_room]) {
       acc[task.id_room] = [];
@@ -188,30 +158,10 @@ const PrivateHouseKeeper = () => {
     acc[task.id_room].push(task);
     return acc;
   }, {});
-
-  // Función para manejar la carga de fotos para las tareas de Housekeeper
-  const handlePhotoChange = (taskId, photoUrl) => {
-    setTaskPhotos(prevState => ({
-      ...prevState,
-      [taskId]: photoUrl, // Guardamos la URL de la foto para la tarea específica
-    }));
-  };
-
-  // Función para manejar la carga de fotos para la tarea de mantenimiento
-  const handleMaintenancePhotoChange = (taskId, photoUrl) => {
-    console.log('URL de la foto de mantenimiento:', photoUrl); // Verifica la URL de la foto
-    setMaintenancePhoto(photoUrl);
-    // setMaintenancePhoto(prevState => ({
-    //   ...prevState,
-    //   [taskId]: photoUrl,
-    // }));
-  };
-
   // Función para actualizar el estado de una tarea de housekeeper
   const handleStatusChange = async (taskId, newStatus) => {
     const updatedTask = tasks.find(task => task.id === taskId);
     updatedTask.condition = newStatus;
-
     try {
       const response = await fetch(`${backendUrl}api/housekeeper_task/${taskId}`, {
         method: 'PUT',
@@ -220,10 +170,8 @@ const PrivateHouseKeeper = () => {
         },
         body: JSON.stringify({ condition: newStatus }),
       });
-
       if (response.ok) {
         const updatedData = await response.json();
-        // Si el estado es "FINALIZADA", filtramos la tarea
         if (newStatus === 'FINALIZADA') {
           setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
         } else {
@@ -243,11 +191,9 @@ const PrivateHouseKeeper = () => {
       alert('Hubo un problema al actualizar el estado de la tarea.');
     }
   };
-
   const toggleMaintenanceTasks = () => {
     setShowMaintenanceTasks(prevState => !prevState); // Alterna entre mostrar/ocultar las tareas de mantenimiento
   };
-
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
       <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
@@ -281,49 +227,35 @@ const PrivateHouseKeeper = () => {
                       <input
                         type="checkbox"
                         className="form-check-input"
-                        checked={task.condition === 'FINALIZADA'} // Marcar el checkbox si la tarea está FINALIZADA
-                        onChange={() => handleStatusChange(task.id, task.condition === 'FINALIZADA' ? 'PENDIENTE' : 'FINALIZADA')} // Alternar entre 'FINALIZADA' y 'Pendiente'
+                        checked={task.condition === 'FINALIZADA'}
+                        onChange={() => handleStatusChange(task.id, task.condition === 'FINALIZADA' ? 'PENDIENTE' : 'FINALIZADA')}
                       />
                       <label className="form-check-label" htmlFor={`task-${task.id}`}>
                         {task.condition === 'FINALIZADA' ? 'Marcar como PENDIENTE' : 'Marcar como FINALIZADA'}
                       </label>
                     </div>
                   </div>
-
                   <p><strong>Fecha de Asignación:</strong> {task.assignment_date}</p>
                   <p><strong>Fecha de Entrega:</strong> {task.submission_date}</p>
-
-                  {/* Foto de la tarea */}
                   <strong>Foto: </strong>
                   <div className="form-group mb-3">
-                    <CloudinaryApiHotel
-                      taskId={task.id}  // Pasamos el ID de la tarea
-                      setPhotoUrl={handlePhotoChange}
-                      setErrorMessage={() => { }}
-                    />
-                    {taskPhotos[task.id] && (
-                      <img
-                        src={taskPhotos[task.id]}
-                        alt="Vista previa de la foto"
-                        style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }}
-                      />
+                    <CloudinaryApiHotel setPhotoUrl={setPhoto} setErrorMessage={() => { }} />
+                    {photo && (
+                      <img src={photo} alt="Preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }} />
                     )}
                   </div>
                 </div>
               </div>
             ))}
-            
             {/* Tareas de mantenimiento */}
             <div className="mt-3">
               <button
                 className="btn btn-primary"
-                // style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }}
                 onClick={toggleMaintenanceTasks}
               >
                 {showMaintenanceTasks ? 'Ocultar tareas de mantenimiento' : 'Mostrar tareas de mantenimiento'}
               </button>
             </div>
-
             {showMaintenanceTasks && (
               <div className="card shadow-lg mt-4">
                 <div className="card-body">
@@ -339,23 +271,13 @@ const PrivateHouseKeeper = () => {
                         placeholder="Ingresa la tarea de mantenimiento..."
                       />
                     </div>
-
+                    <strong>Foto: </strong>
                     <div className="form-group mb-3">
-                      <strong>Foto: </strong>
-                      <CloudinaryApiHotel
-                        taskId="maintenance"
-                        setPhotoUrl={handleMaintenancePhotoChange}
-                        setErrorMessage={() => { }}
-                      />
-                      {maintenancePhoto && (
-                        <img
-                          src={maintenancePhoto}
-                          alt="Vista previa de la foto"
-                          style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }}
-                        />
+                    <CloudinaryApiHotel setPhotoUrl={setMaintenancePhoto} setErrorMessage={() => { }} />
+                      {maintenancePhoto  && (
+                        <img src={maintenancePhoto} alt="Preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }} />
                       )}
                     </div>
-
                     <button
                       type="button"
                       className="btn btn-block"
@@ -364,7 +286,6 @@ const PrivateHouseKeeper = () => {
                     >
                       Crear Tarea
                     </button>
-
                     {/* Listado de tareas de mantenimiento */}
                     <div className="mt-4">
                       <h4 className="mb-3">Listado de Tareas de Mantenimiento</h4>
@@ -385,12 +306,10 @@ const PrivateHouseKeeper = () => {
                         </div>
                       )}
                     </div>
-
                   </form>
                 </div>
               </div>
             )}
-
             <div className="mt-3">
               <button
                 className="btn  w-100"
@@ -415,5 +334,4 @@ const PrivateHouseKeeper = () => {
     </div>
   );
 };
-
 export default PrivateHouseKeeper;
