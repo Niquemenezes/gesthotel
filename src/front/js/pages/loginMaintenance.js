@@ -1,15 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SidebarLogin from '../component/sidebarLogin';
+import AuthLayout from '../component/authLayout';
+import "../../styles/login.css";
 
 const LoginMaintenance = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
+  // Efecto para cambiar el color del navbar
+  useEffect(() => {
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+      navbar.style.backgroundColor = "#e67e22"; // Naranja maintenance
+      navbar.style.transition = "background-color 0.3s ease";
+      
+      return () => {
+        navbar.style.backgroundColor = "#6b72dd"; // Color original (lila)
+      };
+    }
+  }, []);
+
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
     if (!email || !password) {
       alert('Por favor ingresa tu email y contraseña');
       return;
@@ -37,53 +52,58 @@ const LoginMaintenance = () => {
   };
 
   return (
-    <div className="d-flex">
-      {/* Sidebar */}
-      <SidebarLogin />
+    <AuthLayout role="maintenance">
+      <form onSubmit={handleLogin}>
+        <div className="mb-3">
+          <label htmlFor="email" className="form-label">Correo electrónico</label>
+          <input
+            type="email"
+            id="email"
+            className="form-control form-control-lg"
+            placeholder="Introduce tu correo"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
 
-      {/* Contenido - Formulario en el centro */}
-      <div className="container d-flex flex-column align-items-center text-center" style={{ maxWidth: "500px", marginTop: "50px" }}>
-        <h2 className="text-center mb-4">Login Mantenimiento</h2>
+        <div className="mb-3">
+          <label htmlFor="password" className="form-label">Contraseña</label>
+          <input
+            type="password"
+            id="password"
+            className="form-control form-control-lg"
+            placeholder="Introduce tu contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
 
-        <div className="w-100">
-          <div className="mb-3 text-start">
-            <label htmlFor="email" className="form-label">Email</label>
-            <input
-              type="email"
-              id="email"
-              className="form-control"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Ingrese su correo electrónico"
-            />
-          </div>
-          <div className="mb-3 text-start">
-            <label htmlFor="password" className="form-label">Contraseña</label>
-            <input
-              type="password"
-              id="password"
-              className="form-control"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Ingrese su contraseña"
-            />
-          </div>
-          <button className="btn w-100 mb-4" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }} onClick={handleLogin}>
+        <div className="d-grid">
+          <button 
+            type="submit" 
+            className="btn btn-lg w-100 text-white"
+            style={{ backgroundColor: "#e67e22", transition: "all 0.3s ease", border: "none", boxShadow: "0 2px 5px rgba(0,0,0,0.1)"}}
+            onMouseEnter={(e) => {e.target.style.backgroundColor = "#d35400"; e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";}}
+            onMouseLeave={(e) => { e.target.style.backgroundColor = "#e67e22"; e.target.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";}}
+          >
             Iniciar sesión
           </button>
         </div>
 
-        {/* Imagen completamente centrada debajo del botón */}
-        <div className="d-flex justify-content-center">
-          <img
-            src="https://res.cloudinary.com/dnftnyi5g/image/upload/v1742391521/DALL_E_2025-03-19_14.38.26_-_An_illustration_of_maintenance_staff_members_working_in_a_hotel_environment._One_technician_is_holding_a_toolbox_another_is_using_a_mobile_device_an_hwhqvh.webp"
-            alt="Personal de mantenimiento del hotel"
-            className="img-fluid"
-            style={{ maxWidth: "100%", borderRadius: "10px" }}
-          />
-        </div>
-      </div>
-    </div>
+        <p className="mt-3 text-center text-secondary">
+          ¿Necesitas ayuda?{" "}
+          <span
+            style={{color: "#e67e22", textDecoration: "none", fontWeight: "500", transition: "all 0.3s ease", cursor: "pointer" }}
+              onMouseEnter={(e) => {e.target.style.color = "#d35400"; e.target.style.textDecoration = "underline";}}
+            onMouseLeave={(e) => {e.target.style.color = "#e67e22"; e.target.style.textDecoration = "none";}}
+          >
+            Contacta al administrador
+          </span>
+        </p>
+      </form>
+    </AuthLayout>
   );
 };
 

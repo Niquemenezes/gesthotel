@@ -160,11 +160,6 @@ const Maintenance = () => {
 								Foto
 								</label>
 								<CloudinaryApiHotel setPhotoUrl={setPhotoUrl} setErrorMessage={setErrorMessage} />
-								{photoUrl && (
-									<div className="mt-2">
-										<img src={photoUrl} alt="Foto Tecnico" className="img-fluid" />
-									</div>
-								)}
 							</div>
 
 							{/* Preview de imagen */}

@@ -1436,3 +1436,47 @@ def privatehotel():
     current_user = get_jwt_identity() #obtiene la identidad del usuario desde el token
     return jsonify(logget_in_as=current_user), 200
 
+@api.route("/datos_by_hotel", methods=["GET"])
+@jwt_required()
+def get_hotel_datos():
+    try:
+        hotel_email = get_jwt_identity()
+        hotel = Hoteles.query.filter_by(email=hotel_email).first()
+
+        if not hotel:
+            return jsonify({"msg": "Hotel no autorizado"}), 401
+
+        hotel_id = hotel.id
+
+        num_sucursales = Branches.query.filter_by(hotel_id=hotel_id).count()
+        
+        # Para contar camareras, primero obtén las branches del hotel
+        branch_ids = [b.id for b in Branches.query.filter_by(hotel_id=hotel_id).all()]
+        num_camareras = HouseKeeper.query.filter(HouseKeeper.id_branche.in_(branch_ids)).count()
+
+        num_tecnicos = Maintenance.query.filter_by(hotel_id=hotel_id).count()
+        num_habitaciones = Room.query.filter(Room.branch_id.in_(branch_ids)).count()
+
+        num_tareas_limpieza = HouseKeeperTask.query.join(HouseKeeper).filter(
+            HouseKeeper.id_branche.in_(branch_ids)
+        ).count()
+
+        num_tareas_mantenimiento = MaintenanceTask.query.join(Maintenance).filter(
+            Maintenance.hotel_id == hotel_id
+        ).count()
+
+        num_incidencias = MaintenanceTask.query.filter(MaintenanceTask.condition != "FINALIZADA").count()
+
+        return jsonify({
+            "sucursales": num_sucursales,
+            "camareras": num_camareras,
+            "tecnicos": num_tecnicos,
+            "habitaciones": num_habitaciones,
+            "tareasLimpieza": num_tareas_limpieza,
+            "tareasMantenimiento": num_tareas_mantenimiento,
+            "incidencias": num_incidencias
+        }), 200
+
+    except Exception as e:
+        print("Error en /datos_by_hotel:", e)
+        return jsonify({"msg": "Error interno", "error": str(e)}), 500

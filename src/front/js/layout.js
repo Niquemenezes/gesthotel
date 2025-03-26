@@ -31,7 +31,7 @@ import LoginMaintenance from "./pages/loginMaintenance";
 import PrivateMaintenance from './pages/privateMaintenance';
 import ProtectedPrivateMaintenance from './pages/ProtectedPrivateMaintenance';
 import { Footer } from "./component/footer";
-import Chatbot from "./component/chatBot";
+
 
 
 
@@ -83,7 +83,7 @@ const Layout = () => {
                         <Route element={<h1>Not found!</h1>} />
                       
                     </Routes>
-                    <Chatbot />
+                   
                    
                 </ScrollToTop>
                 </BrowserRouter>

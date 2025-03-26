@@ -112,7 +112,7 @@ const HouseKeeper = () => {
               </div>
               <div className="col">{h.nombre}</div>
               <div className="col">{h.email}</div>
-              <div className="col">{h.branch_nombre}</div>
+              <div className="col">{h.id_branche}</div>
               <div className="col text-center">
                 <button className="btn me-2" style={{ backgroundColor: "#ac85eb" }} onClick={() => handleEdit(h)}>Editar</button>
                 <button className="btn" style={{ backgroundColor: "#ac85eb" }} onClick={() => handleDelete(h.id)}>Eliminar</button>
@@ -145,12 +145,7 @@ const HouseKeeper = () => {
                   Foto
                 </label>
                 <CloudinaryApiHotel setPhotoUrl={setPhotoUrl} setErrorMessage={setErrorMessage} />
-                {photoUrl && (
-                  <div className="mt-2">
-                    <img src={photoUrl} alt="Foto Camarera de piso" className="img-fluid" />
-                  </div>
-                )}
-              </div>
+             </div>
 
               {/* Preview de imagen */}
               {photoUrl && (
