@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Context } from "../store/appContext";
 import Sidebar from "../component/sidebar";
-import CloudinaryApiHotel from "../component/cloudinaryApiHotel"; 
+import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
 
 
 
@@ -11,6 +11,7 @@ const MaintenanceTask = () => {
   const [photo, setPhoto] = useState('');
   const [condition, setCondition] = useState('PENDIENTE');  // Estado por defecto "PENDIENTE"
   const [idRoom, setIdRoom] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
   const [idMaintenance, setIdMaintenance] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState('');
@@ -91,7 +92,7 @@ const MaintenanceTask = () => {
             <h5 className="card-title">{editingId ? 'Editar' : 'Crear'} Tarea de Mantenimiento</h5>
             <form>
               <div className="form-group">
-                <label>Nombre</label>
+                <label>Tarea</label>
                 <input
                   type="text"
                   className="form-control"
@@ -103,8 +104,8 @@ const MaintenanceTask = () => {
               <div className="form-group">
                 <label>Foto (subir imagen)</label>
                 <CloudinaryApiHotel
-                  setPhotoUrl={setPhoto}
-                  setErrorMessage={(msg) => console.error("Error de Cloudinary:", msg)}
+                  onUploadSuccess={(result) => setPhotoUrl(result.url)}
+                  setErrorMessage={setErrorMessage}
                 />
               </div>
 
@@ -190,18 +191,19 @@ const MaintenanceTask = () => {
                 </button>
               )}
             </form>
-           </div>
+          </div>
         </div>
 
         <h2>Tareas de Mantenimiento</h2>
         <table className="table">
           <thead>
             <tr>
-              <th>Nombre</th>
+              <th>Técnico</th>
+              <th>Tarea</th>
               <th>Estado</th>
               <th>Sucursal</th>
               <th>Habitación</th>
-              <th>Técnico</th>
+              <th>Foto</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -209,16 +211,23 @@ const MaintenanceTask = () => {
           <tbody>
             {Array.isArray(store.maintenanceTasks) && store.maintenanceTasks.map(task => (
               <tr key={task.id}>
+                <td>{task.maintenance?.nombre || "-"}</td>
                 <td>{task.nombre}</td>
                 <td>{task.condition}</td>
-                <td>
-                  {
-                    store.branches.find(branch => branch.id === task.room?.branch_id)?.nombre || "-"
-                  }
-                </td>
-
+                <td> {store.branches.find(branch => branch.id === task.room?.branch_id)?.nombre || "-"}</td>
                 <td>{task.room_nombre || task.room?.nombre}</td>
                 <td>{task.maintenance?.nombre || "-"}</td>
+                <td>
+                  {task.photo_url ? (
+                    <img
+                      src={task.photo_url}
+                      alt="Incidencia"
+                      style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "8px" }}
+                    />
+                  ) : (
+                    <span className="text-muted">Sin foto</span>
+                  )}
+                </td>
                 <td>
                   <button className="btn btn-sm" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }} onClick={() => editMaintenanceTask(task)}>
                     Editar

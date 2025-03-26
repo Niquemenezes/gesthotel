@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
+import Chatbot from "../component/chatBot";
 
  const PrivateMaintenance = () => {
   const [tasks, setTasks] = useState([]);
@@ -220,6 +221,7 @@ import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
       <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
         <h2 className="text-center mb-4 text-primary">Tareas de Mantenimiento</h2>
+        <Chatbot />
         {!isRoomSelected && Object.keys(groupedTasks).length > 0 ? (
           Object.keys(groupedTasks).map((roomId) => {
             const roomTasks = groupedTasks[roomId];
@@ -340,6 +342,7 @@ import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
               Finalizadas
             </button>
           </div>
+       
         </div>
       </div>
     </div>

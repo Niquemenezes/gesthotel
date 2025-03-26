@@ -28,10 +28,6 @@ const SignupHotel = () => {
 
     return (
         <AuthLayout>
-            <div className="text-center mb-4">
-                <h2 className="text-secondary">Inicia sesión</h2>
-                <p className="text-muted">Crea una cuenta para tu hotel</p>
-            </div>
 
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
@@ -83,16 +79,38 @@ const SignupHotel = () => {
                 {error && <div className="alert alert-danger">{error}</div>}
 
                 <div className="d-grid">
-                    <button type="submit" className="btn btn-primary btn-lg w-100">
+                    <button
+                        type="submit"
+                        className="btn btn-lg w-100 text-white"
+                        style={{ 
+                            backgroundColor: "#6b72dd",
+                            transition: "all 0.3s ease",
+                            border: "none",
+                            boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#5a62c9";
+                            e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "#6b72dd";
+                            e.target.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
+                        }}
+                    >
                         <i className="fas fa-user-plus me-2"></i> Registrarse
                     </button>
-
-
                 </div>
 
                 <p className="mt-3 text-center text-secondary">
                     ¿Ya tienes cuenta?{" "}
-                    <Link to="/LoginHotel" className="link-lila">Inicia sesión</Link>
+                    <Link 
+                        to="/LoginHotel" 
+                        style={{color: "#6b72dd", textDecoration: "none", fontWeight: "500", transition: "all 0.3s ease" }}
+                        onMouseEnter={(e) => {e.target.style.color = "#5a62c9"; e.target.style.textDecoration = "underline"; }}
+                        onMouseLeave={(e) => {e.target.style.color = "#6b72dd"; e.target.style.textDecoration = "none"; }}
+                    >
+                        Inicia sesión
+                    </Link>
                 </p>
             </form>
         </AuthLayout>

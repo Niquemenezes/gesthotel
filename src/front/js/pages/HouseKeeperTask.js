@@ -7,12 +7,13 @@ import { Context } from "../store/appContext";
 const HouseKeeperTask = () => {
   const { store, actions } = useContext(Context);
   const { housekeepers, rooms, houseKeeperTasks } = store;
-  // const [condition, setCondition] = useState('Pendiente');
+  const [condition, setCondition] = useState('Pendiente');
   const [nombre, setNombre] = useState('');
   const [photo, setPhoto] = useState('');
   const [assignmentDate, setAssignmentDate] = useState(new Date().toISOString().split('T')[0]);
   const [submissionDate, setSubmissionDate] = useState('');
   const [idRoom, setIdRoom] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
   const [idHousekeeper, setIdHousekeeper] = useState('');
   const [filteredRooms, setFilteredRooms] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -45,6 +46,7 @@ const HouseKeeperTask = () => {
     const data = {
       nombre,
       photo_url: photo,
+      condition,
       assignment_date: assignmentDate,
       submission_date: submissionDate,
       id_room: idRoom,
@@ -55,7 +57,7 @@ const HouseKeeperTask = () => {
       await actions.updateHouseKeeperTask(editingId, data);
     } else {
       await actions.createHouseKeeperTask(data);
-      await actions.getHouseKeeperTasks(); // 🔄 Recargar tareas para verlas completas
+      await actions.getHouseKeeperTasks(); // Recargar tareas para verlas completas
     }
 
     resetForm();
@@ -66,6 +68,7 @@ const HouseKeeperTask = () => {
     if (task) {
       setNombre(task.nombre);
       setPhoto(task.photo_url);
+      setCondition(task.condition || '');
       setAssignmentDate(task.assignment_date);
       setSubmissionDate(task.submission_date);
       setIdRoom(task.id_room);
@@ -77,13 +80,14 @@ const HouseKeeperTask = () => {
   const deleteHouseKeeperTask = async (id) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
       await actions.deleteHouseKeeperTask(id);
-      await actions.getHouseKeeperTasks(); // 🔄 Recargar después de eliminar
+      await actions.getHouseKeeperTasks(); // Recargar después de eliminar
     }
   };
 
   const resetForm = () => {
     setNombre('');
     setPhoto('');
+    setCondition('PENDIENTE');
     setAssignmentDate('');
     setSubmissionDate('');
     setIdRoom('');
@@ -120,11 +124,14 @@ const HouseKeeperTask = () => {
             </div>
 
             <div className="form-group">
-              <label>Nombre</label>
+              <label>Tarea</label>
               <input className="form-control" value={nombre} onChange={(e) => setNombre(e.target.value)} />
             </div>
 
-            <CloudinaryApiHotel setPhotoUrl={setPhoto} setErrorMessage={() => { }} />
+            <CloudinaryApiHotel
+              setPhotoUrl={setPhoto}
+              setErrorMessage={(msg) => console.error("Error de Cloudinary:", msg)}
+            />
             {photo && (
               <img src={photo} alt="Preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", marginTop: "10px" }} />
             )}
@@ -134,6 +141,15 @@ const HouseKeeperTask = () => {
               <input type="date" className="form-control" value={assignmentDate} onChange={(e) => setAssignmentDate(e.target.value)} />
             </div> */}
 
+            <div className="form-group">
+              <label>Estado en que se encuentra</label>
+              <input
+                type="text"
+                className="form-control"
+                value={condition}
+                onChange={e => setCondition(e.target.value)}
+              />
+            </div>
             <div className="form-group">
               <label>Fecha de Entrega</label>
               <input type="date" className="form-control" value={submissionDate} onChange={(e) => setSubmissionDate(e.target.value)} />
@@ -168,7 +184,8 @@ const HouseKeeperTask = () => {
           <table className="table table-striped">
             <thead>
               <tr>
-                <th>Nombre</th>
+                <th>Tarea</th>
+                <th>Estado</th>
                 <th>Asignación</th>
                 <th>Entrega</th>
                 <th>Habitación</th>
@@ -180,9 +197,21 @@ const HouseKeeperTask = () => {
               {Array.isArray(houseKeeperTasks) && houseKeeperTasks.map((task) => (
                 <tr key={task.id}>
                   <td>{task.nombre}</td>
+                  <td>{task.condition}</td>
                   <td>{task.assignment_date}</td>
                   <td>{task.submission_date}</td>
                   <td>{task.room_nombre || task.id_room}</td>
+                  <td>
+                  {task.photo_url ? (
+                    <img
+                      src={task.photo_url}
+                      alt="Incidencia"
+                      style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "8px" }}
+                    />
+                  ) : (
+                    <span className="text-muted">Sin foto</span>
+                  )}
+                </td>
                   <td>{task.housekeeper_nombre || task.id_housekeeper}</td>
                   <td>
                     <button className="btn btn-sm mr-2" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }} onClick={() => editHouseKeeperTask(task.id)}>Editar</button>

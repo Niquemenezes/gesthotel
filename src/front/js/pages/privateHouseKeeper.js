@@ -136,7 +136,7 @@ const PrivateHouseKeeper = () => {
     }
 
     const taskData = {
-      nombre: nombre || undefined,
+      tarea: tarea || undefined,
       room_id: selectedRoomId,
       housekeeper_id: housekeeperId,
       condition: maintenanceCondition, // Usamos el estado de condition aquí

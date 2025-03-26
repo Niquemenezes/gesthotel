@@ -710,7 +710,27 @@ const getState = ({ getStore, getActions, setStore }) => {
 						console.error("Error en deleteHouseKeeperTask:", error);
 					});
 			},
-
+			getHotelDatos: async () => {
+				const store = getStore();
+			
+				try {
+					const response = await fetch(process.env.BACKEND_URL + "/api/datos_by_hotel", {
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: "Bearer " + store.token
+						}
+					});
+			
+					if (!response.ok) throw new Error("No se pudieron cargar las estadísticas");
+			
+					const data = await response.json();
+					return data;
+			
+				} catch (error) {
+					console.error("Error en getHotelStats:", error);
+					throw error;
+				}
+			},
 
 
 			getMessage: async () => {

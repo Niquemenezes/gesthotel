@@ -25,10 +25,6 @@ const LoginHotel = () => {
 
     return (
         <AuthLayout>
-            <div className="text-center mb-4">
-                <h2 className="text-secondary">Inicia sesión</h2>
-                <p className="text-muted">Ingresa con los datos de tu hotel</p>
-            </div>
 
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
@@ -60,18 +56,27 @@ const LoginHotel = () => {
                 {error && <div className="alert alert-danger">{error}</div>}
 
                 <div className="d-grid">
-                    <button type="submit" className="btn btn-primary btn-lg w-100">
+                    <button
+                        type="submit"
+                        className="btn btn-lg w-100 text-white"
+                        style={{ backgroundColor: "#6b72dd", transition: "background-color 0.3s ease", border: "none" }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#5a62c9"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "#6b72dd"}
+                    >
                         <i className="fas fa-sign-in-alt me-2"></i> Iniciar sesión
                     </button>
-
-
-
-
                 </div>
 
                 <p className="mt-3 text-center text-secondary">
                     ¿No tienes cuenta?{" "}
-                    <Link to="/signupHotel" className="link-lila">Regístrate</Link>
+                    <Link
+                        to="/signupHotel"
+                        style={{color: "#6b72dd", textDecoration: "none", fontWeight: "500", transition: "all 0.3s ease" }}
+                        onMouseEnter={(e) => { e.target.style.color = "#5a62c9"; e.target.style.textDecoration = "underline"; }}
+                        onMouseLeave={(e) => { e.target.style.color = "#6b72dd"; e.target.style.textDecoration = "none"; }}
+                    >
+                        Regístrate
+                    </Link>
                 </p>
             </form>
         </AuthLayout>
