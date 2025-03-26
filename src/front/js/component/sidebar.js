@@ -30,9 +30,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }) => {
     { icon: faClipboardList, label: "Tareas Limpieza", to: "/HouseKeeperTask" },
     { icon: faWrench, label: "Tareas Mantenimiento", to: "/maintenanceTask" },
     { icon: faList, label: "Categorías", to: "/listaCat" },
-    { icon: faPalette, label: "Temas", to: "/theme" },   
-    { icon: faHotel, label: "Temas Hotel", to: "/hoteltheme" },
-    { icon: faBuilding, label: "Hoteles", to: "/listaHoteles" },
+  
   ];
 
   return (

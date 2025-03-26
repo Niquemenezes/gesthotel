@@ -38,7 +38,7 @@ export const Home = () => {
                                 >
                                     Ver Demo
                                 </button>
-                                <button className="btn btn-outline-light btn-lg px-4">Documentación</button>
+                                
                             </div>
                         </div>
                     </div>
@@ -105,21 +105,17 @@ export const Home = () => {
                             </ul>
                         </div>
                         <div className="col-lg-6">
-                            {/* Espacio para un diagrama SVG o imagen técnica real */}
-                            <div className="bg-white p-4 rounded-3 shadow-sm text-center">
-                                <p className="text-muted">[Diagrama de flujo o captura de pantalla real]</p>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>
             </section>
-
-            {/* --- Testimonios (Placeholder para cuando tengas clientes) --- */}
+           
             <section className="py-5">
                 <div className="container">
                     <div className="text-center mb-5">
-                        <h2 className="fw-bold">Experiencias de hoteles</h2>
-                        <p className="text-muted">*Próximamente: testimonios reales*</p>
+                        <h2 className="fw-bold">Fotos del participantes</h2>
+                        
                     </div>
                 </div>
             </section>
