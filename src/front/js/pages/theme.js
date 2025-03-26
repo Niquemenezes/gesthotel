@@ -8,6 +8,7 @@ const ThemeForm = () => {
     const [themesList, setThemesList] = useState([]);
     const [editMode, setEditMode] = useState(false);
     const [selectedThemeId, setSelectedThemeId] = useState(null);
+    const [collapsed, setCollapsed] = useState(false);
 
     const navigate = useNavigate();
     const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
@@ -128,7 +129,7 @@ const ThemeForm = () => {
         <>
             <div className="d-flex">
                 {/* Sidebar */}
-               <Sidebar/>
+                <Sidebar collapsed={collapsed} toggleCollapsed={() => setCollapsed(!collapsed)} />
                 <div className="main-content flex-fill p-4">
                     {/* Texto centrado */}
                     <div className="text-center">

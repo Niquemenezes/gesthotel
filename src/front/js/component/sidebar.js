@@ -3,24 +3,21 @@ import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHome,
-  faBuilding, 
-  faCodeBranch, 
-  faPalette, 
-  faList, 
-  faHotel, 
-  faBed, 
-  faTools, 
-  faUser, 
-  faClipboardList, 
-  faWrench, 
+  faBuilding,
+  faCodeBranch,
+  faPalette,
+  faList,
+  faHotel,
+  faBed,
+  faTools,
+  faUser,
+  faClipboardList,
+  faWrench,
   faBars,
-  faChartLine
-} from "@fortawesome/free-solid-svg-icons";
+ } from "@fortawesome/free-solid-svg-icons";
 import "../../styles/sidebar.css"; // Asegúrate de tener este archivo
-
 const Sidebar = ({ collapsed, toggleCollapsed }) => {
   const location = useLocation();
-  
   const navItems = [
     { icon: faHome, label: "Dashboard", to: "/privatehotel" },
     { icon: faCodeBranch, label: "Branches", to: "/listaBranches" },
@@ -29,15 +26,13 @@ const Sidebar = ({ collapsed, toggleCollapsed }) => {
     { icon: faTools, label: "Técnicos", to: "/listaMaintenance" },
     { icon: faClipboardList, label: "Tareas Limpieza", to: "/HouseKeeperTask" },
     { icon: faWrench, label: "Tareas Mantenimiento", to: "/maintenanceTask" },
-    { icon: faList, label: "Categorías", to: "/listaCat" },
-  
+       { icon: faList, label: "Categorías", to: "/listaCat" },
   ];
-
   return (
     <div
       className={`sidebar ${collapsed ? "collapsed" : ""}`}
       style={{
-        backgroundColor: "#2a3042",
+        backgroundColor: "#2A3042",
         minHeight: "100vh",
         width: collapsed ? "70px" : "250px",
         transition: "width 0.3s ease",
@@ -61,7 +56,6 @@ const Sidebar = ({ collapsed, toggleCollapsed }) => {
           </button>
         </div>
       </div>
-
       {/* Menú con efectos hover */}
       <div className="sidebar-menu">
         {navItems.map((item, index) => {
@@ -73,9 +67,9 @@ const Sidebar = ({ collapsed, toggleCollapsed }) => {
               className={`sidebar-link ${isActive ? "active" : ""}`}
             >
               <div className="sidebar-link-content">
-                <FontAwesomeIcon 
-                  icon={item.icon} 
-                  className={`sidebar-icon ${collapsed ? "collapsed-icon" : ""}`} 
+                <FontAwesomeIcon
+                  icon={item.icon}
+                  className={`sidebar-icon ${collapsed ? "collapsed-icon" : ""}`}
                 />
                 {!collapsed && (
                   <span className="sidebar-link-text">{item.label}</span>
@@ -88,5 +82,4 @@ const Sidebar = ({ collapsed, toggleCollapsed }) => {
     </div>
   );
 };
-
 export default Sidebar;

@@ -13,6 +13,7 @@ const Branches = () => {
   const [longitud, setLongitud] = useState("");
   const [latitud, setLatitud] = useState("");
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -75,8 +76,7 @@ const Branches = () => {
 
   return (
     <div className="d-flex">
-      <Sidebar />
-
+      <Sidebar collapsed={collapsed} toggleCollapsed={() => setCollapsed(!collapsed)} />
       <div className="main-content flex-fill p-4">
         <div className="text-center">
           <div className="container">

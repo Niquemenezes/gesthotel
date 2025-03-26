@@ -25,6 +25,7 @@ const HouseKeeper = () => {
     setEmail('');
     setPassword('');
     setIdBranche('');
+    setPhotoUrl('');
     setEditingId(null);
   };
 

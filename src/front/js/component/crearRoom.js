@@ -122,8 +122,8 @@ const ListaRoom = () => {
             {loading
               ? "Guardando..."
               : roomSeleccionado
-              ? "Guardar Cambios"
-              : "Crear Habitación"}
+                ? "Guardar Cambios"
+                : "Crear Habitación"}
           </button>
         </form>
 

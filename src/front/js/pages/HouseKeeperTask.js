@@ -7,7 +7,7 @@ import { Context } from "../store/appContext";
 const HouseKeeperTask = () => {
   const { store, actions } = useContext(Context);
   const { housekeepers, rooms, houseKeeperTasks } = store;
-  const [condition, setCondition] = useState('Pendiente');
+  const [condition, setCondition] = useState('PENDIENTE');
   const [nombre, setNombre] = useState('');
   const [photo, setPhoto] = useState('');
   const [assignmentDate, setAssignmentDate] = useState(new Date().toISOString().split('T')[0]);

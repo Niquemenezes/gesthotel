@@ -9,6 +9,7 @@ const HotelTheme = () => {
   const [themeId, setThemeId] = useState('');
   const [hotelThemes, setHotelThemes] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [collapsed, setCollapsed] = useState(false);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
 
@@ -172,7 +173,7 @@ const HotelTheme = () => {
     <>
       <div className="d-flex">
         {/* Sidebar */}
-        <Sidebar/>
+        <Sidebar collapsed={collapsed} toggleCollapsed={() => setCollapsed(!collapsed)} />
         {/* Main Content */}
         <div className="main-content flex-fill p-4">
           {/* Texto centrado */}

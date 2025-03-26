@@ -93,13 +93,11 @@ const LoginMaintenance = () => {
         </div>
 
         <p className="mt-3 text-center text-secondary">
-          ¿Necesitas ayuda?{" "}
           <span
             style={{color: "#e67e22", textDecoration: "none", fontWeight: "500", transition: "all 0.3s ease", cursor: "pointer" }}
               onMouseEnter={(e) => {e.target.style.color = "#d35400"; e.target.style.textDecoration = "underline";}}
             onMouseLeave={(e) => {e.target.style.color = "#e67e22"; e.target.style.textDecoration = "none";}}
           >
-            Contacta al administrador
           </span>
         </p>
       </form>

@@ -69,12 +69,12 @@ const SignupHotel = () => {
                     />
                 </div>
 
-                <div className="form-check mb-3">
+                {/* <div className="form-check mb-3">
                     <input type="checkbox" className="form-check-input" id="checkbox-signup" required />
                     <label className="form-check-label text-secondary" htmlFor="checkbox-signup">
                         Acepto los Términos y Condiciones
                     </label>
-                </div>
+                </div> */}
 
                 {error && <div className="alert alert-danger">{error}</div>}
 

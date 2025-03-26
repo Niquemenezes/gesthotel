@@ -10,6 +10,7 @@ const Hoteles = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [mostrarFormulario, setMostrarFormulario] = useState(false);
+	const [collapsed, setCollapsed] = useState(false);
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -53,7 +54,7 @@ const Hoteles = () => {
 
 	return (
 		<div className="d-flex">
-			<Sidebar />
+			<Sidebar collapsed={collapsed} toggleCollapsed={() => setCollapsed(!collapsed)} />
 			<div className="container">
 				<h2 className="text-center my-3">Hoteles</h2>
 

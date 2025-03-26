@@ -216,7 +216,6 @@ const MaintenanceTask = () => {
                 <td>{task.condition}</td>
                 <td> {store.branches.find(branch => branch.id === task.room?.branch_id)?.nombre || "-"}</td>
                 <td>{task.room_nombre || task.room?.nombre}</td>
-                <td>{task.maintenance?.nombre || "-"}</td>
                 <td>
                   {task.photo_url ? (
                     <img

@@ -6,12 +6,12 @@ import Sidebar from "../component/sidebar";
 
 
 export const ListaCat = () => {
-    
+    const [collapsed, setCollapsed] = useState(false);
     return (
         <>
             <div className="d-flex">
                 {/* Sidebar */}
-               <Sidebar/>
+                <Sidebar collapsed={collapsed} toggleCollapsed={() => setCollapsed(!collapsed)} />
                 {/* Main Content */}
                 <div className="main-content flex-fill p-4">
                     {/* Texto centrado */}
