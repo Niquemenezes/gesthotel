@@ -179,12 +179,15 @@ class HouseKeeperTask(db.Model):
     __tablename__ = 'housekeepertask'
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
-    photo_url = db.Column(db.String(300), nullable=True)
-    condition = db.Column(db.String(80), nullable=True)
+    photo_url = db.Column(db.String(500), nullable=True)  # Longitud aumentada a 500
+    condition = db.Column(db.String(80), nullable=False, default='PENDIENTE')
     assignment_date = db.Column(db.String(80), nullable=False)
     submission_date = db.Column(db.String(80), nullable=False)
     id_room = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)
     id_housekeeper = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=True)
+
+    # Eliminados los campos created_at y updated_at para evitar el error
+    # ya que no existen en la base de datos
 
     room = db.relationship('Room', backref='housekeepertask')
     housekeeper = db.relationship('HouseKeeper', backref='housekeepertask')
@@ -196,14 +199,15 @@ class HouseKeeperTask(db.Model):
         return {
             "id": self.id,
             "nombre": self.nombre,
-            "photo_url": self.photo_url,
+            "photo_url": self.photo_url if self.photo_url else None,
             "condition": self.condition,
             "assignment_date": self.assignment_date,
             "submission_date": self.submission_date,
             "id_room": self.id_room,
             "room_nombre": self.room.nombre if self.room else None,
             "id_housekeeper": self.id_housekeeper,
-            "housekeeper_nombre": self.housekeeper.nombre if self.housekeeper else None,
+            "housekeeper_nombre": self.housekeeper.nombre if self.housekeeper else None
+            # Eliminadas las referencias a created_at y updated_at
         }
     
 class MaintenanceTask(db.Model):

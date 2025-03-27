@@ -1,4 +1,3 @@
-// Código completo con mejoras visuales y filtros de tareas
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
@@ -16,10 +15,25 @@ const PrivateHouseKeeper = () => {
   const [maintenanceCondition, setMaintenanceCondition] = useState('PENDIENTE');
   const [showMaintenanceTasks, setShowMaintenanceTasks] = useState(false);
   const [photo, setPhoto] = useState('');
-  const [taskFilter, setTaskFilter] = useState('TODAS');
-
+  const [taskPhotos, setTaskPhotos] = useState(() => {
+    const savedPhotos = localStorage.getItem('housekeeperTaskPhotos');
+    return savedPhotos ? JSON.parse(savedPhotos) : {};
+  });
+  const [errorMessages, setErrorMessages] = useState({});
+  
   const navigate = useNavigate();
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
+
+  useEffect(() => {
+    const photosToSave = {};
+    Object.keys(taskPhotos).forEach(taskId => {
+      const task = tasks.find(t => t.id === parseInt(taskId));
+      if (task && task.condition === 'FINALIZADA') {
+        photosToSave[taskId] = taskPhotos[taskId];
+      }
+    });
+    localStorage.setItem('housekeeperTaskPhotos', JSON.stringify(photosToSave));
+  }, [taskPhotos, tasks]);
 
   const getHousekeeperIdFromToken = () => {
     const token = localStorage.getItem('token');
@@ -47,6 +61,15 @@ const PrivateHouseKeeper = () => {
       if (!response.ok) throw new Error('Error en la respuesta del servidor');
       const data = await response.json();
       const filteredTasks = data.filter(task => task.id_housekeeper === housekeeperId);
+      
+      const updatedPhotos = { ...taskPhotos };
+      filteredTasks.forEach(task => {
+        if (task.photo_url) {
+          updatedPhotos[task.id] = task.photo_url;
+        }
+      });
+      setTaskPhotos(updatedPhotos);
+      
       setTasks(filteredTasks);
     } catch (error) {
       console.error('Error al obtener las tareas:', error);
@@ -94,6 +117,62 @@ const PrivateHouseKeeper = () => {
       handleFetchMaintenanceTasks();
     }
   }, [housekeeperId, selectedRoomId]);
+
+  const handlePhotoUpload = async (taskId, photoUrl) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const newPhotos = { ...taskPhotos, [taskId]: photoUrl };
+      setTaskPhotos(newPhotos);
+
+      setTasks(prev => prev.map(t =>
+        t.id === taskId ? { ...t, photo_url: photoUrl } : t
+      ));
+
+      const response = await fetch(`${backendUrl}api/housekeeper_task/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          photo_url: photoUrl,
+          condition: tasks.find(t => t.id === taskId)?.condition || 'PENDIENTE'
+        }),
+      });
+
+      if (!response.ok) throw new Error('Error al guardar foto');
+
+    } catch (error) {
+      console.error('Error al guardar foto:', error);
+      setErrorMessages(prev => ({ ...prev, [taskId]: 'Error al guardar foto' }));
+    }
+  };
+
+  const handlePhotoError = (taskId, errorMessage) => {
+    setErrorMessages(prev => ({ ...prev, [taskId]: errorMessage }));
+  };
+
+  const handleFilterTasks = (view) => {
+    let filteredTasks = tasks;
+    
+    if (view === 'pending') {
+      filteredTasks = tasks.filter(task => task.condition === 'PENDIENTE');
+    } else if (view === 'completed') {
+      filteredTasks = tasks.filter(task => task.condition === 'FINALIZADA');
+    }
+
+    navigate('/task-filter-housekeeper', {
+      state: {
+        view: view === 'pending' ? 'PENDIENTE' : view === 'completed' ? 'FINALIZADA' : 'all',
+        tasks: filteredTasks.map(task => ({
+          ...task,
+          photo: taskPhotos[task.id] || task.photo_url || null
+        }))
+      }
+    });
+  };
 
   const handleRoomClick = (roomId) => {
     setSelectedRoomId(roomId);
@@ -178,42 +257,43 @@ const PrivateHouseKeeper = () => {
   }, {});
 
   const handleStatusChange = async (taskId, newStatus) => {
-    const updatedTask = tasks.find(task => task.id === taskId);
-    updatedTask.condition = newStatus;
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/loginHouseKeeper');
+        return;
+      }
+
       const response = await fetch(`${backendUrl}api/housekeeper_task/${taskId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ condition: newStatus }),
       });
-      if (response.ok) {
-        const updatedData = await response.json();
-        setTasks(prev =>
-          prev.map(task => task.id === taskId ? { ...task, condition: newStatus } : task)
-        );
 
-        alert('Estado de la tarea actualizado con éxito');
-      } else {
-        const errorData = await response.json();
-        console.error('Error al actualizar el estado:', errorData.message);
-        alert('Error al actualizar el estado de la tarea');
+      if (!response.ok) throw new Error('Error al actualizar');
+
+      const updatedTask = await response.json();
+      setTasks(prevTasks =>
+        prevTasks.map(task =>
+          task.id === taskId ? { ...task, condition: newStatus } : task
+        )
+      );
+
+      if (newStatus === 'FINALIZADA') {
+        setTimeout(handleBackToRooms, 500);
       }
+
     } catch (error) {
-      console.error('Error al actualizar el estado:', error);
-      alert('Hubo un problema al actualizar el estado de la tarea.');
+      console.error('Error:', error);
+      alert('Hubo un problema al actualizar el estado de la tarea');
     }
   };
 
   const toggleMaintenanceTasks = () => {
     setShowMaintenanceTasks(prev => !prev);
-  };
-
-  const getFilteredTasks = () => {
-    if (!selectedRoomId || !groupedTasks[selectedRoomId]) return [];
-    return groupedTasks[selectedRoomId].filter(task => {
-      if (taskFilter === 'TODAS') return true;
-      return task.condition === taskFilter;
-    });
   };
 
   return (
@@ -222,78 +302,117 @@ const PrivateHouseKeeper = () => {
         <h2 className="text-center mb-4">Tareas de Camarera</h2>
 
         {!isRoomSelected && Object.keys(groupedTasks).length > 0 && (
-          <div className="row">
-            {Object.keys(groupedTasks).map(roomId => {
-              const tareas = groupedTasks[roomId];
-              const todasFinalizadas = tareas.every(task => task.condition === 'FINALIZADA');
-              const hayPendientes = tareas.some(task => task.condition === 'PENDIENTE');
+          <>
+            <div className="row">
+              {Object.keys(groupedTasks).map(roomId => {
+                const tareas = groupedTasks[roomId];
+                const todasFinalizadas = tareas.every(task => task.condition === 'FINALIZADA');
+                const hayPendientes = tareas.some(task => task.condition === 'PENDIENTE');
 
-              let iconEstado = '';
-              const iconRoom = <i className="fas fa-bed me-2"></i>; // Ícono Font Awesome
+                let iconEstado = '';
+                const iconRoom = <i className="fas fa-bed me-2"></i>;
 
-              if (todasFinalizadas) {
-                iconEstado = '✅';
-              } else if (hayPendientes) {
-                iconEstado = '🕒';
-              } else {
-                iconEstado = '❔';
-              }
+                if (todasFinalizadas) {
+                  iconEstado = '✅';
+                } else if (hayPendientes) {
+                  iconEstado = '🕒';
+                } else {
+                  iconEstado = '❔';
+                }
 
-              return (
-                <div key={roomId} className="col-md-6">
-                  <button
-                    className="btn custom-room-button text-start mb-3 w-100 py-2 fw-semibold"
-                    onClick={() => handleRoomClick(roomId)}
-                  >
-                    {iconRoom} {iconEstado} Habitación: {tareas[0].room_nombre}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+                return (
+                  <div key={roomId} className="col-md-6">
+                    <button
+                      className="btn custom-room-button text-start mb-3 w-100 py-2 fw-semibold"
+                      onClick={() => handleRoomClick(roomId)}
+                    >
+                      {iconRoom} {iconEstado} Habitación: {tareas[0].room_nombre}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Botones de filtrado - Solo fuera de las habitaciones */}
+            <div className="d-flex justify-content-center gap-3 mb-4">
+              <button 
+                className="btn btn-primary"
+                onClick={() => handleFilterTasks('all')}
+              >
+                TODAS
+              </button>
+              <button 
+                className="btn btn-warning"
+                onClick={() => handleFilterTasks('pending')}
+              >
+                PENDIENTES
+              </button>
+              <button 
+                className="btn btn-success"
+                onClick={() => handleFilterTasks('completed')}
+              >
+                FINALIZADAS
+              </button>
+            </div>
+          </>
         )}
-
-
 
         {isRoomSelected && (
           <div className="mt-4">
-            <div className="d-flex justify-content-center mb-3">
-              <button className={`btn mx-2 ${taskFilter === 'TODAS' ? 'btn-secondary' : 'btn-outline-secondary'}`} onClick={() => setTaskFilter('TODAS')}>
-                Todas
-              </button>
-              <button className={`btn mx-2 ${taskFilter === 'PENDIENTE' ? 'btn-warning' : 'btn-outline-warning'}`} onClick={() => setTaskFilter('PENDIENTE')}>
-                Pendientes
-              </button>
-              <button className={`btn mx-2 ${taskFilter === 'FINALIZADA' ? 'btn-success' : 'btn-outline-success'}`} onClick={() => setTaskFilter('FINALIZADA')}>
-                Finalizadas
-              </button>
-            </div>
-
-            {getFilteredTasks().map(task => (
+            {groupedTasks[selectedRoomId]?.map(task => (
               <div key={task.id} className="card mb-3 shadow-sm rounded-3">
                 <div className="card-body">
                   <p><strong>Tarea asignada:</strong> {task.nombre}</p>
-                  <div className="d-flex justify-content-between mb-3">
-                    <div><p className="mb-0 ms-2"><strong>Estado:</strong> {task.condition}</p></div>
-                    <div className="form-check">
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={task.condition === 'FINALIZADA'}
-                        onChange={() => handleStatusChange(task.id, task.condition === 'FINALIZADA' ? 'PENDIENTE' : 'FINALIZADA')}
-                      />
-                      <label className="form-check-label">
-                        {task.condition === 'FINALIZADA' ? 'Marcar como PENDIENTE' : 'Marcar como FINALIZADA'}
-                      </label>
+                  <p><strong>Estado actual:</strong>
+                    <span className={`badge ${task.condition === 'PENDIENTE' ? 'bg-warning' :
+                      task.condition === 'EN PROCESO' ? 'bg-info' : 'bg-success'
+                      } ms-2`}>
+                      {task.condition}
+                    </span>
+                  </p>
+
+                  <div className="mb-3">
+                    <label htmlFor="photo" className="form-label">Foto</label>
+                    <CloudinaryApiHotel
+                      setPhotoUrl={(url) => handlePhotoUpload(task.id, url)}
+                      setErrorMessage={(msg) => handlePhotoError(task.id, msg)}
+                    />
+                    {(taskPhotos[task.id] || task.photo_url) && (
+                      <div className="mt-2">
+                        <img
+                          src={taskPhotos[task.id] || task.photo_url}
+                          alt={`Tarea ${task.nombre}`}
+                          className="img-thumbnail"
+                          style={{ maxWidth: '200px' }}
+                        />
+                      </div>
+                    )}
+                    {errorMessages[task.id] && (
+                      <div className="text-danger small mt-1">{errorMessages[task.id]}</div>
+                    )}
+                  </div>
+
+                  <div className="mt-3 p-3 border rounded d-flex justify-content-around">
+                    {['PENDIENTE', 'EN PROCESO', 'FINALIZADA'].map((status) => (
+                      <button
+                        key={status}
+                        className={`btn ${status === 'PENDIENTE' ? 'btn-warning' :
+                          status === 'EN PROCESO' ? 'btn-info' : 'btn-success'
+                          }`}
+                        onClick={() => handleStatusChange(task.id, status)}
+                        disabled={task.condition === status}
+                      >
+                        {status}
+                      </button>
+                    ))}
+                  </div>
+
+                  {task.condition === 'FINALIZADA' && (
+                    <div className="text-center mt-2">
+                      <i className="bi bi-check-circle-fill text-success fs-4"></i>
+                      <span className="ms-2">Tarea completada</span>
                     </div>
-                  </div>
-                  <p><strong>Fecha de Asignación:</strong> {task.assignment_date}</p>
-                  <p><strong>Fecha de Entrega:</strong> {task.submission_date}</p>
-                  <strong>Foto: </strong>
-                  <div className="form-group mb-3">
-                    <CloudinaryApiHotel setPhotoUrl={setPhoto} setErrorMessage={() => { }} />
-                    {photo && <img src={photo} alt="Preview" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, marginTop: 10 }} />}
-                  </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -362,20 +481,16 @@ const PrivateHouseKeeper = () => {
             >
               🔙 Volver a todas las habitaciones
             </button>
-
           </div>
-          
         )}
 
-      <div className="d-flex justify-content-center">
-        <button className="btn mt-3 px-5 py-2" style={{ backgroundColor: "#0dcaf0" }} onClick={handleLogout}>
-          <i className="fas fa-sign-out-alt me-2"></i> Cerrar sesión
-
-          Cerrar sesión
-        </button>
+        <div className="d-flex justify-content-center mt-4">
+          <button className="btn px-5 py-2" style={{ backgroundColor: "#0dcaf0" }} onClick={handleLogout}>
+            <i className="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+          </button>
+        </div>
       </div>
     </div>
-    </div >
   );
 };
 
