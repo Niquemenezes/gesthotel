@@ -8,25 +8,32 @@ import mantenimiento from "../../img/mantenimiento.jpg";
 import "../../styles/authLayout.css";
 
 const roleConfig = {
+  signup: {
+    icon: faHotel,
+    title: "Registro de Hotel",
+    subtitle: "Crea una nueva cuenta para gestionar tu propiedad",
+    bgColor: "#0dcaf0",
+    image: equipo
+  },
   hotel: {
     icon: faHotel,
     title: "Inicia sesión",
     subtitle: "Ingresa con los datos de tu hotel",
-    bgColor: "#6b72dd",
+    bgColor: "#0dcaf0",
     image: equipo
   },
   housekeeper: {
     icon: faBroom,
     title: "Acceso Housekeeper",
     subtitle: "Ingresa tus credenciales de limpieza",
-    bgColor: "#27ae60",
+    bgColor: "#0dcaf0",
     image: camarera
   },
   maintenance: {
     icon: faTools,
     title: "Acceso Mantenimiento",
     subtitle: "Ingresa tus credenciales técnicas",
-    bgColor: "#e67e22",
+    bgColor: "#0dcaf0",
     image: mantenimiento
   }
 };

@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHotel, faBroom, faTools, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
-import logo from "../../img/logo.png";
 
 export const Navbar = () => {
   const { store, actions } = useContext(Context);
@@ -15,14 +14,10 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg" style={{ backgroundColor: "#6b72dd" }}>
+    <nav className="navbar navbar-expand-lg" style={{ backgroundColor: "#0dcaf0" }}>
       <div className="container-fluid">
         <Link className="navbar-brand text-white fs-3 fw-bold" to="/">
-          <img
-            src={logo}
-            alt="ApiHotel Logo"
-            style={{ height: "40px", objectFit: "contain" }}
-          />
+          APIHOTEL
         </Link>
 
         <div className="ms-auto d-flex align-items-center gap-3">
