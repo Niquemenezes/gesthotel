@@ -16,9 +16,7 @@ export const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg" style={{ backgroundColor: "#0dcaf0" }}>
       <div className="container-fluid">
-        <Link className="navbar-brand text-white fs-3 fw-bold" to="/">
-          APIHOTEL
-        </Link>
+        
 
         <div className="ms-auto d-flex align-items-center gap-3">
           {!store.token && (

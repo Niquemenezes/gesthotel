@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Context } from "../store/appContext";
-import Sidebar from "../component/sidebar";
+import PrivateLayout from "./privateLayout"; 
 
 const ListaRoom = () => {
   const { store, actions } = useContext(Context);
@@ -12,7 +12,7 @@ const ListaRoom = () => {
 
   useEffect(() => {
     actions.getRooms();
-    actions.getBranches(); // Para cargar las sucursales
+    actions.getBranches(); 
   }, []);
 
   const resetForm = () => {
@@ -50,22 +50,22 @@ const ListaRoom = () => {
   };
 
   return (
-    <div className="d-flex">
-      <Sidebar />
+    <PrivateLayout>
       <div className="container">
         <h2 className="text-center my-3">Lista de Habitaciones</h2>
+
         <div className="d-flex justify-content-center align-items-center mb-4">
-  <button
-    className="btn"
-    style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
-    onClick={() => {
-      resetForm();
-      setShowForm(true);
-    }}
-  >
-    Crear Habitación
-  </button>
-</div>
+          <button
+            className="btn"
+            style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+          >
+            Crear Habitación
+          </button>
+        </div>
 
         <div className="row bg-light p-2 fw-bold border-bottom">
           <div className="col">Nombre</div>
@@ -79,19 +79,18 @@ const ListaRoom = () => {
           store.rooms.map((room) => (
             <div key={room.id} className="row p-2 border-bottom align-items-center">
               <div className="col">{room.nombre}</div>
-              <div className="col">{room.branch || "Sin sucursal"}
-              </div>
+              <div className="col">{room.branch || "Sin sucursal"}</div>
               <div className="col text-center">
                 <button
                   className="btn me-2"
-                  style={{ backgroundColor: "#ac85eb" }}
+                  style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
                   onClick={() => handleEdit(room)}
                 >
                   Editar
                 </button>
                 <button
                   className="btn"
-                  style={{ backgroundColor: "#ac85eb" }}
+                  style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
                   onClick={() => eliminarRoom(room.id)}
                   disabled={eliminando === room.id}
                 >
@@ -129,7 +128,11 @@ const ListaRoom = () => {
                 ))}
               </select>
               <div className="d-flex justify-content-between">
-                <button type="submit" className="btn" style={{ backgroundColor: "#ac85eb" }}>
+                <button
+                  type="submit"
+                  className="btn"
+                  style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
+                >
                   {editingId ? "Actualizar" : "Crear"}
                 </button>
                 <button
@@ -143,9 +146,8 @@ const ListaRoom = () => {
             </form>
           </div>
         )}
-       
       </div>
-    </div>
+    </PrivateLayout>
   );
 };
 

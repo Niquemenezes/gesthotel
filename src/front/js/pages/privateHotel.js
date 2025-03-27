@@ -71,7 +71,7 @@ const PrivateHotel = () => {
           <div className="d-flex justify-content-between align-items-center">
             <h4 className="mb-0">Dashboard</h4>
             <div className="d-flex align-items-center">
-              <span className="me-3">Bienvenido, {nombreHotel}</span>
+              <span className="me-3">Bienvenido al Hotel, {nombreHotel}</span>
               <div className="avatar-sm">
                 <span className="avatar-title rounded-circle bg-soft-primary text-primary font-size-16">
                   <i className="fas fa-user"></i>
