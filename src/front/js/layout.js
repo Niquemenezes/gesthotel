@@ -55,43 +55,49 @@ const RouterContent = () => {
   }
 
   return (
-    <div>
+    <div className="d-flex flex-column min-vh-100">
       {showNavbarAndFooter && <Navbar />}
-      
-      <Routes>
-        <Route element={<Home />} path="/" />
-        <Route element={<Demo />} path="/demo" />
-        
-        {/* Rutas protegidas y administrativas */}
-        <Route element={<ListaCat />} path="/listaCat" />
-        <Route element={<EditarCategoria />} path="/editar/:id" />
-        <Route element={<CrearCategoria />} path="/crearCategoria" />
-        <Route element={<ListaCategoria />} path="/listaCategoria" />
-        <Route element={<Single />} path="/single/:theid" />
-        <Route element={<Hoteles />} path="/hoteles" />
-        <Route element={<Hoteles />} path="/listaHoteles" />
-        <Route element={<ThemeForm />} path="/theme" />
-        <Route element={<HotelTheme />} path="/hotelTheme" />
-        <Route element={<Branches />} path="/listaBranches" />
-        <Route element={<ListaRoom />} path="/listaRoom" />
-        <Route element={<Maintenance />} path="/listaMaintenance" />
-        <Route element={<HouseKeeper />} path="/houseKeeper" />
-        <Route element={<LoginHouseKeeper />} path="/loginHouseKeeper" />
-        <Route element={<ProtectedPrivateHouseKeeper><PrivateHouseKeeper /></ProtectedPrivateHouseKeeper>} path="/privateHouseKeeper" />
-        <Route element={<HouseKeeperTask />} path="/HouseKeeperTask" />
-        <Route element={<PrivateHotel />} path="/privateHotel" />
-        <Route element={<LoginHotel />} path="/loginHotel" />
-        <Route element={<SignupHotel />} path="/signupHotel" />
-        <Route element={<AuthLayout />} path="/authLayout" />
-        <Route element={<MaintenanceTask />} path="/maintenanceTask" />
-        <Route element={<LoginMaintenance />} path="/loginMaintenance" />
-        <Route element={<ProtectedPrivateMaintenance><PrivateMaintenance /></ProtectedPrivateMaintenance>} path="/privateMaintenance" />
-        <Route element={<TaskFilterView />} path="/task-filter" />
-        
-        <Route element={<h1>Not found!</h1>} path="*" />
-      </Routes>
-      
+
+      {/* Contenido principal */}
+      <main className="flex-grow-1">
+        <Routes>
+          <Route element={<Home />} path="/" />
+          <Route element={<Demo />} path="/demo" />
+
+          {/* Tus rutas existentes */}
+          <Route element={<ListaCat />} path="/listaCat" />
+          <Route element={<EditarCategoria />} path="/editar/:id" />
+          <Route element={<CrearCategoria />} path="/crearCategoria" />
+          <Route element={<ListaCategoria />} path="/listaCategoria" />
+          <Route element={<Single />} path="/single/:theid" />
+          <Route element={<Hoteles />} path="/hoteles" />
+          <Route element={<Hoteles />} path="/listaHoteles" />
+          <Route element={<ThemeForm />} path="/theme" />
+          <Route element={<HotelTheme />} path="/hotelTheme" />
+          <Route element={<Branches />} path="/listaBranches" />
+          <Route element={<ListaRoom />} path="/listaRoom" />
+          <Route element={<Maintenance />} path="/listaMaintenance" />
+          <Route element={<HouseKeeper />} path="/houseKeeper" />
+          <Route element={<LoginHouseKeeper />} path="/loginHouseKeeper" />
+          <Route element={<ProtectedPrivateHouseKeeper><PrivateHouseKeeper /></ProtectedPrivateHouseKeeper>} path="/privateHouseKeeper" />
+          <Route element={<HouseKeeperTask />} path="/HouseKeeperTask" />
+          <Route element={<PrivateHotel />} path="/privateHotel" />
+          <Route element={<LoginHotel />} path="/loginHotel" />
+          <Route element={<SignupHotel />} path="/signupHotel" />
+          <Route element={<AuthLayout />} path="/authLayout" />
+          <Route element={<MaintenanceTask />} path="/maintenanceTask" />
+          <Route element={<LoginMaintenance />} path="/loginMaintenance" />
+          <Route element={<ProtectedPrivateMaintenance><PrivateMaintenance /></ProtectedPrivateMaintenance>} path="/privateMaintenance" />
+          <Route element={<TaskFilterView />} path="/task-filter" />
+
+          <Route element={<h1>Not found!</h1>} path="*" />
+        </Routes>
+      </main>
+
+      {/* Chatbot siempre visible */}
       <Chatbot />
+
+      {/* Footer solo en páginas que lo necesitan */}
       {showNavbarAndFooter && <Footer />}
     </div>
   );

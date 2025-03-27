@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../component/authLayout';
 import "../../styles/login.css";
@@ -8,18 +8,6 @@ const LoginMaintenance = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  // Efecto para cambiar el color del navbar
-  useEffect(() => {
-    const navbar = document.querySelector('.navbar');
-    if (navbar) {
-      navbar.style.backgroundColor = "#e67e22"; // Naranja maintenance
-      navbar.style.transition = "background-color 0.3s ease";
-      
-      return () => {
-        navbar.style.backgroundColor = "#6b72dd"; // Color original (lila)
-      };
-    }
-  }, []);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
 
@@ -81,22 +69,34 @@ const LoginMaintenance = () => {
         </div>
 
         <div className="d-grid">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn btn-lg w-100 text-white"
-            style={{ backgroundColor: "#e67e22", transition: "all 0.3s ease", border: "none", boxShadow: "0 2px 5px rgba(0,0,0,0.1)"}}
-            onMouseEnter={(e) => {e.target.style.backgroundColor = "#d35400"; e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";}}
-            onMouseLeave={(e) => { e.target.style.backgroundColor = "#e67e22"; e.target.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";}}
+            style={{
+              backgroundColor: "#0dcaf0",
+              transition: "all 0.3s ease",
+              border: "none",
+              boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = "#1bc1d2";
+              e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = "#0dcaf0";
+              e.target.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
+            }}
           >
             Iniciar sesión
           </button>
+
         </div>
 
         <p className="mt-3 text-center text-secondary">
           <span
-            style={{color: "#e67e22", textDecoration: "none", fontWeight: "500", transition: "all 0.3s ease", cursor: "pointer" }}
-              onMouseEnter={(e) => {e.target.style.color = "#d35400"; e.target.style.textDecoration = "underline";}}
-            onMouseLeave={(e) => {e.target.style.color = "#e67e22"; e.target.style.textDecoration = "none";}}
+            style={{ color: "#e67e22", textDecoration: "none", fontWeight: "500", transition: "all 0.3s ease", cursor: "pointer" }}
+            onMouseEnter={(e) => { e.target.style.color = "#d35400"; e.target.style.textDecoration = "underline"; }}
+            onMouseLeave={(e) => { e.target.style.color = "#e67e22"; e.target.style.textDecoration = "none"; }}
           >
           </span>
         </p>

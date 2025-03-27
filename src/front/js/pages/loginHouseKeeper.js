@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../component/authLayout';
 import "../../styles/login.css";
@@ -37,18 +37,6 @@ const LoginHouseKeeper = () => {
       alert('Hubo un error al intentar iniciar sesión, por favor intenta más tarde.');
     }
   };
-   // Efecto para cambiar el color del navbar
-   useEffect(() => {
-    const navbar = document.querySelector('.navbar');
-    if (navbar) {
-      navbar.style.backgroundColor = "#27ae60"; // Verde housekeeper
-      
-      // Restablecer al color original al salir de la página
-      return () => {
-        navbar.style.backgroundColor = "#6b72dd"; // Color original (lila)
-      };
-    }
-  }, []);
 
   return (
     <AuthLayout role="housekeeper">
@@ -80,25 +68,29 @@ const LoginHouseKeeper = () => {
         </div>
 
         <div className="d-grid">
-          <button 
-            type="submit" 
-            className="btn btn-lg w-100 text-white"
-            style={{ backgroundColor: "#27ae60", transition: "all 0.3s ease", border: "none", boxShadow: "0 2px 5px rgba(0,0,0,0.1)"}}
-            onMouseEnter={(e) => { e.target.style.backgroundColor = "#219653"; e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";}}
-            onMouseLeave={(e) => { e.target.style.backgroundColor = "#27ae60"; e.target.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)"; }}
-          >
-            Iniciar sesión
-          </button>
+        <button 
+  type="submit" 
+  className="btn btn-lg w-100 text-white"
+  style={{
+    backgroundColor: "#0dcaf0",
+    transition: "all 0.3s ease",
+    border: "none",
+    boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
+  }}
+  onMouseEnter={(e) => {
+    e.target.style.backgroundColor = "#1bc1d2";
+    e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
+  }}
+  onMouseLeave={(e) => {
+    e.target.style.backgroundColor = "#0dcaf0";
+    e.target.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
+  }}
+>
+  Iniciar sesión
+</button>
+
         </div>
-        <p className="mt-3 text-center text-secondary">
-          <span
-            style={{
-              color: "#27ae60", textDecoration: "none", fontWeight: "500", transition: "all 0.3s ease", cursor: "pointer"}}
-            onMouseEnter={(e) => {e.target.style.color = "#219653"; e.target.style.textDecoration = "underline";}}
-            onMouseLeave={(e) => {e.target.style.color = "#27ae60"; e.target.style.textDecoration = "none";}}
-          >
-          </span>
-        </p>
+
       </form>
     </AuthLayout>
   );

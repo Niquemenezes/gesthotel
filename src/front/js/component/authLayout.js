@@ -5,6 +5,8 @@ import { faHotel, faBroom, faTools } from "@fortawesome/free-solid-svg-icons";
 import equipo from "../../img/equipo.png";
 import camarera from "../../img/camarera.jpg";
 import mantenimiento from "../../img/mantenimiento.jpg";
+import { useLocation } from "react-router-dom";
+
 import "../../styles/authLayout.css";
 
 const roleConfig = {
@@ -38,8 +40,21 @@ const roleConfig = {
   }
 };
 
-const AuthLayout = ({ role = "hotel", children }) => {
-  const config = roleConfig[role];
+const AuthLayout = ({ role, children }) => {
+  const location = useLocation();
+
+  // Detectar el role basado en la ruta si no se pasó manualmente
+  const currentRole =
+    role ||
+    (location.pathname === "/signupHotel"
+      ? "signup"
+      : location.pathname === "/loginHouseKeeper"
+      ? "housekeeper"
+      : location.pathname === "/loginMaintenance"
+      ? "maintenance"
+      : "hotel");
+
+  const config = roleConfig[currentRole];
 
   return (
     <div className="auth-container">
@@ -54,7 +69,7 @@ const AuthLayout = ({ role = "hotel", children }) => {
       <div className="auth-image-section">
         <img
           src={config.image}
-          alt={`Imagen de ${role}`}
+          alt={`Imagen de ${currentRole}`}
           className="auth-image"
         />
       </div>

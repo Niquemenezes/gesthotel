@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { Context } from "../store/appContext";
 import { Navigate, Link } from "react-router-dom";
 import AuthLayout from "../component/authLayout";
+import { useLocation } from "react-router-dom";
 import "../../styles/home.css";
 
 
@@ -13,6 +14,9 @@ const SignupHotel = () => {
     const [password, setPassword] = useState("");
     const [redirect, setRedirect] = useState(false);
     const [error, setError] = useState("");
+    const location = useLocation();
+    const isSignup = location.pathname === "/signupHotel";
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -27,7 +31,8 @@ const SignupHotel = () => {
     if (redirect) return <Navigate to="/loginHotel" />;
 
     return (
-        <AuthLayout>
+        <AuthLayout role="signup">
+
 
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
