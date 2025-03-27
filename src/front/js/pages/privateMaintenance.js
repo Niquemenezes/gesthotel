@@ -224,41 +224,41 @@ const PrivateMaintenance = () => {
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
       <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
-        <h2 className="text-center mb-4" style={{color:"#0dcaf0"}}>Tareas de Mantenimiento</h2>
+        <h2 className="text-center mb-4" style={{ color: "#0dcaf0" }}>Tareas de Mantenimiento</h2>
         <Chatbot />
         {!isRoomSelected && Object.keys(groupedTasks).length > 0 ? (
-         <div className="row">
-         {Object.keys(groupedTasks).map((roomId) => {
-           const roomTasks = groupedTasks[roomId];
-           const roomName = roomTasks[0].room_nombre || `Habitación ${roomId}`;
-       
-           const todasFinalizadas = roomTasks.every(task => task.condition === 'FINALIZADA');
-           const hayPendientes = roomTasks.some(task => task.condition === 'PENDIENTE');
-       
-           let iconEstado = '';
-           const iconRoom = <i className="fas fa-bed me-2"></i>;
-       
-           if (todasFinalizadas) {
-             iconEstado = '✅';
-           } else if (hayPendientes) {
-             iconEstado = '🕒';
-           } else {
-             iconEstado = '❔';
-           }
-       
-           return (
-             <div key={roomId} className="col-md-6">
-               <button
-                 className="btn custom-room-button text-start mb-3 w-100 py-2 fw-semibold"
-                 onClick={() => handleRoomClick(roomId)}
-               >
-                 {iconRoom} {iconEstado} Habitación: {roomName}
-               </button>
-             </div>
-           );
-         })}
-       </div>
-       
+          <div className="row">
+            {Object.keys(groupedTasks).map((roomId) => {
+              const roomTasks = groupedTasks[roomId];
+              const roomName = roomTasks[0].room_nombre || `Habitación ${roomId}`;
+
+              const todasFinalizadas = roomTasks.every(task => task.condition === 'FINALIZADA');
+              const hayPendientes = roomTasks.some(task => task.condition === 'PENDIENTE');
+
+              let iconEstado = '';
+              const iconRoom = <i className="fas fa-bed me-2"></i>;
+
+              if (todasFinalizadas) {
+                iconEstado = '✅';
+              } else if (hayPendientes) {
+                iconEstado = '🕒';
+              } else {
+                iconEstado = '❔';
+              }
+
+              return (
+                <div key={roomId} className="col-md-6">
+                  <button
+                    className="btn custom-room-button text-start mb-3 w-100 py-2 fw-semibold"
+                    onClick={() => handleRoomClick(roomId)}
+                  >
+                    {iconRoom} {iconEstado} Habitación: {roomName}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
         ) : null}
         {isRoomSelected && (
           <>
@@ -269,7 +269,7 @@ const PrivateMaintenance = () => {
                     <p><strong>Nombre:</strong> {task.nombre}</p>
                     <p><strong>Estado actual:</strong>
                       <span className={`badge ${task.condition === 'PENDIENTE' ? 'bg-warning' :
-                          task.condition === 'EN PROCESO' ? 'bg-info' : 'bg-success'
+                        task.condition === 'EN PROCESO' ? 'bg-info' : 'bg-success'
                         } ms-2`}>
                         {task.condition}
                       </span>
@@ -301,7 +301,7 @@ const PrivateMaintenance = () => {
                         <button
                           key={status}
                           className={`btn ${status === 'PENDIENTE' ? 'btn-warning' :
-                              status === 'EN PROCESO' ? 'btn-info' : 'btn-success'
+                            status === 'EN PROCESO' ? 'btn-info' : 'btn-success'
                             }`}
                           onClick={() => handleConditionChange(task.id, selectedRoomId, status)}
                           disabled={task.condition === status}

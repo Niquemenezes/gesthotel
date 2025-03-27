@@ -94,8 +94,7 @@ const RouterContent = () => {
         </Routes>
       </main>
 
-      {/* Chatbot siempre visible */}
-      <Chatbot />
+     
 
       {/* Footer solo en páginas que lo necesitan */}
       {showNavbarAndFooter && <Footer />}

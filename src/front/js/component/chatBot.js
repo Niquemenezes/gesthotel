@@ -80,7 +80,7 @@ const Chatbot = () => {
             disabled={loading}
           />
           <button
-            className="btn btn-primary w-100 mt-2"
+            className="btn w-100 mt-2" style={{background:"#0dcaf0"}}
             onClick={sendMessage}
             disabled={loading}
           >
@@ -89,16 +89,17 @@ const Chatbot = () => {
 
           {error && <div className="alert alert-danger mt-2">{error}</div>}
 
-          
+
         </div>
       ) : (
         <button
-          className="btn btn-primary rounded-circle p-3 shadow"
+          className="btn btn-info rounded-circle p-3 shadow"
           style={{ width: "60px", height: "60px" }}
           onClick={() => setIsOpen(true)}
         >
-          🤖
+          <i className="fas fa-tools text-white fs-4"></i>
         </button>
+      
       )}
     </div>
   );
