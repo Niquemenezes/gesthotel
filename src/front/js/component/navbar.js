@@ -21,14 +21,10 @@ export const Navbar = () => {
 
   return (
     <nav className="navbar navbar-expand-lg shadow-sm" style={{ backgroundColor: "#0dcaf0" }}>
-      <div className="container-fluid d-flex justify-content-between align-items-center">
+      
+      <div className="container-fluid d-flex justify-content-end align-items-center">
         
-        {/* Logo / Nombre */}
-        <Link className="navbar-brand text-white fs-4 fw-bold d-flex align-items-center" to="/">
-          <FontAwesomeIcon icon={faHotel} className="me-2" />
-          APIHOTEL
-        </Link>
-
+        
         {/* Botones al lado derecho */}
         <div className="d-flex align-items-center gap-2">
           {/* Volver a Home */}

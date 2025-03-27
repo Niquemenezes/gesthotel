@@ -111,7 +111,8 @@ const HouseKeeper = () => {
               </div>
               <div className="col">{h.nombre}</div>
               <div className="col">{h.email}</div>
-              <div className="col">{h.id_branche}</div>
+              <div className="col">{store.branches?.find(branch => branch.id === h.id_branche)?.nombre || "Sucursal no encontrada"}</div>
+
               <div className="col text-center">
                 <button
                   className="btn me-2"
