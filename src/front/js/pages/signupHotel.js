@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { Context } from "../store/appContext";
 import { Navigate, Link } from "react-router-dom";
 import AuthLayout from "../component/authLayout";
+import { useLocation } from "react-router-dom";
 import "../../styles/home.css";
 
 
@@ -13,6 +14,9 @@ const SignupHotel = () => {
     const [password, setPassword] = useState("");
     const [redirect, setRedirect] = useState(false);
     const [error, setError] = useState("");
+    const location = useLocation();
+    const isSignup = location.pathname === "/signupHotel";
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -27,7 +31,8 @@ const SignupHotel = () => {
     if (redirect) return <Navigate to="/loginHotel" />;
 
     return (
-        <AuthLayout>
+        <AuthLayout role="signup">
+
 
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
@@ -69,12 +74,7 @@ const SignupHotel = () => {
                     />
                 </div>
 
-                {/* <div className="form-check mb-3">
-                    <input type="checkbox" className="form-check-input" id="checkbox-signup" required />
-                    <label className="form-check-label text-secondary" htmlFor="checkbox-signup">
-                        Acepto los Términos y Condiciones
-                    </label>
-                </div> */}
+                
 
                 {error && <div className="alert alert-danger">{error}</div>}
 
@@ -83,17 +83,17 @@ const SignupHotel = () => {
                         type="submit"
                         className="btn btn-lg w-100 text-white"
                         style={{ 
-                            backgroundColor: "#6b72dd",
+                            backgroundColor: "#0dcaf0",
                             transition: "all 0.3s ease",
                             border: "none",
                             boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
                         }}
                         onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = "#5a62c9";
+                            e.target.style.backgroundColor = "#1bc1d2";
                             e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
                         }}
                         onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = "#6b72dd";
+                            e.target.style.backgroundColor = "#0dcaf0";
                             e.target.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
                         }}
                     >
@@ -105,9 +105,9 @@ const SignupHotel = () => {
                     ¿Ya tienes cuenta?{" "}
                     <Link 
                         to="/LoginHotel" 
-                        style={{color: "#6b72dd", textDecoration: "none", fontWeight: "500", transition: "all 0.3s ease" }}
-                        onMouseEnter={(e) => {e.target.style.color = "#5a62c9"; e.target.style.textDecoration = "underline"; }}
-                        onMouseLeave={(e) => {e.target.style.color = "#6b72dd"; e.target.style.textDecoration = "none"; }}
+                        style={{color: "#0dcaf0", textDecoration: "none", fontWeight: "500", transition: "all 0.3s ease" }}
+                        onMouseEnter={(e) => {e.target.style.color = "#1bc1d2"; e.target.style.textDecoration = "underline"; }}
+                        onMouseLeave={(e) => {e.target.style.color = "#0dcaf0"; e.target.style.textDecoration = "none"; }}
                     >
                         Inicia sesión
                     </Link>

@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import ScrollToTop from "./component/scrollToTop";
 import { BackendURL } from "./component/backendURL";
 import ThemeForm from './pages/theme';
@@ -31,65 +31,75 @@ import LoginMaintenance from "./pages/loginMaintenance";
 import PrivateMaintenance from './pages/privateMaintenance';
 import ProtectedPrivateMaintenance from './pages/ProtectedPrivateMaintenance';
 import { Footer } from "./component/footer";
-
-
-
-
-import TaskFilterView from './pages/TaskFilterView'; // Importar el nuevo componente
-
+import Chatbot from "./component/chatBot";
+import TaskFilterView from './pages/TaskFilterView';
 
 const Layout = () => {
-    // Basename: Usado si el proyecto está en un subdirectorio, configurado en .env
-    const basename = process.env.BASENAME || "";
+  const basename = process.env.BASENAME || "";
 
-    // Si la variable de entorno BACKEND_URL no está configurada, muestra un mensaje de error
-    if (!process.env.BACKEND_URL || process.env.BACKEND_URL === "") {
-        return <BackendURL />;
-    }
+  return (
+    <BrowserRouter basename={basename}>
+      <ScrollToTop>
+        <RouterContent />
+      </ScrollToTop>
+    </BrowserRouter>
+  );
+};
 
-    return (
-        <div>
-            <BrowserRouter basename={basename}>
-                <ScrollToTop>
-                    <Navbar />
-                    <Routes>
-                        <Route element={<Home />} path="/" />
-                        <Route element={<ListaCat />} path="/listaCat" />
-                        <Route element={<EditarCategoria />} path="/editar/:id" />
-                        <Route element={<CrearCategoria />} path="/crearCategoria" />
-                        <Route element={<ListaCategoria />} path="/listaCategoria" />
-                        <Route element={<Single />} path="/single/:theid" />
-                        <Route element={<Hoteles />} path="/hoteles" />
-                        <Route element={<Hoteles />} path="/listaHoteles" />
-                        <Route element={<Demo />} path="/demo" />
-                        <Route element={<ThemeForm />} path="/theme" />
-                        <Route element={<HotelTheme />} path="/hotelTheme" />
-                        <Route element={<Branches />} path="/listaBranches" />
-                        <Route element={<ListaRoom />} path="/listaRoom" />
-                        <Route element={<Maintenance />} path="/listaMaintenance" />
-                        <Route element={<HouseKeeper />} path="/houseKeeper" />
-                        <Route element={<LoginHouseKeeper />} path="/loginHouseKeeper" />
-                        <Route element={<ProtectedPrivateHouseKeeper><PrivateHouseKeeper /></ProtectedPrivateHouseKeeper>} path="/privateHouseKeeper" />
-                        <Route element={<HouseKeeperTask />} path="/HouseKeeperTask" />
-                        <Route element={<PrivateHotel />} path="/privateHotel" />
-                        <Route element={<LoginHotel />} path="/loginHotel" />
-                        <Route element={<SignupHotel />} path="/signupHotel" />
-                        <Route element={<AuthLayout />} path="/authLayout" />
-                        <Route element={<MaintenanceTask />} path="/maintenanceTask" />
-                        <Route element={<LoginMaintenance />} path="/loginMaintenance" />
-                        <Route element={<ProtectedPrivateMaintenance><PrivateMaintenance /></ProtectedPrivateMaintenance>} path="/privateMaintenance" />
-                        <Route element={<h1>Not found!</h1>} path="*" />
-                        <Route element={<TaskFilterView />} path="/task-filter" />
-                        <Route element={<h1>Not found!</h1>} />
-                      
-                    </Routes>
-                   
-                   
-                </ScrollToTop>
-                </BrowserRouter>
-                <Footer />
-        </div>
-    );
+const RouterContent = () => {
+  const location = useLocation();
+  const showNavbarAndFooter = !["/", "/demo"].includes(location.pathname);
+
+  if (!process.env.BACKEND_URL || process.env.BACKEND_URL === "") {
+    return <BackendURL />;
+  }
+
+  return (
+    <div className="d-flex flex-column min-vh-100">
+      {showNavbarAndFooter && <Navbar />}
+
+      {/* Contenido principal */}
+      <main className="flex-grow-1">
+        <Routes>
+          <Route element={<Home />} path="/" />
+          <Route element={<Demo />} path="/demo" />
+
+          {/* Tus rutas existentes */}
+          <Route element={<ListaCat />} path="/listaCat" />
+          <Route element={<EditarCategoria />} path="/editar/:id" />
+          <Route element={<CrearCategoria />} path="/crearCategoria" />
+          <Route element={<ListaCategoria />} path="/listaCategoria" />
+          <Route element={<Single />} path="/single/:theid" />
+          <Route element={<Hoteles />} path="/hoteles" />
+          <Route element={<Hoteles />} path="/listaHoteles" />
+          <Route element={<ThemeForm />} path="/theme" />
+          <Route element={<HotelTheme />} path="/hotelTheme" />
+          <Route element={<Branches />} path="/listaBranches" />
+          <Route element={<ListaRoom />} path="/listaRoom" />
+          <Route element={<Maintenance />} path="/listaMaintenance" />
+          <Route element={<HouseKeeper />} path="/houseKeeper" />
+          <Route element={<LoginHouseKeeper />} path="/loginHouseKeeper" />
+          <Route element={<ProtectedPrivateHouseKeeper><PrivateHouseKeeper /></ProtectedPrivateHouseKeeper>} path="/privateHouseKeeper" />
+          <Route element={<HouseKeeperTask />} path="/HouseKeeperTask" />
+          <Route element={<PrivateHotel />} path="/privateHotel" />
+          <Route element={<LoginHotel />} path="/loginHotel" />
+          <Route element={<SignupHotel />} path="/signupHotel" />
+          <Route element={<AuthLayout />} path="/authLayout" />
+          <Route element={<MaintenanceTask />} path="/maintenanceTask" />
+          <Route element={<LoginMaintenance />} path="/loginMaintenance" />
+          <Route element={<ProtectedPrivateMaintenance><PrivateMaintenance /></ProtectedPrivateMaintenance>} path="/privateMaintenance" />
+          <Route element={<TaskFilterView />} path="/task-filter" />
+
+          <Route element={<h1>Not found!</h1>} path="*" />
+        </Routes>
+      </main>
+
+     
+
+      {/* Footer solo en páginas que lo necesitan */}
+      {showNavbarAndFooter && <Footer />}
+    </div>
+  );
 };
 
 export default injectContext(Layout);

@@ -1,34 +1,40 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Context } from "../store/appContext";
-import Sidebar from "../component/sidebar";
 import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
-
-
+import PrivateLayout from "../component/privateLayout";
 
 const MaintenanceTask = () => {
   const { store, actions } = useContext(Context);
   const [nombre, setNombre] = useState('');
   const [photo, setPhoto] = useState('');
-  const [condition, setCondition] = useState('PENDIENTE');  // Estado por defecto "PENDIENTE"
+  const [condition, setCondition] = useState('PENDIENTE');
   const [idRoom, setIdRoom] = useState('');
   const [errorMessage, setErrorMessage] = useState("");
   const [idMaintenance, setIdMaintenance] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState('');
 
+  useEffect(() => {
+    actions.getMaintenanceTasks();
+    actions.getBranches();
+    actions.getRooms();
+    actions.getMaintenances();
+    actions.getHousekeepers();
+    actions.getRoomsByBranch();
+  }, []);
+
   const resetForm = () => {
     setNombre('');
     setPhoto('');
-    setCondition('PENDIENTE');  // Resetear a "PENDIENTE"
+    setCondition('PENDIENTE');
     setIdRoom('');
     setIdMaintenance('');
     setSelectedBranch('');
     setEditingId(null);
   };
 
-
   const handleCreateOrUpdate = () => {
-    if (!nombre || !idRoom || !idMaintenance) {
+    if (!nombre || !idRoom ) {
       alert('Por favor, completa todos los campos obligatorios');
       return;
     }
@@ -60,10 +66,7 @@ const MaintenanceTask = () => {
     setEditingId(task.id);
   };
 
-
-  const cancelEdit = () => {
-    resetForm();
-  };
+  const cancelEdit = () => resetForm();
 
   const handleDelete = (id) => {
     if (window.confirm('¿Estás segura/o de que quieres eliminar esta tarea?')) {
@@ -71,27 +74,16 @@ const MaintenanceTask = () => {
     }
   };
 
-  useEffect(() => {
-    actions.getMaintenanceTasks();
-    actions.getBranches();
-    actions.getRooms();
-    actions.getMaintenances();
-    actions.getHousekeepers();
-    actions.getRoomsByBranch();
-  }, []);
-
-
-
   return (
-    <div className="d-flex">
-      <Sidebar />
+    <PrivateLayout>
       <div className="container">
-        <h1>Gestión de Tareas de Mantenimiento</h1>
+        <h1 className="my-4 text-center">Gestión de Tareas de Mantenimiento</h1>
+
         <div className="card mb-4">
           <div className="card-body">
             <h5 className="card-title">{editingId ? 'Editar' : 'Crear'} Tarea de Mantenimiento</h5>
             <form>
-              <div className="form-group">
+              <div className="form-group mb-2">
                 <label>Tarea</label>
                 <input
                   type="text"
@@ -101,23 +93,20 @@ const MaintenanceTask = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-group mb-3">
                 <label>Foto (subir imagen)</label>
                 <CloudinaryApiHotel
-                  onUploadSuccess={(result) => setPhotoUrl(result.url)}
+                  setPhotoUrl={setPhoto}
                   setErrorMessage={setErrorMessage}
                 />
+                {photo && (
+                  <div className="mt-2">
+                    <img src={photo} alt="preview" style={{ width: "100%", maxWidth: "300px", borderRadius: "10px" }} />
+                  </div>
+                )}
               </div>
 
-              {photo && (
-                <div className="mt-2">
-                  <label>Vista previa:</label>
-                  <img src={photo} alt="preview" style={{ width: "100%", maxWidth: "300px", borderRadius: "10px" }} />
-                </div>
-              )}
-
-
-              <div className="form-group">
+              <div className="form-group mb-2">
                 <label>Estado en que se encuentra</label>
                 <input
                   type="text"
@@ -127,7 +116,7 @@ const MaintenanceTask = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-group mb-2">
                 <label>Sucursal</label>
                 <select
                   className="form-control"
@@ -144,7 +133,7 @@ const MaintenanceTask = () => {
                 </select>
               </div>
 
-              <div className="form-group">
+              <div className="form-group mb-2">
                 <label>Habitación</label>
                 <select
                   className="form-control"
@@ -158,7 +147,7 @@ const MaintenanceTask = () => {
                 </select>
               </div>
 
-              <div className="form-group">
+              <div className="form-group mb-3">
                 <label>Técnico de Mantenimiento</label>
                 <select
                   className="form-control"
@@ -174,8 +163,8 @@ const MaintenanceTask = () => {
 
               <button
                 type="button"
-                className="btn mt-3"
-                style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                className="btn"
+                style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
                 onClick={handleCreateOrUpdate}
               >
                 {editingId ? "Actualizar" : "Crear"} Tarea
@@ -183,8 +172,7 @@ const MaintenanceTask = () => {
               {editingId && (
                 <button
                   type="button"
-                  className="btn mt-3 ml-2"
-                  style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                  className="btn btn-secondary ml-2"
                   onClick={cancelEdit}
                 >
                   Cancelar
@@ -207,14 +195,18 @@ const MaintenanceTask = () => {
               <th>Acciones</th>
             </tr>
           </thead>
-
           <tbody>
             {Array.isArray(store.maintenanceTasks) && store.maintenanceTasks.map(task => (
               <tr key={task.id}>
-                <td>{task.maintenance?.nombre || "-"}</td>
+                <td>
+                  {task.maintenance?.nombre
+                    ? task.maintenance.nombre
+                    : <span className="text-muted">Camarera</span>}
+                </td>
+
                 <td>{task.nombre}</td>
                 <td>{task.condition}</td>
-                <td> {store.branches.find(branch => branch.id === task.room?.branch_id)?.nombre || "-"}</td>
+                <td>{store.branches.find(branch => branch.id === task.room?.branch_id)?.nombre || "-"}</td>
                 <td>{task.room_nombre || task.room?.nombre}</td>
                 <td>
                   {task.photo_url ? (
@@ -228,20 +220,27 @@ const MaintenanceTask = () => {
                   )}
                 </td>
                 <td>
-                  <button className="btn btn-sm" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }} onClick={() => editMaintenanceTask(task)}>
+                  <button
+                    className="btn btn-sm me-2"
+                    style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
+                    onClick={() => editMaintenanceTask(task)}
+                  >
                     Editar
                   </button>
-                  <button className="btn btn-sm ml-2" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }} onClick={() => handleDelete(task.id)}>
+                  <button
+                    className="btn btn-sm"
+                    style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
+                    onClick={() => handleDelete(task.id)}
+                  >
                     Eliminar
                   </button>
                 </td>
               </tr>
             ))}
           </tbody>
-
         </table>
       </div>
-    </div>
+    </PrivateLayout>
   );
 };
 

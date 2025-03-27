@@ -19,7 +19,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			housekeepers: [],
 			maintenances: [],
 			housekeepertasks: [],
-			maintenancetasks: [],
+			maintenanceTasks: [],
 			branches: [],
 			categories: [],
 			rooms: [],

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
-import Sidebar from "../component/sidebar";
 import { Context } from "../store/appContext";
 import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
+import PrivateLayout from "../component/privateLayout";
 
 const HouseKeeper = () => {
   const { store, actions } = useContext(Context);
@@ -13,7 +13,6 @@ const HouseKeeper = () => {
   const [showForm, setShowForm] = useState(false);
   const [photoUrl, setPhotoUrl] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-
 
   useEffect(() => {
     actions.getHousekeepers();
@@ -27,6 +26,7 @@ const HouseKeeper = () => {
     setIdBranche('');
     setPhotoUrl('');
     setEditingId(null);
+    setShowForm(false);
   };
 
   const handleEdit = (housekeeper) => {
@@ -46,15 +46,15 @@ const HouseKeeper = () => {
       password,
       id_branche,
       photo_url: photoUrl
-
     };
+
     if (editingId) {
       actions.updateHousekeeper(editingId, data);
     } else {
       actions.createHousekeeper(data);
     }
+
     resetForm();
-    setShowForm(false);
   };
 
   const handleDelete = (id) => {
@@ -66,16 +66,14 @@ const HouseKeeper = () => {
   const shouldShowForm = showForm || editingId;
 
   return (
-    <div className="d-flex">
-      <Sidebar />
-
+    <PrivateLayout>
       <div className="container">
         <h2 className="text-center my-3">Gestión de Housekeepers</h2>
 
         <div className="d-flex justify-content-center align-items-center mb-4">
           <button
             className="btn"
-            style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+            style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
             onClick={() => {
               resetForm();
               setShowForm(true);
@@ -115,8 +113,20 @@ const HouseKeeper = () => {
               <div className="col">{h.email}</div>
               <div className="col">{h.id_branche}</div>
               <div className="col text-center">
-                <button className="btn me-2" style={{ backgroundColor: "#ac85eb" }} onClick={() => handleEdit(h)}>Editar</button>
-                <button className="btn" style={{ backgroundColor: "#ac85eb" }} onClick={() => handleDelete(h.id)}>Eliminar</button>
+                <button
+                  className="btn me-2"
+                  style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
+                  onClick={() => handleEdit(h)}
+                >
+                  Editar
+                </button>
+                <button
+                  className="btn"
+                  style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
+                  onClick={() => handleDelete(h.id)}
+                >
+                  Eliminar
+                </button>
               </div>
             </div>
           ))}
@@ -125,14 +135,46 @@ const HouseKeeper = () => {
         {shouldShowForm && (
           <div className="card p-4 mt-5">
             <form onSubmit={handleSubmit}>
-              <input type="text" className="form-control mb-2" placeholder="Nombre" value={nombre} onChange={e => setNombre(e.target.value)} required />
-              <input type="email" className="form-control mb-2" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-              <input type="password" className="form-control mb-2" placeholder="Contraseña" value={password} onChange={e => setPassword(e.target.value)} required />
+              <input
+                type="text"
+                className="form-control mb-2"
+                placeholder="Nombre"
+                value={nombre}
+                onChange={e => setNombre(e.target.value)}
+                required
+              />
+              <input
+                type="email"
+                className="form-control mb-2"
+                placeholder="Email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                className="form-control mb-2"
+                placeholder="Contraseña"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+              />
               <select
                 className="form-select mb-3"
                 value={id_branche}
                 onChange={e => setIdBranche(e.target.value)}
                 required
+                style={{
+                  backgroundColor: "#0dcaf0",
+                  color: "white",
+                  border: "none",
+                  fontWeight: "bold",
+                  appearance: "none",
+                  WebkitAppearance: "none",
+                  MozAppearance: "none",
+                  padding: "10px",
+                  borderRadius: "4px"
+                }}
               >
                 <option value="">Seleccione una sucursal</option>
                 {store.branches?.map(branch => (
@@ -146,7 +188,7 @@ const HouseKeeper = () => {
                   Foto
                 </label>
                 <CloudinaryApiHotel setPhotoUrl={setPhotoUrl} setErrorMessage={setErrorMessage} />
-             </div>
+              </div>
 
               {/* Preview de imagen */}
               {photoUrl && (
@@ -157,19 +199,31 @@ const HouseKeeper = () => {
                   style={{ width: "150px" }}
                 />
               )}
+
               <div className="d-flex justify-content-between">
-                <button type="submit" className="btn" style={{ backgroundColor: "#ac85eb" }}>
+                <button
+                  type="submit"
+                  className="btn"
+                  style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
+                >
                   {editingId ? 'Actualizar' : 'Crear'} Housekeeper
                 </button>
                 {!editingId && (
-                  <button type="button" className="btn" style={{ backgroundColor: "#ac85eb" }} onClick={() => setShowForm(false)}>Cancelar</button>
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
+                    onClick={() => setShowForm(false)}
+                  >
+                    Cancelar
+                  </button>
                 )}
               </div>
             </form>
           </div>
         )}
       </div>
-    </div>
+    </PrivateLayout>
   );
 };
 

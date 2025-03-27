@@ -59,9 +59,9 @@ const LoginHotel = () => {
                     <button
                         type="submit"
                         className="btn btn-lg w-100 text-white"
-                        style={{ backgroundColor: "#6b72dd", transition: "background-color 0.3s ease", border: "none" }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = "#5a62c9"}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = "#6b72dd"}
+                        style={{ backgroundColor: "#0dcaf0", transition: "background-color 0.3s ease", border: "none" }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#1bc1d2"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "#0dcaf0"}
                     >
                         <i className="fas fa-sign-in-alt me-2"></i> Iniciar sesión
                     </button>
@@ -71,9 +71,9 @@ const LoginHotel = () => {
                     ¿No tienes cuenta?{" "}
                     <Link
                         to="/signupHotel"
-                        style={{color: "#6b72dd", textDecoration: "none", fontWeight: "500", transition: "all 0.3s ease" }}
-                        onMouseEnter={(e) => { e.target.style.color = "#5a62c9"; e.target.style.textDecoration = "underline"; }}
-                        onMouseLeave={(e) => { e.target.style.color = "#6b72dd"; e.target.style.textDecoration = "none"; }}
+                        style={{color: "#0dcaf0", textDecoration: "none", fontWeight: "500", transition: "all 0.3s ease" }}
+                        onMouseEnter={(e) => { e.target.style.color = "#1bc1d2"; e.target.style.textDecoration = "underline"; }}
+                        onMouseLeave={(e) => { e.target.style.color = "#0dcaf0"; e.target.style.textDecoration = "none"; }}
                     >
                         Regístrate
                     </Link>
