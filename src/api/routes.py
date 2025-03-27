@@ -637,21 +637,13 @@ def get_maintenancetasks_by_hotel():
     rooms = Room.query.filter(Room.branch_id.in_(branch_ids)).all()
     room_ids = [r.id for r in rooms]
 
-    maintenances = Maintenance.query.filter_by(hotel_id=hotel.id).all()
-    maintenance_ids = [m.id for m in maintenances]
-
-    housekeepers = HouseKeeper.query.filter(HouseKeeper.id_branche.in_(branch_ids)).all()
-    housekeeper_ids = [h.id for h in housekeepers]
-
+    # ✅ Obtenemos todas las tareas de mantenimiento de las habitaciones del hotel
     tasks = MaintenanceTask.query.filter(
-        MaintenanceTask.room_id.in_(room_ids),
-        MaintenanceTask.maintenance_id.in_(maintenance_ids)
+        MaintenanceTask.room_id.in_(room_ids)
     ).all()
 
-    # Opcional: incluir también tareas creadas por housekeepers
-    filtered = [t for t in tasks if (t.housekeeper_id is None or t.housekeeper_id in housekeeper_ids)] 
+    return jsonify([t.serialize() for t in tasks]), 200
 
-    return jsonify([t.serialize() for t in filtered]), 200
 
 # crear tareas de mantenimiento
 

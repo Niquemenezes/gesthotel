@@ -51,7 +51,10 @@ import Chatbot from "../component/chatBot";
         return;
       }
       const data = await response.json();
-      const filteredTasks = data.filter(task => task.maintenance_id === maintenanceId);
+      const filteredTasks = data.filter(task =>
+        task.maintenance_id === maintenanceId || task.maintenance_id === null
+      );
+      
       setTasks(filteredTasks);
       setGroupedTasks(groupTasksByRoom(filteredTasks));
 

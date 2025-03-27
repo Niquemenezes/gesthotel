@@ -34,7 +34,7 @@ const MaintenanceTask = () => {
   };
 
   const handleCreateOrUpdate = () => {
-    if (!nombre || !idRoom || !idMaintenance) {
+    if (!nombre || !idRoom ) {
       alert('Por favor, completa todos los campos obligatorios');
       return;
     }
@@ -119,7 +119,7 @@ const MaintenanceTask = () => {
               <div className="form-group mb-2">
                 <label>Sucursal</label>
                 <select
-                  className="form-control" 
+                  className="form-control"
                   value={selectedBranch}
                   onChange={(e) => {
                     setSelectedBranch(e.target.value);
@@ -196,9 +196,14 @@ const MaintenanceTask = () => {
             </tr>
           </thead>
           <tbody>
-          {Array.isArray(store.maintenanceTasks) && store.maintenanceTasks.map(task => (
+            {Array.isArray(store.maintenanceTasks) && store.maintenanceTasks.map(task => (
               <tr key={task.id}>
-                <td>{task.maintenance?.nombre || "-"}</td>
+                <td>
+                  {task.maintenance?.nombre
+                    ? task.maintenance.nombre
+                    : <span className="text-muted">Camarera</span>}
+                </td>
+
                 <td>{task.nombre}</td>
                 <td>{task.condition}</td>
                 <td>{store.branches.find(branch => branch.id === task.room?.branch_id)?.nombre || "-"}</td>
