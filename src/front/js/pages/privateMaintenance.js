@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
 import Chatbot from "../component/chatBot";
+import "../../styles/privateMaintenance.css";
 
- const PrivateMaintenance = () => {
+const PrivateMaintenance = () => {
   const [tasks, setTasks] = useState([]);
   const [groupedTasks, setGroupedTasks] = useState({});
   const [isRoomSelected, setIsRoomSelected] = useState(false);
@@ -54,7 +55,7 @@ import Chatbot from "../component/chatBot";
       const filteredTasks = data.filter(task =>
         task.maintenance_id === maintenanceId || task.maintenance_id === null
       );
-      
+
       setTasks(filteredTasks);
       setGroupedTasks(groupTasksByRoom(filteredTasks));
 
@@ -109,19 +110,19 @@ import Chatbot from "../component/chatBot";
         navigate('/loginMaintenance');
         return;
       }
-  
+
       const currentPhoto = taskPhotos[taskId] || tasks.find(t => t.id === taskId)?.photo_url || null;
       const updatedTask = {
         condition: newCondition,
         photo_url: currentPhoto
       };
 
-      setTasks(prevTasks => 
-        prevTasks.map(task => 
+      setTasks(prevTasks =>
+        prevTasks.map(task =>
           task.id === taskId ? { ...task, ...updatedTask } : task
         )
       );
-  
+
       setGroupedTasks(prevGroupedTasks => {
         const updated = { ...prevGroupedTasks };
         Object.keys(updated).forEach(roomId => {
@@ -140,22 +141,22 @@ import Chatbot from "../component/chatBot";
         },
         body: JSON.stringify(updatedTask),
       });
-  
+
       if (!response.ok) throw new Error('Error al actualizar');
-      
+
       const updatedTaskFromBackend = await response.json();
-      
+
       if (updatedTaskFromBackend.photo_url) {
         setTaskPhotos(prev => ({
           ...prev,
           [taskId]: updatedTaskFromBackend.photo_url
         }));
       }
-  
+
       if (newCondition === 'FINALIZADA') {
         setTimeout(handleBackToRooms, 500);
       }
-  
+
     } catch (error) {
       console.error('Error:', error);
       fetchMaintenanceTasks();
@@ -169,8 +170,8 @@ import Chatbot from "../component/chatBot";
 
       const newPhotos = { ...taskPhotos, [taskId]: photoUrl };
       setTaskPhotos(newPhotos);
-      
-      setTasks(prev => prev.map(t => 
+
+      setTasks(prev => prev.map(t =>
         t.id === taskId ? { ...t, photo_url: photoUrl } : t
       ));
 
@@ -180,21 +181,21 @@ import Chatbot from "../component/chatBot";
           t.id === taskId ? { ...t, photo_url: photoUrl } : t
         ),
       }));
-      
+
       const response = await fetch(`${backendUrl}api/maintenancetasks/${taskId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           photo_url: photoUrl,
           condition: tasks.find(t => t.id === taskId)?.condition || 'PENDIENTE'
         }),
       });
 
       if (!response.ok) throw new Error('Error al guardar foto');
-      
+
       const updatedTask = await response.json();
       setTaskPhotos(prev => ({ ...prev, [taskId]: updatedTask.photo_url }));
 
@@ -209,37 +210,55 @@ import Chatbot from "../component/chatBot";
   };
 
   const handleFilterTasks = (view) => {
-    navigate('/task-filter', { 
-      state: { 
+    navigate('/task-filter', {
+      state: {
         view,
         tasks: tasks.map(task => ({
           ...task,
           photo: taskPhotos[task.id] || task.photo_url || null
         }))
-      } 
+      }
     });
   };
 
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
       <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
-        <h2 className="text-center mb-4 text-primary">Tareas de Mantenimiento</h2>
+        <h2 className="text-center mb-4" style={{color:"#0dcaf0"}}>Tareas de Mantenimiento</h2>
         <Chatbot />
         {!isRoomSelected && Object.keys(groupedTasks).length > 0 ? (
-          Object.keys(groupedTasks).map((roomId) => {
-            const roomTasks = groupedTasks[roomId];
-            const roomName = roomTasks[0].room_nombre || `Habitación ${roomId}`;
-            return (
-              <div key={roomId} className="mb-3">
-                <button 
-                  className="btn btn-primary mt-3 px-3 py-2" 
-                  onClick={() => handleRoomClick(roomId)}
-                >
-                  <h5>Habitación: {roomName}</h5>
-                </button>
-              </div>
-            );
-          })
+         <div className="row">
+         {Object.keys(groupedTasks).map((roomId) => {
+           const roomTasks = groupedTasks[roomId];
+           const roomName = roomTasks[0].room_nombre || `Habitación ${roomId}`;
+       
+           const todasFinalizadas = roomTasks.every(task => task.condition === 'FINALIZADA');
+           const hayPendientes = roomTasks.some(task => task.condition === 'PENDIENTE');
+       
+           let iconEstado = '';
+           const iconRoom = <i className="fas fa-bed me-2"></i>;
+       
+           if (todasFinalizadas) {
+             iconEstado = '✅';
+           } else if (hayPendientes) {
+             iconEstado = '🕒';
+           } else {
+             iconEstado = '❔';
+           }
+       
+           return (
+             <div key={roomId} className="col-md-6">
+               <button
+                 className="btn custom-room-button text-start mb-3 w-100 py-2 fw-semibold"
+                 onClick={() => handleRoomClick(roomId)}
+               >
+                 {iconRoom} {iconEstado} Habitación: {roomName}
+               </button>
+             </div>
+           );
+         })}
+       </div>
+       
         ) : null}
         {isRoomSelected && (
           <>
@@ -248,26 +267,25 @@ import Chatbot from "../component/chatBot";
                 <div key={task.id} className="card mb-3 shadow-sm">
                   <div className="card-body">
                     <p><strong>Nombre:</strong> {task.nombre}</p>
-                    <p><strong>Estado actual:</strong> 
-                      <span className={`badge ${
-                        task.condition === 'PENDIENTE' ? 'bg-warning' :
-                        task.condition === 'EN PROCESO' ? 'bg-info' : 'bg-success'
-                      } ms-2`}>
+                    <p><strong>Estado actual:</strong>
+                      <span className={`badge ${task.condition === 'PENDIENTE' ? 'bg-warning' :
+                          task.condition === 'EN PROCESO' ? 'bg-info' : 'bg-success'
+                        } ms-2`}>
                         {task.condition}
                       </span>
                     </p>
 
                     <div className="mb-3">
                       <label htmlFor="photo" className="form-label">Foto</label>
-                      <CloudinaryApiHotel 
+                      <CloudinaryApiHotel
                         setPhotoUrl={(url) => handlePhotoUpload(task.id, url)}
                         setErrorMessage={(msg) => handlePhotoError(task.id, msg)}
                       />
                       {(taskPhotos[task.id] || task.photo_url) && (
                         <div className="mt-2">
-                          <img 
-                            src={taskPhotos[task.id] || task.photo_url} 
-                            alt={`Tarea ${task.nombre}`} 
+                          <img
+                            src={taskPhotos[task.id] || task.photo_url}
+                            alt={`Tarea ${task.nombre}`}
                             className="img-thumbnail"
                             style={{ maxWidth: '200px' }}
                           />
@@ -277,15 +295,14 @@ import Chatbot from "../component/chatBot";
                         <div className="text-danger small mt-1">{errorMessages[task.id]}</div>
                       )}
                     </div>
-                    
+
                     <div className="mt-3 p-3 border rounded d-flex justify-content-around">
                       {['PENDIENTE', 'EN PROCESO', 'FINALIZADA'].map((status) => (
                         <button
                           key={status}
-                          className={`btn ${
-                            status === 'PENDIENTE' ? 'btn-warning' :
-                            status === 'EN PROCESO' ? 'btn-info' : 'btn-success'
-                          }`}
+                          className={`btn ${status === 'PENDIENTE' ? 'btn-warning' :
+                              status === 'EN PROCESO' ? 'btn-info' : 'btn-success'
+                            }`}
                           onClick={() => handleConditionChange(task.id, selectedRoomId, status)}
                           disabled={task.condition === status}
                         >
@@ -305,18 +322,19 @@ import Chatbot from "../component/chatBot";
               ))}
             </div>
 
-            <button 
-              className="btn btn-secondary w-100 mt-3" 
-              onClick={handleBackToRooms}
+            <button
+              className="btn custom-room-button w-100 mt-3 fw-semibold py-2"
+              onClick={handleBackToRooms} // o tu función de navegación
             >
-              ← Volver a habitaciones
+              🔙 Volver a todas las habitaciones
             </button>
+
           </>
         )}
 
         <div className="mt-4 border-top pt-3">
-          <button 
-            className="btn btn-outline-danger w-100" 
+          <button
+            className="btn btn-outline-danger w-100"
             onClick={handleLogout}
           >
             Cerrar sesión
@@ -326,26 +344,26 @@ import Chatbot from "../component/chatBot";
         <div className="card mt-4 p-3">
           <h5 className="text-center">Filtrar tareas</h5>
           <div className="d-flex justify-content-around">
-            <button 
-              className="btn btn-primary" 
+            <button
+              className="btn btn-primary"
               onClick={() => handleFilterTasks('all')}
             >
               Todas
             </button>
-            <button 
-              className="btn btn-warning" 
+            <button
+              className="btn btn-warning"
               onClick={() => handleFilterTasks('PENDIENTE')}
             >
               Pendientes
             </button>
-            <button 
-              className="btn btn-success" 
+            <button
+              className="btn btn-success"
               onClick={() => handleFilterTasks('FINALIZADA')}
             >
               Finalizadas
             </button>
           </div>
-       
+
         </div>
       </div>
     </div>

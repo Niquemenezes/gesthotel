@@ -12,7 +12,6 @@ const HouseKeeperTask = () => {
   const [assignmentDate, setAssignmentDate] = useState(new Date().toISOString().split('T')[0]);
   const [submissionDate, setSubmissionDate] = useState('');
   const [idRoom, setIdRoom] = useState('');
-  const [errorMessage, setErrorMessage] = useState("");
   const [idHousekeeper, setIdHousekeeper] = useState('');
   const [filteredRooms, setFilteredRooms] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -87,7 +86,7 @@ const HouseKeeperTask = () => {
     setNombre('');
     setPhoto('');
     setCondition('PENDIENTE');
-    setAssignmentDate('');
+    setAssignmentDate(new Date().toISOString().split('T')[0]); // Siempre se actualiza con la fecha de hoy
     setSubmissionDate('');
     setIdRoom('');
     setIdHousekeeper('');
@@ -129,6 +128,26 @@ const HouseKeeperTask = () => {
             </div>
 
             <div className="form-group">
+              <label>Habitación</label>
+              <select
+                className="form-control mb-3"
+                value={idRoom}
+                onChange={(e) => setIdRoom(e.target.value)}
+                style={{
+                  backgroundColor: "#0dcaf0",
+                  color: "white",
+                  border: "none",
+                  fontWeight: "bold"
+                }}
+              >
+                <option value="">Selecciona una habitación</option>
+                {filteredRooms.map((room) => (
+                  <option key={room.id} value={room.id}>{room.nombre}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
               <label>Tarea</label>
               <input className="form-control mb-2" value={nombre} onChange={(e) => setNombre(e.target.value)} />
             </div>
@@ -163,26 +182,6 @@ const HouseKeeperTask = () => {
                 value={submissionDate}
                 onChange={(e) => setSubmissionDate(e.target.value)}
               />
-            </div>
-
-            <div className="form-group">
-              <label>Habitación</label>
-              <select
-                className="form-control mb-3"
-                value={idRoom}
-                onChange={(e) => setIdRoom(e.target.value)}
-                style={{
-                  backgroundColor: "#0dcaf0",
-                  color: "white",
-                  border: "none",
-                  fontWeight: "bold"
-                }}
-              >
-                <option value="">Selecciona una habitación</option>
-                {filteredRooms.map((room) => (
-                  <option key={room.id} value={room.id}>{room.nombre}</option>
-                ))}
-              </select>
             </div>
 
             <div className="form-group">

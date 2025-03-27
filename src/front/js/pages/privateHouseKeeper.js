@@ -1,7 +1,9 @@
+// Código completo con mejoras visuales y filtros de tareas
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import CloudinaryApiHotel from '../component/cloudinaryApiHotel';
+import "../../styles/privatehousekeepers.css";
 
 const PrivateHouseKeeper = () => {
   const [tasks, setTasks] = useState([]);
@@ -14,6 +16,7 @@ const PrivateHouseKeeper = () => {
   const [maintenanceCondition, setMaintenanceCondition] = useState('PENDIENTE');
   const [showMaintenanceTasks, setShowMaintenanceTasks] = useState(false);
   const [photo, setPhoto] = useState('');
+  const [taskFilter, setTaskFilter] = useState('TODAS');
 
   const navigate = useNavigate();
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.BACKEND_URL;
@@ -43,9 +46,7 @@ const PrivateHouseKeeper = () => {
       const response = await fetch(`${backendUrl}api/housekeeper_tasks`);
       if (!response.ok) throw new Error('Error en la respuesta del servidor');
       const data = await response.json();
-      const filteredTasks = data.filter(
-        task => task.id_housekeeper === housekeeperId && task.condition === 'PENDIENTE'
-      );
+      const filteredTasks = data.filter(task => task.id_housekeeper === housekeeperId);
       setTasks(filteredTasks);
     } catch (error) {
       console.error('Error al obtener las tareas:', error);
@@ -187,11 +188,10 @@ const PrivateHouseKeeper = () => {
       });
       if (response.ok) {
         const updatedData = await response.json();
-        if (newStatus === 'FINALIZADA') {
-          setTasks(prev => prev.filter(task => task.id !== taskId));
-        } else {
-          setTasks(prev => prev.map(task => task.id === taskId ? updatedData : task));
-        }
+        setTasks(prev =>
+          prev.map(task => task.id === taskId ? { ...task, condition: newStatus } : task)
+        );
+
         alert('Estado de la tarea actualizado con éxito');
       } else {
         const errorData = await response.json();
@@ -208,25 +208,69 @@ const PrivateHouseKeeper = () => {
     setShowMaintenanceTasks(prev => !prev);
   };
 
+  const getFilteredTasks = () => {
+    if (!selectedRoomId || !groupedTasks[selectedRoomId]) return [];
+    return groupedTasks[selectedRoomId].filter(task => {
+      if (taskFilter === 'TODAS') return true;
+      return task.condition === taskFilter;
+    });
+  };
+
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
-      <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
+      <div className="card shadow-lg p-4 w-100" style={{ maxWidth: '900px' }}>
         <h2 className="text-center mb-4">Tareas de Camarera</h2>
 
-        {!isRoomSelected && Object.keys(groupedTasks).length > 0 ? (
-          Object.keys(groupedTasks).map(roomId => (
-            <div key={roomId} className="mb-3">
-              <button className="btn btn-primary mt-3 px-3 py-2" onClick={() => handleRoomClick(roomId)}>
-                <h5>Habitación: {groupedTasks[roomId][0].room_nombre}</h5>
-              </button>
-            </div>
-          ))
-        ) : null}
+        {!isRoomSelected && Object.keys(groupedTasks).length > 0 && (
+          <div className="row">
+            {Object.keys(groupedTasks).map(roomId => {
+              const tareas = groupedTasks[roomId];
+              const todasFinalizadas = tareas.every(task => task.condition === 'FINALIZADA');
+              const hayPendientes = tareas.some(task => task.condition === 'PENDIENTE');
+
+              let iconEstado = '';
+              const iconRoom = <i className="fas fa-bed me-2"></i>; // Ícono Font Awesome
+
+              if (todasFinalizadas) {
+                iconEstado = '✅';
+              } else if (hayPendientes) {
+                iconEstado = '🕒';
+              } else {
+                iconEstado = '❔';
+              }
+
+              return (
+                <div key={roomId} className="col-md-6">
+                  <button
+                    className="btn custom-room-button text-start mb-3 w-100 py-2 fw-semibold"
+                    onClick={() => handleRoomClick(roomId)}
+                  >
+                    {iconRoom} {iconEstado} Habitación: {tareas[0].room_nombre}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+
 
         {isRoomSelected && (
           <div className="mt-4">
-            {groupedTasks[selectedRoomId]?.map(task => (
-              <div key={task.id} className="card mb-3 shadow-sm">
+            <div className="d-flex justify-content-center mb-3">
+              <button className={`btn mx-2 ${taskFilter === 'TODAS' ? 'btn-secondary' : 'btn-outline-secondary'}`} onClick={() => setTaskFilter('TODAS')}>
+                Todas
+              </button>
+              <button className={`btn mx-2 ${taskFilter === 'PENDIENTE' ? 'btn-warning' : 'btn-outline-warning'}`} onClick={() => setTaskFilter('PENDIENTE')}>
+                Pendientes
+              </button>
+              <button className={`btn mx-2 ${taskFilter === 'FINALIZADA' ? 'btn-success' : 'btn-outline-success'}`} onClick={() => setTaskFilter('FINALIZADA')}>
+                Finalizadas
+              </button>
+            </div>
+
+            {getFilteredTasks().map(task => (
+              <div key={task.id} className="card mb-3 shadow-sm rounded-3">
                 <div className="card-body">
                   <p><strong>Tarea asignada:</strong> {task.nombre}</p>
                   <div className="d-flex justify-content-between mb-3">
@@ -255,7 +299,7 @@ const PrivateHouseKeeper = () => {
             ))}
 
             <div className="mt-3">
-              <button className="btn btn-primary" onClick={toggleMaintenanceTasks}>
+              <button className="btn custom-room-button" onClick={toggleMaintenanceTasks}>
                 {showMaintenanceTasks ? 'Ocultar tareas de mantenimiento' : 'Mostrar tareas de mantenimiento'}
               </button>
             </div>
@@ -282,7 +326,7 @@ const PrivateHouseKeeper = () => {
                     <button
                       type="button"
                       className="btn btn-block"
-                      style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }}
+                      style={{ backgroundColor: "#0dcaf0" }}
                       onClick={createMaintenanceTask}
                     >
                       Crear Tarea
@@ -312,21 +356,26 @@ const PrivateHouseKeeper = () => {
               </div>
             )}
 
-            <div className="mt-3">
-              <button className="btn w-100" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }} onClick={handleBackToRooms}>
-                Volver a ver todas las habitaciones
-              </button>
-            </div>
+            <button
+              className="btn custom-room-button w-100 mt-3 fw-semibold py-2"
+              onClick={handleBackToRooms}
+            >
+              🔙 Volver a todas las habitaciones
+            </button>
+
           </div>
+          
         )}
 
-        <div className="d-flex justify-content-center">
-          <button className="btn mt-3 px-5 py-2" style={{ backgroundColor: "#ac85eb", borderColor: "#B7A7D1" }} onClick={handleLogout}>
-            Cerrar sesión
-          </button>
-        </div>
+      <div className="d-flex justify-content-center">
+        <button className="btn mt-3 px-5 py-2" style={{ backgroundColor: "#0dcaf0" }} onClick={handleLogout}>
+          <i className="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+
+          Cerrar sesión
+        </button>
       </div>
     </div>
+    </div >
   );
 };
 
