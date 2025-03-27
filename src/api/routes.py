@@ -1059,29 +1059,39 @@ def login_maintenance():
     }, SECRET_KEY, algorithm='HS256')
     return jsonify({'token': token}), 200
 
+# CREATE a new HouseKeeperTask (with improved photo handling)
 @api.route('/housekeeper_task', methods=['POST'])
 def create_housekeeper_task():
     data = request.get_json()
     
-    # Validate if all required fields are in the request
-    if not data.get('nombre') or not data.get('photo_url') or not data.get('condition') or not data.get('assignment_date') or not data.get('submission_date'):
+    # Validate required fields
+    required_fields = ['nombre', 'condition', 'assignment_date', 'submission_date', 'id_housekeeper']
+    if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing required data"}), 400
 
-    # Check if room and housekeeper IDs are valid
-    room = Room.query.get(data.get('id_room'))
+    # Check if housekeeper exists
     housekeeper = HouseKeeper.query.get(data.get('id_housekeeper'))
+    if not housekeeper:
+        return jsonify({"error": "Invalid housekeeper ID"}), 404
 
-    if not room or not housekeeper:
-        return jsonify({"error": "Invalid room or housekeeper ID"}), 404
+    # Check room if provided
+    if 'id_room' in data:
+        room = Room.query.get(data.get('id_room'))
+        if not room:
+            return jsonify({"error": "Invalid room ID"}), 404
 
-    # Create new HouseKeeperTask
+    # Validate condition
+    if data['condition'] not in ['PENDIENTE', 'EN PROCESO', 'FINALIZADA']:
+        return jsonify({"error": "Invalid condition value"}), 400
+
+    # Create new task
     new_task = HouseKeeperTask(
         nombre=data['nombre'],
-        photo_url=data['photo_url'],  # Correct usage of 'photo_url'
+        photo_url=data.get('photo_url'),  # Optional field
         condition=data['condition'],
         assignment_date=data['assignment_date'],
         submission_date=data['submission_date'],
-        id_room=data['id_room'],
+        id_room=data.get('id_room'),
         id_housekeeper=data['id_housekeeper']
     )
 
@@ -1090,90 +1100,95 @@ def create_housekeeper_task():
 
     return jsonify(new_task.serialize()), 201
 
-
-# READ all HouseKeeperTasks
+# GET all HouseKeeperTasks with filtering
 @api.route('/housekeeper_tasks', methods=['GET'])
 def get_all_housekeeper_tasks():
-    status = request.args.get('status')  # Obtener el parámetro de estado de la query string
+    # Get query parameters
+    status = request.args.get('condition')  # Changed to 'condition' to match field name
+    housekeeper_id = request.args.get('housekeeper_id', type=int)
+    room_id = request.args.get('room_id', type=int)
     
+    # Start query
+    query = HouseKeeperTask.query
+    
+    # Apply filters if provided
     if status:
-        tasks = HouseKeeperTask.query.filter_by(condition=status).all()  # Filtrar por estado
-    else:
-        tasks = HouseKeeperTask.query.all()  # Si no se especifica el estado, devuelve todas las tareas
+        query = query.filter_by(condition=status)
+    if housekeeper_id:
+        query = query.filter_by(id_housekeeper=housekeeper_id)
+    if room_id:
+        query = query.filter_by(id_room=room_id)
     
+    tasks = query.all()
     return jsonify([task.serialize() for task in tasks]), 200
 
-
-# READ a single HouseKeeperTask by ID
+# GET single HouseKeeperTask
 @api.route('/housekeeper_task/<int:id>', methods=['GET'])
 def get_housekeeper_task(id):
     task = HouseKeeperTask.query.get(id)
-    
-    if task is None:
+    if not task:
         return jsonify({"error": "HouseKeeperTask not found"}), 404
-    
     return jsonify(task.serialize()), 200
 
-# UPDATE a HouseKeeperTask by ID
+# UPDATE HouseKeeperTask (full implementation)
 @api.route('/housekeeper_task/<int:id>', methods=['PUT'])
 def update_housekeeper_task(id):
     task = HouseKeeperTask.query.get(id)
-
-    if task is None:
+    if not task:
         return jsonify({"error": "HouseKeeperTask not found"}), 404
     
     data = request.get_json()
 
-    # Update fields if they are provided in the request
-    if data.get('nombre'):
+    # Update fields
+    if 'nombre' in data:
         task.nombre = data['nombre']
-    if data.get('photo'):
-        task.photo = data['photo']
-    if data.get('condition'):
+    if 'photo_url' in data:
+        task.photo_url = data['photo_url'] if data['photo_url'] else None
+    if 'condition' in data:
+        if data['condition'] not in ['PENDIENTE', 'EN PROCESO', 'FINALIZADA']:
+            return jsonify({"error": "Invalid condition value"}), 400
         task.condition = data['condition']
-    if data.get('assignment_date'):
+    if 'assignment_date' in data:
         task.assignment_date = data['assignment_date']
-    if data.get('submission_date'):
+    if 'submission_date' in data:
         task.submission_date = data['submission_date']
-    if data.get('id_room'):
+    if 'id_room' in data:
+        if data['id_room']:
+            room = Room.query.get(data['id_room'])
+            if not room:
+                return jsonify({"error": "Invalid room ID"}), 404
         task.id_room = data['id_room']
-    if data.get('id_housekeeper'):
+    if 'id_housekeeper' in data:
+        housekeeper = HouseKeeper.query.get(data['id_housekeeper'])
+        if not housekeeper:
+            return jsonify({"error": "Invalid housekeeper ID"}), 404
         task.id_housekeeper = data['id_housekeeper']
 
     db.session.commit()
-
     return jsonify(task.serialize()), 200
 
-# DELETE a HouseKeeperTask by ID
+# DELETE HouseKeeperTask
 @api.route('/housekeeper_task/<int:id>', methods=['DELETE'])
 def delete_housekeeper_task(id):
     task = HouseKeeperTask.query.get(id)
-    
-    if task is None:
+    if not task:
         return jsonify({"error": "HouseKeeperTask not found"}), 404
     
     db.session.delete(task)
     db.session.commit()
-
     return jsonify({"message": "HouseKeeperTask deleted successfully"}), 200
 
-
-# Actualizar el estado de la tarea a 'terminado'
+# Mark task as completed (updated)
 @api.route('/housekeeper_task/mark_completed/<int:id>', methods=['PUT'])
 def mark_task_completed(id):
     task = HouseKeeperTask.query.get(id)
-
-    if task is None:
+    if not task:
         return jsonify({"error": "HouseKeeperTask not found"}), 404
     
-    # Cambiar el estado de la tarea a 'terminado'
-    task.condition = 'terminado'
-    
-    # Aquí puedes agregar la fecha de finalización si lo necesitas, por ejemplo:
+    task.condition = 'FINALIZADA'
     task.submission_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
+    
     db.session.commit()
-
     return jsonify(task.serialize()), 200
 
 

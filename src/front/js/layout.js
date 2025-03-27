@@ -33,6 +33,7 @@ import ProtectedPrivateMaintenance from './pages/ProtectedPrivateMaintenance';
 import { Footer } from "./component/footer";
 import Chatbot from "./component/chatBot";
 import TaskFilterView from './pages/TaskFilterView';
+import TaskFilterView2 from './pages/TaskFilterView2';
 
 const Layout = () => {
   const basename = process.env.BASENAME || "";
@@ -58,13 +59,10 @@ const RouterContent = () => {
     <div className="d-flex flex-column min-vh-100">
       {showNavbarAndFooter && <Navbar />}
 
-      {/* Contenido principal */}
       <main className="flex-grow-1">
         <Routes>
           <Route element={<Home />} path="/" />
           <Route element={<Demo />} path="/demo" />
-
-          {/* Tus rutas existentes */}
           <Route element={<ListaCat />} path="/listaCat" />
           <Route element={<EditarCategoria />} path="/editar/:id" />
           <Route element={<CrearCategoria />} path="/crearCategoria" />
@@ -89,14 +87,11 @@ const RouterContent = () => {
           <Route element={<LoginMaintenance />} path="/loginMaintenance" />
           <Route element={<ProtectedPrivateMaintenance><PrivateMaintenance /></ProtectedPrivateMaintenance>} path="/privateMaintenance" />
           <Route element={<TaskFilterView />} path="/task-filter" />
-
+          <Route element={<TaskFilterView2 />} path="/task-filter-housekeeper" />
           <Route element={<h1>Not found!</h1>} path="*" />
         </Routes>
       </main>
 
-     
-
-      {/* Footer solo en páginas que lo necesitan */}
       {showNavbarAndFooter && <Footer />}
     </div>
   );
