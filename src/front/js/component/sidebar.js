@@ -2,27 +2,27 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { 
-  faHome, 
-  faCodeBranch, 
-  faList, 
-  faBed, 
-  faTools, 
-  faUser, 
-  faClipboardList, 
-  faWrench, 
-  faBars 
+import {
+  faHome,
+  faCodeBranch,
+  faList,
+  faBed,
+  faTools,
+  faClipboardList,
+  faWrench,
+  faBars,
+  faBroom // 👈 escoba para camareras
 } from "@fortawesome/free-solid-svg-icons";
 import "../../styles/sidebar.css";
 
 const Sidebar = ({ collapsed, toggleCollapsed }) => {
   const location = useLocation();
-  
+
   const navItems = [
     { icon: faHome, label: "Dashboard", to: "/privatehotel" },
     { icon: faCodeBranch, label: "Branches", to: "/listaBranches" },
     { icon: faBed, label: "Habitaciones", to: "/listaRoom" },
-    { icon: faUser, label: "Camareras", to: "/houseKeeper" },
+    { icon: faBroom, label: "Camareras", to: "/houseKeeper" }, // ✅ ícono actualizado
     { icon: faTools, label: "Técnicos", to: "/listaMaintenance" },
     { icon: faClipboardList, label: "Tareas Limpieza", to: "/HouseKeeperTask" },
     { icon: faWrench, label: "Tareas Mantenimiento", to: "/maintenanceTask" },
@@ -47,19 +47,20 @@ const Sidebar = ({ collapsed, toggleCollapsed }) => {
         <div className="d-flex justify-content-between align-items-center">
           {!collapsed && (
             <h5 className="text-white mb-0">
-              <span className="fw-bold">HOTEL</span> ADMIN
+              <span className="fw-bold">API</span>HOTEL
             </h5>
           )}
-          <button 
-            className="sidebar-toggle-btn btn btn-sm btn-light" 
+          <button
+            className="sidebar-toggle-btn btn btn-sm btn-light ms-2"
             onClick={toggleCollapsed}
+            title={collapsed ? "Expandir" : "Colapsar"}
           >
             <FontAwesomeIcon icon={faBars} />
           </button>
         </div>
       </div>
 
-      {/* Items del menú */}
+      {/* Menú */}
       <div className="sidebar-menu px-2">
         {navItems.map((item, index) => {
           const isActive = location.pathname === item.to;
@@ -67,12 +68,12 @@ const Sidebar = ({ collapsed, toggleCollapsed }) => {
             <Link
               key={index}
               to={item.to}
-              className={`sidebar-link ${isActive ? "active" : ""}`}
+              className={`sidebar-link ${isActive ? "active" : ""} mb-3`} // ✅ Espaciado entre links
             >
-              <div className="sidebar-link-content">
+              <div className="sidebar-link-content d-flex align-items-center">
                 <FontAwesomeIcon
                   icon={item.icon}
-                  className={`sidebar-icon ${collapsed ? "collapsed-icon" : ""}`}
+                  className={`sidebar-icon ${collapsed ? "collapsed-icon" : ""} me-2`}
                 />
                 {!collapsed && (
                   <span className="sidebar-link-text">{item.label}</span>

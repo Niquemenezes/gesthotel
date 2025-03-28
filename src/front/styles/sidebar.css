@@ -24,7 +24,9 @@
   text-decoration: none;
   transition: background-color 0.3s ease;
   border-radius: 5px;
+  margin-bottom: 12px;
 }
+
 
 .sidebar-link:hover {
   background-color: #3A3F58;
