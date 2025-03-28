@@ -203,9 +203,9 @@ export const Home = () => {
                             {
                                 name: "Milton",
 
-                                photo: "https://randomuser.me/api/portraits/men/1.jpg",
+                                photo: "https://res.cloudinary.com/dnftnyi5g/image/upload/v1743179716/milton_sy2lcp.jpg",
                                 social: {
-                                    github: "#",
+                                    github: "https://github.com/allisonjuliana",
                                     linkedin: "#"
                                 }
                             },
@@ -221,9 +221,9 @@ export const Home = () => {
                             {
                                 name: "Antonio",
 
-                                photo: "https://randomuser.me/api/portraits/men/2.jpg",
+                                photo: "https://res.cloudinary.com/dnftnyi5g/image/upload/v1743179716/antonio_vlpj6o.jpg",
                                 social: {
-                                    github: "#",
+                                    github: "https://github.com/tony42cadiz",
                                     linkedin: "#"
                                 }
                             }
