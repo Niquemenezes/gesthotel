@@ -212,10 +212,10 @@ export const Home = () => {
                             {
                                 name: "Monique",
 
-                                photo: "https://randomuser.me/api/portraits/women/1.jpg",
+                                photo: "https://res.cloudinary.com/dnftnyi5g/image/upload/v1743157250/Imagen_de_WhatsApp_2025-03-28_a_las_11.14.35_a8d7dc6e_thlbqe.jpg",
                                 social: {
-                                    github: "#",
-                                    linkedin: "#"
+                                    github: "https://github.com/Niquemenezes",
+                                    linkedin: "https://www.linkedin.com/in/monique-menezes-459589190/"
                                 }
                             },
                             {

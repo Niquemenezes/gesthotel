@@ -7,11 +7,45 @@ const Chatbot = () => {
   const [conversation, setConversation] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [vozActiva, setVozActiva] = useState(true);
 
-  const sendMessage = async () => {
-    if (!message.trim()) return;
+  const speak = (text) => {
+    if (!vozActiva) return;
+    const synth = window.speechSynthesis;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "es-ES";
+    synth.speak(utter);
+  };
 
-    setConversation((prev) => [...prev, { role: "user", content: message }]);
+  const handleVoiceInput = () => {
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Tu navegador no soporta reconocimiento de voz.");
+      return;
+    }
+
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.lang = "es-ES";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setMessage(transcript);
+      sendMessage(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Error de reconocimiento:", event.error);
+      alert("No se pudo escuchar tu voz. Intenta de nuevo.");
+    };
+
+    recognition.start();
+  };
+
+  const sendMessage = async (msg = message) => {
+    if (!msg.trim()) return;
+
+    setConversation((prev) => [...prev, { role: "user", content: msg }]);
     setLoading(true);
     setError(null);
 
@@ -19,18 +53,18 @@ const Chatbot = () => {
       const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message: msg }),
       });
 
       const data = await res.json();
 
       if (res.ok && data.reply) {
         setConversation((prev) => [...prev, { role: "assistant", content: data.reply }]);
+        speak(data.reply);
       } else {
-        setConversation((prev) => [
-          ...prev,
-          { role: "assistant", content: "Error al procesar la respuesta del asistente." },
-        ]);
+        const fallback = "Error al procesar la respuesta del asistente.";
+        setConversation((prev) => [...prev, { role: "assistant", content: fallback }]);
+        speak(fallback);
         if (data.error) setError(data.error);
       }
     } catch (err) {
@@ -48,18 +82,20 @@ const Chatbot = () => {
   return (
     <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 9999 }}>
       {isOpen ? (
-        <div className="card p-3 shadow chatbot-card">
+        <div className="card p-3 shadow chatbot-card animate__animated animate__fadeInUp">
           <div className="d-flex justify-content-between align-items-center">
             <h5 className="mb-0">
-              <i className="fas fa-robot text-primary me-2"></i> Mantenito
+              <i className="fas fa-user-cog text-white me-2"></i> Mantenito
             </h5>
-            <button className="btn btn-sm btn-danger" onClick={() => setIsOpen(false)}>
-              X
+            <button className="btn-cerrar-chat" onClick={() => setIsOpen(false)}>✖</button>
+          </div>
+
+          {/* Toggle voz */}
+          <div className="text-end mt-2">
+            <button className="btn btn-sm btn-voz-toggle" onClick={() => setVozActiva(!vozActiva)}>
+              {vozActiva ? "🔊 Voz activada" : "🔇 Voz desactivada"}
             </button>
           </div>
-          <p className="text-muted small mt-2">
-            ¿Tienes dudas con alguna incidencia? Mantenito está aquí para ayudarte.
-          </p>
 
           <div className="chat-box mt-2">
             {conversation.map((msg, i) => (
@@ -70,36 +106,44 @@ const Chatbot = () => {
             {loading && <div className="chat-msg assistant">Mantenito está pensando...</div>}
           </div>
 
-          <input
-            type="text"
-            placeholder="Escribe tu consulta..."
-            className="form-control mt-2"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyPress}
-            disabled={loading}
-          />
+          <div className="input-group mt-2">
+            <input
+              type="text"
+              placeholder="Escribe tu pregunta..."
+              className="form-control"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyPress}
+              disabled={loading}
+            />
+            <button
+              className="voice-btn"
+              onClick={handleVoiceInput}
+              disabled={loading}
+              title="Hablar"
+            >
+              🎤
+            </button>
+          </div>
+
           <button
-            className="btn w-100 mt-2" style={{background:"#0dcaf0"}}
-            onClick={sendMessage}
+            className="btn btn-send w-100 mt-2"
+            onClick={() => sendMessage()}
             disabled={loading}
           >
             Enviar
           </button>
 
           {error && <div className="alert alert-danger mt-2">{error}</div>}
-
-
         </div>
       ) : (
         <button
-          className="btn btn-info rounded-circle p-3 shadow"
-          style={{ width: "60px", height: "60px" }}
+          className="fab-mantenito animate__animated animate__bounceIn"
           onClick={() => setIsOpen(true)}
+          title="Habla con Mantenito"
         >
-          <i className="fas fa-tools text-white fs-4"></i>
+          🤖
         </button>
-      
       )}
     </div>
   );

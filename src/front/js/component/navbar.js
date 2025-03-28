@@ -2,13 +2,13 @@ import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faHotel,
-  faBroom,
-  faTools,
-  faRightFromBracket,
-  faHouse
-} from "@fortawesome/free-solid-svg-icons";
+import {faHotel, faBroom, faTools, faRightFromBracket, faHouse} 
+from "@fortawesome/free-solid-svg-icons";
+import DarkModeToggle from "./dark"; // Ajusta el path según tu estructura
+
+
+
+
 
 export const Navbar = () => {
   const { store, actions } = useContext(Context);
@@ -21,10 +21,9 @@ export const Navbar = () => {
 
   return (
     <nav className="navbar navbar-expand-lg shadow-sm" style={{ backgroundColor: "#0dcaf0" }}>
-      
       <div className="container-fluid d-flex justify-content-end align-items-center">
         
-        
+        <DarkModeToggle/>
         {/* Botones al lado derecho */}
         <div className="d-flex align-items-center gap-2">
           {/* Volver a Home */}
@@ -32,7 +31,7 @@ export const Navbar = () => {
             <FontAwesomeIcon icon={faHouse} className="me-1" />
             Inicio
           </Link>
-
+          
           {/* Login (si no hay token) */}
           {!store.token && (
             <>
