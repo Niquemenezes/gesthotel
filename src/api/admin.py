@@ -22,4 +22,4 @@ def setup_admin(app):
     admin.add_view(ModelView(MaintenanceTask, db.session))
     admin.add_view(ModelView(Room, db.session))
     # Aquí puedes agregar más modelos a la interfaz de administración si lo necesitas
-    # admin.add_view(ModelView(YourModelName, db.session, name='YourModelName'))
+    # admin.add_view(ModelView(YourModelName, db.session, name='YourModelName')) 
