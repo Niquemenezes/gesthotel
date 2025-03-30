@@ -246,6 +246,7 @@ class MaintenanceTask(db.Model):
             "room_nombre": self.room.nombre if self.room else None,
             "maintenance": self.maintenance.serialize() if self.maintenance else None,
             "maintenance_id": self.maintenance_id,
+            "maintenance_nombre": self.maintenance.nombre if self.maintenance else None,
             "housekeeper": self.housekeeper.serialize() if self.housekeeper else None,
             "housekeeper_id": self.housekeeper_id,
             "housekeeper_nombre": self.housekeeper.nombre if self.housekeeper else None,  

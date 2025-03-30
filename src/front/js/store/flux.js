@@ -19,7 +19,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			housekeepers: [],
 			maintenances: [],
 			housekeepertasks: [],
-			maintenancetasks: [],
+			maintenanceTasks: [],
 			branches: [],
 			categories: [],
 			rooms: [],
@@ -101,7 +101,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			
+
 			signup: async (nombre, email, password) => {
 				try {
 					const res = await fetch(process.env.BACKEND_URL + "/api/signuphotel", {
@@ -109,20 +109,20 @@ const getState = ({ getStore, getActions, setStore }) => {
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({ nombre, email, password })
 					});
-			
+
 					if (!res.ok) {
 						const errorText = await res.text();
 						console.error("Error en el registro:", errorText);
 						return false;
 					}
-			
+
 					return true;
 				} catch (err) {
 					console.error("Error en signup:", err);
 					return false;
 				}
 			},
-			
+
 
 			// Para hoteles
 			getHoteles: async () => {
@@ -371,30 +371,30 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			createMultipleRooms: async ({ branch_id, floors, rooms_per_floor }) => {
 				try {
-				  const token = localStorage.getItem("token");
-				  const resp = await fetch(process.env.BACKEND_URL + "api/bulk_create_rooms", {
-					method: "POST",
-					headers: {
-					  "Content-Type": "application/json",
-					  Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify({ branch_id, floors, rooms_per_floor }),
-				  });
-			  
-				  if (!resp.ok) throw new Error("Error al crear habitaciones automáticamente");
-			  
-				  const data = await resp.json();
-				  await getActions().getRooms(); 
-				  return data;
+					const token = localStorage.getItem("token");
+					const resp = await fetch(process.env.BACKEND_URL + "api/bulk_create_rooms", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${token}`,
+						},
+						body: JSON.stringify({ branch_id, floors, rooms_per_floor }),
+					});
+
+					if (!resp.ok) throw new Error("Error al crear habitaciones automáticamente");
+
+					const data = await resp.json();
+					await getActions().getRooms();
+					return data;
 				} catch (error) {
-				  console.error("bulkCreateRooms error:", error);
-				  return null;
+					console.error("bulkCreateRooms error:", error);
+					return null;
 				}
-			  },
-			  
-			  
-			  
-			  
+			},
+
+
+
+
 
 			// para housekeepers
 
@@ -444,31 +444,31 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			updateHousekeeper: (id, data) => {
 				const token = localStorage.getItem("token");
-			  
+
 				fetch(`${process.env.BACKEND_URL}/api/housekeeper_by_hotel/${id}`, {
-				  method: "PUT",
-				  headers: {
-					"Content-Type": "application/json",
-					Authorization: "Bearer " + token
-				  },
-				  body: JSON.stringify(data)
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: "Bearer " + token
+					},
+					body: JSON.stringify(data)
 				})
-				  .then(resp => {
-					if (!resp.ok) {
-					  throw new Error("Error al actualizar camarera");
-					}
-					return resp.json();
-				  })
-				  .then(result => {
-					console.log("Actualizado:", result);
-					getActions().getHousekeepers(); // ✅ refresca la lista
-				  })
-				  .catch(err => {
-					console.error("Error updateHousekeeper:", err);
-				  });
-			  },
-			  
-			  
+					.then(resp => {
+						if (!resp.ok) {
+							throw new Error("Error al actualizar camarera");
+						}
+						return resp.json();
+					})
+					.then(result => {
+						console.log("Actualizado:", result);
+						getActions().getHousekeepers(); // ✅ refresca la lista
+					})
+					.catch(err => {
+						console.error("Error updateHousekeeper:", err);
+					});
+			},
+
+
 
 			deleteHousekeeper: (id) => {
 				const store = getStore();
@@ -482,12 +482,46 @@ const getState = ({ getStore, getActions, setStore }) => {
 					.catch(err => console.error("Error al eliminar housekeeper", err));
 			},
 
+			// En flux.js dentro de actions:
+
+			bulkCreateHousekeeperTasks: async ({ nombre, photo_url, condition, assignment_date, submission_date, id_housekeeper, room_ids }) => {
+				try {
+					const token = localStorage.getItem("token");
+					const resp = await fetch(process.env.BACKEND_URL + "api/bulk_housekeeper_tasks", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${token}`,
+						},
+						body: JSON.stringify({
+							nombre,
+							photo_url,
+							condition,
+							assignment_date,
+							submission_date,
+							id_housekeeper,
+							room_ids,
+						}),
+					});
+
+					if (!resp.ok) throw new Error("Error al crear tareas de limpieza en lote");
+
+					const data = await resp.json();
+					await actions.getHouseKeeperTasks(); // refresca tareas
+					return data;
+				} catch (error) {
+					console.error("bulkCreateHousekeeperTasks error:", error);
+					return null;
+				}
+			},
+
 
 
 			// GET: Obtiene los mantenimientos del hotel autenticado
 			getMaintenances: () => {
 				const store = getStore();
-				console.log("Token que estoy enviando:", store.token);
+				if (!store.token) return;
+			
 				fetch(process.env.BACKEND_URL + "/api/maintenance_by_hotel", {
 					method: "GET",
 					headers: {
@@ -503,6 +537,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					})
 					.catch((err) => console.error("Error al obtener técnicos:", err));
 			},
+			
 
 			postMaintenance: (maintenanceData) => {
 				const store = getStore();
@@ -568,76 +603,85 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 
 			//tareas de mantenimiento
-
-			getMaintenanceTasks: () => {
+			getMaintenanceTasks: async () => {
 				const store = getStore();
-				fetch(process.env.BACKEND_URL + "/api/maintenancetask_by_hotel", {
-					headers: {
-						Authorization: "Bearer " + store.token
-					}
-				})
-					.then(res => {
-						if (!res.ok) throw new Error("Error al obtener las tareas de mantenimiento");
-						return res.json();
-					})
-					.then(data => {
-						setStore({ maintenanceTasks: data });
-					})
-					.catch(error => {
-						console.error("Error en getMaintenanceTasks:", error);
-					});
-			},
-
-			createMaintenanceTask: (data) => {
+				try {
+				  const res = await fetch(process.env.BACKEND_URL + "/api/maintenancetask_by_hotel", {
+					headers: { Authorization: "Bearer " + store.token }
+				  });
+				  
+				  if (!res.ok) throw new Error("Error al obtener tareas");
+				  const data = await res.json();
+				  
+				  setStore({ maintenanceTasks: data });
+				  return data;
+				} catch (error) {
+				  console.error("Error en getMaintenanceTasks:", error);
+				  throw error;
+				}
+			  },
+		  
+			  createMaintenanceTask: async (data) => {
 				const store = getStore();
-				console.log("Token que se está enviando en createMaintenanceTask:", store.token);
-				console.log("Payload que se está enviando:", data);
-				fetch(process.env.BACKEND_URL + "/api/maintenancetask_by_hotel", {
+				try {
+				  const res = await fetch(process.env.BACKEND_URL + "/api/maintenancetask_by_hotel", {
 					method: "POST",
 					headers: {
-						"Content-Type": "application/json",
-						Authorization: "Bearer " + store.token
+					  "Content-Type": "application/json",
+					  Authorization: "Bearer " + store.token
 					},
-					body: JSON.stringify(data)
-				})
-					.then(res => {
-						if (!res.ok) throw new Error("Error al crear la tarea");
-						return res.json();
-					})
-					.then(newTask => {
-						setStore({
-							maintenanceTasks: [...getStore().maintenanceTasks, newTask]
-						});
-					})
-					.catch(error => {
-						console.error("Error en createMaintenanceTask:", error);
-					});
-			},
+					body: JSON.stringify({ ...data, condition: "PENDIENTE" })
+				  });
+		  
+				  if (!res.ok) {
+					const errorText = await res.text();
+					throw new Error(errorText || "Error al crear tarea");
+				  }
+		  
+				  const newTask = await res.json();
+				   // Actualización optimista
+				   setStore({
+					maintenanceTasks: [...store.maintenanceTasks, newTask]
+				  });
+		  
+				  return newTask;
+				} catch (error) {
+				  console.error("Error en createMaintenanceTask:", error);
+				  throw error;
+				}
+			  },
+			
 
-			updateMaintenanceTask: (id, data) => {
+			  updateMaintenanceTask: async (id, data) => {
 				const store = getStore();
-				fetch(`${process.env.BACKEND_URL}/api/maintenancetask_by_hotel/${id}`, {
+				try {
+				  const res = await fetch(`${process.env.BACKEND_URL}/api/maintenancetask_by_hotel/${id}`, {
 					method: "PUT",
 					headers: {
-						"Content-Type": "application/json",
-						Authorization: "Bearer " + store.token
+					  "Content-Type": "application/json",
+					  Authorization: "Bearer " + store.token
 					},
 					body: JSON.stringify(data)
-				})
-					.then(res => {
-						if (!res.ok) throw new Error("Error al actualizar la tarea");
-						return res.json();
-					})
-					.then(updatedTask => {
-						const updatedTasks = getStore().maintenanceTasks.map(t =>
-							t.id === id ? updatedTask : t
-						);
-						setStore({ maintenanceTasks: updatedTasks });
-					})
-					.catch(error => {
-						console.error("Error en updateMaintenanceTask:", error);
-					});
-			},
+				  });
+			  
+				  if (!res.ok) throw new Error("Error al actualizar la tarea");
+			  
+				  const updatedTask = await res.json();
+			  
+				  const updatedTasks = store.maintenanceTasks.map(t =>
+					t.id === id ? updatedTask : t
+				  );
+			  
+				  setStore({ maintenanceTasks: updatedTasks }); // ✅ aquí el nombre correcto
+			  
+				  return updatedTask;
+				} catch (error) {
+				  console.error("Error en updateMaintenanceTask:", error);
+				  throw error;
+				}
+			  },
+			  
+			  
 
 			deleteMaintenanceTask: (id) => {
 				const store = getStore();
@@ -751,7 +795,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			getHotelDatos: async () => {
 				const store = getStore();
-			
+
 				try {
 					const response = await fetch(process.env.BACKEND_URL + "/api/datos_by_hotel", {
 						headers: {
@@ -759,12 +803,12 @@ const getState = ({ getStore, getActions, setStore }) => {
 							Authorization: "Bearer " + store.token
 						}
 					});
-			
+
 					if (!response.ok) throw new Error("No se pudieron cargar las estadísticas");
-			
+
 					const data = await response.json();
 					return data;
-			
+
 				} catch (error) {
 					console.error("Error en getHotelStats:", error);
 					throw error;

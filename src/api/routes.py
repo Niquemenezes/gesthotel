@@ -9,7 +9,7 @@ from flask_cors import CORS
 from flask import Flask, request, jsonify, Blueprint
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, create_access_token
 from werkzeug.security import check_password_hash, generate_password_hash
-import datetime
+from datetime import datetime, timedelta, timezone
 from api.utils import generate_sitemap, APIException
 import jwt
 import os
@@ -687,6 +687,108 @@ def delete_housekeeper_task_by_hotel(id):
     db.session.commit()
     return jsonify({"msg": "Tarea eliminada"}), 200
 
+
+@api.route('/bulk_create_housekeeper_tasks', methods=['POST'])
+@jwt_required()
+def bulk_create_housekeeper_tasks():
+    email = get_jwt_identity()
+    hotel = Hoteles.query.filter_by(email=email).first()
+
+    if not hotel:
+        return jsonify({"msg": "Hotel no autorizado"}), 401
+
+    data = request.get_json()
+    tasks = data.get("tasks")
+
+    if not isinstance(tasks, list) or not tasks:
+        return jsonify({"msg": "Lista de tareas no válida"}), 400
+
+    created_tasks = []
+
+    for task_data in tasks:
+        nombre = task_data.get("nombre")
+        photo_url = task_data.get("photo_url", "")
+        condition = task_data.get("condition", "PENDIENTE")
+        assignment_date = task_data.get("assignment_date")
+        submission_date = task_data.get("submission_date")
+        id_room = task_data.get("id_room")
+        id_housekeeper = task_data.get("id_housekeeper")
+
+        if not all([nombre, assignment_date, submission_date, id_room, id_housekeeper]):
+            continue
+
+        # Verificar que la camarera pertenece a una sucursal del hotel
+        housekeeper = HouseKeeper.query.get(id_housekeeper)
+        if not housekeeper or not housekeeper.branches or housekeeper.branches.hotel_id != hotel.id:
+            continue
+
+        # Verificar que la habitación pertenece a una sucursal del hotel
+        room = Room.query.get(id_room)
+        if not room or room.branch.hotel_id != hotel.id:
+            continue
+
+        nueva_tarea = HouseKeeperTask(
+            nombre=nombre,
+            photo_url=photo_url,
+            condition=condition,
+            assignment_date=assignment_date,
+            submission_date=submission_date,
+            id_room=id_room,
+            id_housekeeper=id_housekeeper
+        )
+        db.session.add(nueva_tarea)
+        created_tasks.append(nueva_tarea)
+
+    db.session.commit()
+
+    return jsonify({
+        "msg": f"{len(created_tasks)} tareas creadas con éxito.",
+        "tareas": [t.serialize() for t in created_tasks]
+    }), 201
+
+# recibir multiples habitaciones para la misma tareas de limpieza
+
+@api.route('/bulk_housekeeper_tasks', methods=['POST'])
+@jwt_required()
+def create_bulk_housekeeper_tasks():
+    email = get_jwt_identity()
+    hotel = Hoteles.query.filter_by(email=email).first()
+    if not hotel:
+        return jsonify({"msg": "No autorizado"}), 401
+
+    data = request.get_json()
+    nombre = data.get("nombre")
+    photo_url = data.get("photo_url")
+    condition = data.get("condition", "PENDIENTE")
+    assignment_date = data.get("assignment_date")
+    submission_date = data.get("submission_date")
+    id_housekeeper = data.get("id_housekeeper")
+    room_ids = data.get("room_ids", [])  # lista de habitaciones
+
+    housekeeper = HouseKeeper.query.get(id_housekeeper)
+    if not housekeeper or housekeeper.branches.hotel_id != hotel.id:
+        return jsonify({"msg": "Camarera no válida o no pertenece al hotel"}), 401
+
+    created_tasks = []
+    for room_id in room_ids:
+        room = Room.query.get(room_id)
+        if room and room.branch.hotel_id == hotel.id:
+            new_task = HouseKeeperTask(
+                nombre=nombre,
+                photo_url=photo_url,
+                condition=condition,
+                assignment_date=assignment_date,
+                submission_date=submission_date,
+                id_housekeeper=id_housekeeper,
+                id_room=room_id
+            )
+            db.session.add(new_task)
+            created_tasks.append(new_task)
+
+    db.session.commit()
+    return jsonify({"msg": f"{len(created_tasks)} tareas creadas", "tasks": [t.serialize() for t in created_tasks]}), 201
+
+
 #obtener tareas de maintenance
 
 @api.route('/maintenancetask_by_hotel', methods=['GET'])
@@ -697,18 +799,21 @@ def get_maintenancetasks_by_hotel():
     if not hotel:
         return jsonify({"msg": "Hotel no autorizado"}), 401
 
+    # Obtener todas las sucursales del hotel
     branches = Branches.query.filter_by(hotel_id=hotel.id).all()
     branch_ids = [b.id for b in branches]
 
+    # Obtener todas las habitaciones de esas sucursales
     rooms = Room.query.filter(Room.branch_id.in_(branch_ids)).all()
     room_ids = [r.id for r in rooms]
 
-    # ✅ Obtenemos todas las tareas de mantenimiento de las habitaciones del hotel
+    # Obtenemos todas las tareas de mantenimiento de las habitaciones del hotel
     tasks = MaintenanceTask.query.filter(
         MaintenanceTask.room_id.in_(room_ids)
     ).all()
 
     return jsonify([t.serialize() for t in tasks]), 200
+
 
 
 # crear tareas de mantenimiento
@@ -741,7 +846,7 @@ def create_maintenancetask_by_hotel():
     task = MaintenanceTask(
         nombre=data["nombre"],
         photo_url=data.get("photo_url", ""),
-        condition=data["condition"],
+        condition="PENDIENTE",
         room_id=room.id,
         maintenance_id=maintenance.id,
         housekeeper_id=housekeeper.id if housekeeper else None,
@@ -1120,27 +1225,34 @@ def login_housekeeper():
         return jsonify({"error": "Invalid password credentials"}), 401
     token = jwt.encode({
         'housekeeper_id': housekeeper.id,
-        'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=5)
+      'exp': datetime.now(timezone.utc) + timedelta(hours=5)
     }, SECRET_KEY, algorithm='HS256')
     return jsonify({'token': token}), 200
+
 
 @api.route('/loginMaintenance', methods=['POST'])
 def login_maintenance():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
+
     if not email or not password:
         return jsonify({"error": "Missing email or password"}), 400
+
     maintenance = Maintenance.query.filter_by(email=email).first()
     if not maintenance:
-        return jsonify({"error": "Invalid housekeeper credentials"}), 401
+        return jsonify({"error": "Invalid maintenance credentials"}), 401
+
     if maintenance.password != password:
-        return jsonify({"error": "Invalid password credentials"}), 401
+        return jsonify({"error": "Invalid password"}), 401
+
     token = jwt.encode({
         'maintenance_id': maintenance.id,
-        'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=5)
+        'exp': datetime.now(timezone.utc) + timedelta(hours=5)
     }, SECRET_KEY, algorithm='HS256')
+
     return jsonify({'token': token}), 200
+
 
 # CREATE a new HouseKeeperTask (with improved photo handling)
 @api.route('/housekeeper_task', methods=['POST'])
