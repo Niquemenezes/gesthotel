@@ -462,6 +462,44 @@ def create_room_by_hotel():
 
     return jsonify(nueva_room.serialize()), 201
 
+#crear habitaciones masiva por plantas
+@api.route('/bulk_create_rooms', methods=['POST'])
+@jwt_required()
+def create_multiples_rooms():
+    email = get_jwt_identity()
+    hotel = Hoteles.query.filter_by(email=email).first()
+    if not hotel:
+        return jsonify({"msg": "Hotel no autorizado"}), 401
+
+    data = request.get_json()
+    branch_id = data.get("branch_id")
+    floors = data.get("floors")  # cantidad de plantas
+    rooms_per_floor = data.get("rooms_per_floor")  # habitaciones por planta (lista de enteros)
+
+    if not branch_id or not floors or not isinstance(rooms_per_floor, list):
+        return jsonify({"msg": "Datos incompletos o incorrectos"}), 400
+
+    branch = Branches.query.get(branch_id)
+    if not branch or branch.hotel_id != hotel.id:
+        return jsonify({"msg": "Sucursal no válida o no pertenece al hotel"}), 401
+
+    new_rooms = []
+
+    for floor in range(1, floors + 1):
+        try:
+            count = rooms_per_floor[floor - 1]
+        except IndexError:
+            count = rooms_per_floor[-1]  # Usar último valor si no hay más definidos
+
+        for i in range(1, count + 1):
+            room_number = int(f"{floor}{i:02d}")
+            new_room = Room(nombre=str(room_number), branch_id=branch_id)
+            db.session.add(new_room)
+            new_rooms.append(new_room)
+
+    db.session.commit()
+
+    return jsonify({"msg": f"{len(new_rooms)} habitaciones creadas con éxito", "rooms": [r.serialize() for r in new_rooms]}), 201
 
 
 #editar habitacion verificando que la branche es del hotel
@@ -614,6 +652,20 @@ def update_housekeeper_task_by_hotel(id):
     task.assignment_date = data.get("assignment_date", task.assignment_date)
     task.submission_date = data.get("submission_date", task.submission_date)
 
+    # Validar y actualizar la habitación
+    new_room_id = data.get("id_room", task.id_room)
+    new_room = Room.query.get(new_room_id)
+    if not new_room or new_room.branch.hotel_id != hotel.id:
+        return jsonify({"msg": "La habitación no pertenece al hotel"}), 401
+    task.id_room = new_room_id
+
+    # Validar y actualizar la camarera
+    new_housekeeper_id = data.get("id_housekeeper", task.id_housekeeper)
+    new_housekeeper = HouseKeeper.query.get(new_housekeeper_id)
+    if not new_housekeeper or new_housekeeper.branches.hotel_id != hotel.id:
+        return jsonify({"msg": "La camarera no pertenece al hotel"}), 401
+    task.id_housekeeper = new_housekeeper_id
+
     db.session.commit()
     return jsonify(task.serialize()), 200
 
@@ -700,8 +752,7 @@ def create_maintenancetask_by_hotel():
     db.session.commit()
     return jsonify(task.serialize()), 201
 
-# editar tareas de mantenimiento
-
+#  Editar tarea de mantenimiento (solo si pertenece al hotel autenticado)
 @api.route('/maintenancetask_by_hotel/<int:id>', methods=['PUT'])
 @jwt_required()
 def update_maintenancetask_by_hotel(id):
@@ -711,16 +762,34 @@ def update_maintenancetask_by_hotel(id):
         return jsonify({"msg": "Hotel no autorizado"}), 401
 
     task = MaintenanceTask.query.get(id)
-    if not task or task.room.branch.hotel_id != hotel.id:
-        return jsonify({"msg": "Tarea no autorizada"}), 401
+    if not task or not task.room or not task.room.branch or task.room.branch.hotel_id != hotel.id:
+        return jsonify({"msg": "No tienes permiso para modificar esta tarea"}), 401
 
     data = request.get_json()
+
+    # Validar y actualizar la habitación
+    new_room_id = data.get("room_id", task.room_id)
+    new_room = Room.query.get(new_room_id)
+    if not new_room or new_room.branch.hotel_id != hotel.id:
+        return jsonify({"msg": "La habitación no pertenece al hotel"}), 401
+    task.room_id = new_room_id
+
+    #  Validar y actualizar el técnico de mantenimiento
+    new_maintenance_id = data.get("maintenance_id", task.maintenance_id)
+    if new_maintenance_id:
+        new_maintenance = Maintenance.query.get(new_maintenance_id)
+        if not new_maintenance or new_maintenance.hotel_id != hotel.id:
+            return jsonify({"msg": "El técnico no pertenece al hotel"}), 401
+        task.maintenance_id = new_maintenance_id
+
     task.nombre = data.get("nombre", task.nombre)
     task.photo_url = data.get("photo_url", task.photo_url)
     task.condition = data.get("condition", task.condition)
 
     db.session.commit()
     return jsonify(task.serialize()), 200
+
+
 
 #eliminar tareas de maintenance
 
@@ -1205,6 +1274,33 @@ def mark_task_completed(id):
     db.session.commit()
     return jsonify(task.serialize()), 200
 
+#nueva ruta para tecnico logueado
+@api.route('/maintenancetasks_by_branch', methods=['GET'])
+def get_maintenancetasks_by_branch():
+    token = request.headers.get('Authorization', None)
+    if not token:
+        return jsonify({"msg": "Token requerido"}), 401
+    
+    try:
+        token = token.replace("Bearer ", "")
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        maintenance_id = decoded.get('maintenance_id')
+    except Exception as e:
+        return jsonify({"msg": "Token inválido", "error": str(e)}), 401
+
+    maintenance = Maintenance.query.get(maintenance_id)
+    if not maintenance:
+        return jsonify({"msg": "Técnico no encontrado"}), 404
+
+    # Obtener solo las tareas de habitaciones que están en su misma sucursal
+    branch_id = maintenance.branch_id
+    rooms = Room.query.filter_by(branch_id=branch_id).all()
+    room_ids = [r.id for r in rooms]
+
+    tasks = MaintenanceTask.query.filter(MaintenanceTask.room_id.in_(room_ids)).all()
+    return jsonify([t.serialize() for t in tasks]), 200
+
+
 
 @api.route('/maintenancetasks', methods=['GET'])
 def get_all_maintenance_tasks():
@@ -1501,3 +1597,4 @@ def get_hotel_datos():
     except Exception as e:
         print("Error en /datos_by_hotel:", e)
         return jsonify({"msg": "Error interno", "error": str(e)}), 500
+

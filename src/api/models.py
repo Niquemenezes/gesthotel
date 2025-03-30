@@ -1,9 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 
-# Inicializamos la instancia de SQLAlchemy
 db = SQLAlchemy()
 
-# Definición del modelo User
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -69,6 +68,7 @@ class HotelTheme(db.Model):
             "id_theme": self.id_theme
         }
 
+
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
@@ -81,6 +81,7 @@ class Category(db.Model):
             "id": self.id,
             "nombre": self.nombre
         }
+
 
 class Branches(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -105,14 +106,15 @@ class Branches(db.Model):
             "hotel_id": self.hotel_id
         }
 
+
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
-    branch_id = db.Column(db.Integer, db.ForeignKey('branches.id'),nullable=False)
-    branch = db.relationship("Branches")
+    branch_id = db.Column(db.Integer, db.ForeignKey('branches.id'), nullable=False)
 
-    maintenance_tasks = db.relationship("MaintenanceTask", backref="room", cascade="all, delete-orphan")
-    housekeeper_tasks = db.relationship("HouseKeeperTask", backref="room", cascade="all, delete-orphan")
+    branch = db.relationship("Branches")
+    maintenance_tasks = db.relationship("MaintenanceTask", back_populates="room", cascade="all, delete-orphan")
+    housekeeper_tasks = db.relationship("HouseKeeperTask", back_populates="room", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Room {self.nombre}>'
@@ -124,6 +126,7 @@ class Room(db.Model):
             'branch_id': self.branch_id,
             'branch': self.branch.nombre if self.branch else None
         }
+
 
 class Maintenance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -152,6 +155,7 @@ class Maintenance(db.Model):
             "branch_id": self.branch_id,
             "branch_nombre": self.branch.nombre if self.branch else None
         }
+
 
 class HouseKeeper(db.Model):
     __tablename__ = 'housekeeper'
@@ -189,6 +193,7 @@ class HouseKeeperTask(db.Model):
     id_room = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)
     id_housekeeper = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=True)
 
+    room = db.relationship('Room', back_populates='housekeeper_tasks')
     housekeeper = db.relationship('HouseKeeper', backref='housekeepertask')
 
     def __repr__(self):
@@ -204,9 +209,12 @@ class HouseKeeperTask(db.Model):
             "submission_date": self.submission_date,
             "id_room": self.id_room,
             "room_nombre": self.room.nombre if self.room else None,
+            "room_branch_id": self.room.branch_id if self.room else None,
+            "room_branch_nombre": self.room.branch.nombre if self.room and self.room.branch else None,
             "id_housekeeper": self.id_housekeeper,
             "housekeeper_nombre": self.housekeeper.nombre if self.housekeeper else None
         }
+
 
 class MaintenanceTask(db.Model):
     __tablename__ = 'maintenancetask'
@@ -219,6 +227,7 @@ class MaintenanceTask(db.Model):
     housekeeper_id = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=True)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
 
+    room = db.relationship('Room', back_populates='maintenance_tasks')
     maintenance = db.relationship('Maintenance')
     housekeeper = db.relationship('HouseKeeper')
     category = db.relationship('Category')
@@ -233,12 +242,14 @@ class MaintenanceTask(db.Model):
             "photo_url": self.photo_url if self.photo_url else None,
             "condition": self.condition,
             "room": self.room.serialize() if self.room else None,
-            "maintenance": self.maintenance.serialize() if self.maintenance else None,
-            "housekeeper": self.housekeeper.serialize() if self.housekeeper else None,
-            "category": self.category.serialize() if self.category else None,
             "room_id": self.room_id,
             "room_nombre": self.room.nombre if self.room else None,
+            "maintenance": self.maintenance.serialize() if self.maintenance else None,
             "maintenance_id": self.maintenance_id,
+            "housekeeper": self.housekeeper.serialize() if self.housekeeper else None,
             "housekeeper_id": self.housekeeper_id,
+            "housekeeper_nombre": self.housekeeper.nombre if self.housekeeper else None,  
+            "category": self.category.serialize() if self.category else None,
             "category_id": self.category_id,
         }
+

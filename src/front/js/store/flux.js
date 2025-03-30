@@ -19,7 +19,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			housekeepers: [],
 			maintenances: [],
 			housekeepertasks: [],
-			maintenanceTasks: [],
+			maintenancetasks: [],
 			branches: [],
 			categories: [],
 			rooms: [],
@@ -369,6 +369,32 @@ const getState = ({ getStore, getActions, setStore }) => {
 					});
 			},
 
+			createMultipleRooms: async ({ branch_id, floors, rooms_per_floor }) => {
+				try {
+				  const token = localStorage.getItem("token");
+				  const resp = await fetch(process.env.BACKEND_URL + "api/bulk_create_rooms", {
+					method: "POST",
+					headers: {
+					  "Content-Type": "application/json",
+					  Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify({ branch_id, floors, rooms_per_floor }),
+				  });
+			  
+				  if (!resp.ok) throw new Error("Error al crear habitaciones automáticamente");
+			  
+				  const data = await resp.json();
+				  await getActions().getRooms(); 
+				  return data;
+				} catch (error) {
+				  console.error("bulkCreateRooms error:", error);
+				  return null;
+				}
+			  },
+			  
+			  
+			  
+			  
 
 			// para housekeepers
 

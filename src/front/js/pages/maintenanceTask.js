@@ -11,8 +11,8 @@ const MaintenanceTask = () => {
   const [photo, setPhoto] = useState('');
   const [condition, setCondition] = useState('PENDIENTE');
   const [idRoom, setIdRoom] = useState('');
-  const [errorMessage, setErrorMessage] = useState("");
   const [idMaintenance, setIdMaintenance] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
@@ -72,8 +72,10 @@ const MaintenanceTask = () => {
     }
   };
 
-  const selectedMaintenance = store.maintenances.find(m => m.id == idMaintenance);
-  const filteredRooms = store.rooms.filter(room => room.branch_id === selectedMaintenance?.branch_id);
+  const selectedMaintenance = store.maintenances?.find(m => m.id == idMaintenance);
+  const filteredRooms = Array.isArray(store.rooms)
+    ? store.rooms.filter(room => room.branch_id === selectedMaintenance?.branch_id)
+    : [];
 
   return (
     <PrivateLayout>
@@ -81,7 +83,7 @@ const MaintenanceTask = () => {
         <h1 className="my-4 text-center">Gestión de Tareas de Mantenimiento</h1>
 
         <div className="row">
-          <div className="col-12 col-md-4 mb-4 d-flex justify-content-center">
+          <div className="col-12 col-md-3 mb-4 d-flex justify-content-center">
             <div className="card shadow-sm w-100">
               <div className="card-body p-3">
                 <h5 className="card-title text-center mb-3">{editingId ? 'Editar' : 'Crear'} Tarea</h5>
@@ -94,11 +96,13 @@ const MaintenanceTask = () => {
                       onChange={e => setIdMaintenance(e.target.value)}
                     >
                       <option value="">Selecciona un técnico</option>
-                      {store.maintenances.map(m => (
-                        <option key={m.id} value={m.id}>{m.nombre}</option>
-                      ))}
+                      {Array.isArray(store.maintenances) &&
+                        store.maintenances.map(m => (
+                          <option key={m.id} value={m.id}>{m.nombre}</option>
+                        ))}
                     </select>
                   </div>
+
                   <div className="form-group mb-2">
                     <label className="small">Habitación</label>
                     <select
@@ -129,30 +133,42 @@ const MaintenanceTask = () => {
                       setPhotoUrl={setPhoto}
                       setErrorMessage={setErrorMessage}
                     />
+
+                    {!photo && (
+                      <p className="text-muted small mt-1 mb-0">Ningún archivo seleccionado</p>
+                    )}
+
                     {photo && (
                       <div className="mt-2 text-center">
-                        <img src={photo} alt="preview" style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "8px" }} />
+                        <img
+                          src={photo}
+                          alt="preview"
+                          style={{
+                            width: "60px",
+                            height: "60px",
+                            objectFit: "cover",
+                            borderRadius: "8px",
+                          }}
+                        />
                       </div>
                     )}
                   </div>
 
                   <div className="form-group mb-2">
                     <label className="small">Estado</label>
-                    <input
-                      type="text"
+                    <select
                       className="form-control form-control-sm"
                       value={condition}
                       onChange={e => setCondition(e.target.value)}
-                    />
-                  </div>
-                 
-                  <div className="d-flex justify-content-between mt-2">
-                    <button
-                      type="button"
-                      className="btn btn-sm"
-                      style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
-                      onClick={handleCreateOrUpdate}
                     >
+                      <option value="PENDIENTE">PENDIENTE</option>
+                      <option value="EN PROCESO">EN PROCESO</option>
+                      <option value="FINALIZADA">FINALIZADA</option>
+                    </select>
+                  </div>
+
+                  <div className="d-flex justify-content-between mt-2">
+                    <button type="button" className="btn btn-sm" style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }} onClick={handleCreateOrUpdate}>
                       <FontAwesomeIcon icon={faSave} className="me-2" />
                       {editingId ? "Actualizar" : "Crear"}
                     </button>
@@ -172,12 +188,12 @@ const MaintenanceTask = () => {
             </div>
           </div>
 
-          <div className="col-12 col-md-8">
+          <div className="col-12 col-md-9">
             <h4 className="mb-3">Tareas de Mantenimiento</h4>
             <table className="table table-striped">
               <thead>
                 <tr>
-                  <th>Técnico</th>
+                  <th>Nombre</th>
                   <th>Tarea</th>
                   <th>Estado</th>
                   <th>Sucursal</th>
@@ -187,44 +203,63 @@ const MaintenanceTask = () => {
                 </tr>
               </thead>
               <tbody>
-                {store.maintenanceTasks.map(task => (
-                  <tr key={task.id}>
-                    <td>{task.maintenance?.nombre || <span className="text-muted">tecnico</span>}</td>
-                    <td>{task.nombre}</td>
-                    <td>{task.condition}</td>
-                    <td>{store.branches.find(branch => branch.id === task.room?.branch_id)?.nombre || "-"}</td>
-                    <td>{task.room_nombre || task.room?.nombre}</td>
-                    <td>
-                      {task.photo_url ? (
-                        <img
-                          src={task.photo_url}
-                          alt="Incidencia"
-                          style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "8px" }}
-                        />
-                      ) : (
-                        <span className="text-muted">Sin foto</span>
-                      )}
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-sm me-2"
-                        style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
-                        onClick={() => editMaintenanceTask(task)}
+                {Array.isArray(store.maintenanceTasks) &&
+                  store.maintenanceTasks.map(task => {
+                    const isReportedByHousekeeper = task.housekeeper_id !== null;
+
+                    return (
+                      <tr
+                        key={task.id}
+                        className={isReportedByHousekeeper ? "table-info" : ""}
                       >
-                        <FontAwesomeIcon icon={faPen} className="me-1" />
-              
-                      </button>
-                      <button
-                        className="btn btn-sm btn-danger"
-                        onClick={() => handleDelete(task.id)}
-                      >
-                        <FontAwesomeIcon icon={faTrash} className="me-1" />
-                       
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                        <td>
+                          {isReportedByHousekeeper
+                            ? task.housekeeper?.nombre || "Camarera"
+                            : task.maintenance?.nombre || "Técnico"}
+                          {isReportedByHousekeeper && <span className="ms-1">🧹</span>}
+                        </td>
+                        <td>{task.nombre}</td>
+                        <td>{task.condition}</td>
+                        <td>
+                          {store.branches.find(branch => branch.id === task.room?.branch_id)?.nombre || "-"}
+                        </td>
+                        <td>{task.room_nombre || task.room?.nombre}</td>
+                        <td>
+                          {task.photo_url ? (
+                            <img
+                              src={task.photo_url}
+                              alt="Incidencia"
+                              style={{
+                                width: "60px",
+                                height: "60px",
+                                objectFit: "cover",
+                                borderRadius: "8px"
+                              }}
+                            />
+                          ) : (
+                            <span className="text-muted">Sin foto</span>
+                          )}
+                        </td>
+                        <td>
+                          <button
+                            className="btn btn-sm me-2"
+                            style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
+                            onClick={() => editMaintenanceTask(task)}
+                          >
+                            <FontAwesomeIcon icon={faPen} className="me-1" />
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() => handleDelete(task.id)}
+                          >
+                            <FontAwesomeIcon icon={faTrash} className="me-1" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
+
             </table>
           </div>
         </div>
