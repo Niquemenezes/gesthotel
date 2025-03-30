@@ -10,10 +10,11 @@ const MaintenanceTask = () => {
   const [nombre, setNombre] = useState('');
   const [photo, setPhoto] = useState('');
   const [condition, setCondition] = useState('PENDIENTE');
-  const [idRoom, setIdRoom] = useState('');
+  const [selectedRooms, setSelectedRooms] = useState([]);
   const [idMaintenance, setIdMaintenance] = useState('');
   const [errorMessage, setErrorMessage] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [esZonaComun, setEsZonaComun] = useState(false);
 
   useEffect(() => {
     actions.getMaintenanceTasks();
@@ -27,33 +28,38 @@ const MaintenanceTask = () => {
     setNombre('');
     setPhoto('');
     setCondition('PENDIENTE');
-    setIdRoom('');
+    setSelectedRooms([]);
     setIdMaintenance('');
     setEditingId(null);
+    setEsZonaComun(false);
   };
 
   const handleCreateOrUpdate = async () => {
-    if (!nombre || !idRoom || !idMaintenance) {
+    if (!nombre || (!esZonaComun && selectedRooms.length === 0) || !idMaintenance) {
       alert('Por favor, completa todos los campos obligatorios');
       return;
     }
 
-    const payload = {
-      nombre,
-      photo_url: photo,
-      condition,
-      room_id: idRoom,
-      maintenance_id: idMaintenance,
-    };
-
     try {
       if (editingId) {
+        const payload = {
+          nombre,
+          photo_url: photo,
+          condition,
+          room_id: esZonaComun ? null : selectedRooms[0],
+          maintenance_id: idMaintenance,
+        };
         await actions.updateMaintenanceTask(editingId, payload);
       } else {
-        await actions.createMaintenanceTask(payload);
-      }
+        const tareas = esZonaComun
+          ? [{ nombre, photo_url: photo, condition, room_id: null, maintenance_id: idMaintenance }]
+          : selectedRooms.map(roomId => ({ nombre, photo_url: photo, condition, room_id: roomId, maintenance_id: idMaintenance }));
 
-      await actions.getMaintenanceTasks(); // recarga tareas
+        for (const tarea of tareas) {
+          await actions.createMaintenanceTask(tarea);
+        }
+      }
+      setTimeout(() => actions.getMaintenanceTasks(), 500);
       resetForm();
     } catch (err) {
       console.error("Error al crear o actualizar tarea:", err);
@@ -64,9 +70,10 @@ const MaintenanceTask = () => {
     setNombre(task.nombre);
     setPhoto(task.photo_url || '');
     setCondition(task.condition || '');
-    setIdRoom(task.room_id);
+    setSelectedRooms(task.room_id ? [task.room_id] : []);
     setIdMaintenance(task.maintenance_id || '');
     setEditingId(task.id);
+    setEsZonaComun(task.room_id === null);
   };
 
   const cancelEdit = () => resetForm();
@@ -83,9 +90,7 @@ const MaintenanceTask = () => {
     : [];
 
   const getTaskConditionForRoom = (roomId) => {
-    const task = store.maintenanceTasks.find(t =>
-      t.maintenance_id === parseInt(idMaintenance) && t.room_id === roomId
-    );
+    const task = store.maintenanceTasks.find(t => t.maintenance_id === parseInt(idMaintenance) && t.room_id === roomId);
     return task ? task.condition : null;
   };
 
@@ -101,8 +106,10 @@ const MaintenanceTask = () => {
   const toggleRoomSelection = (roomId) => {
     const existing = getTaskConditionForRoom(roomId);
     if (editingId || !existing) {
-      setIdRoom(prev =>
-        prev === roomId ? '' : roomId
+      setSelectedRooms(prev =>
+        prev.includes(roomId)
+          ? prev.filter(id => id !== roomId)
+          : [...prev, roomId]
       );
     }
   };
@@ -120,92 +127,58 @@ const MaintenanceTask = () => {
                 <form>
                   <div className="form-group mb-3">
                     <label className="small">Técnico</label>
-                    <select
-                      className="form-control form-control-sm"
-                      value={idMaintenance}
-                      onChange={e => setIdMaintenance(e.target.value)}
-                    >
+                    <select className="form-control form-control-sm" value={idMaintenance} onChange={e => setIdMaintenance(e.target.value)}>
                       <option value="">Selecciona un técnico</option>
-                      {Array.isArray(store.maintenances) &&
-                        store.maintenances.map(m => (
-                          <option key={m.id} value={m.id}>{m.nombre}</option>
-                        ))}
+                      {store.maintenances.map(m => (<option key={m.id} value={m.id}>{m.nombre}</option>))}
                     </select>
                   </div>
 
-                  <div className="form-group mb-2">
-                    <label className="small">Habitación</label>
-                    <div className="d-flex flex-wrap gap-2">
-                      {filteredRooms.map(room => {
-                        const condition = getTaskConditionForRoom(room.id);
-                        const selected = idRoom == room.id;
-                        const colorClass = condition
-                          ? getColorClassForCondition(condition)
-                          : selected
-                            ? 'btn-primary'
-                            : 'btn-outline-secondary';
-
-                        return (
-                          <button
-                            key={room.id}
-                            type="button"
-                            className={`btn btn-sm ${colorClass}`}
-                            onClick={() => toggleRoomSelection(room.id)}
-                            disabled={!!condition && !editingId}
-                            title={condition ? `Ya tiene tarea (${condition})` : 'Seleccionar'}
-                          >
-                            {room.nombre}
-                          </button>
-                        );
-                      })}
-                    </div>
+                  <div className="form-check mb-2">
+                    <input className="form-check-input" type="checkbox" checked={esZonaComun} onChange={() => setEsZonaComun(!esZonaComun)} id="zonaComunCheck" />
+                    <label className="form-check-label" htmlFor="zonaComunCheck">
+                      Tarea fuera de una habitación (pasillos, baños, piscina...)
+                    </label>
                   </div>
 
+                  {!esZonaComun && (
+                    <div className="form-group mb-2">
+                      <label className="small">Habitaciones</label>
+                      <div className="d-flex flex-wrap gap-2">
+                        {filteredRooms.map(room => {
+                          const condition = getTaskConditionForRoom(room.id);
+                          const selected = selectedRooms.includes(room.id);
+                          const colorClass = condition
+                            ? getColorClassForCondition(condition)
+                            : selected ? 'btn-primary' : 'btn-outline-secondary';
+
+                          return (
+                            <button key={room.id} type="button" className={`btn btn-sm ${colorClass}`} onClick={() => toggleRoomSelection(room.id)} disabled={!!condition && !editingId}>
+                              {room.nombre}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="form-group mb-2">
                     <label className="small">Tarea</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      value={nombre}
-                      onChange={e => setNombre(e.target.value)}
-                    />
+                    <input type="text" className="form-control form-control-sm" value={nombre} onChange={e => setNombre(e.target.value)} />
                   </div>
 
                   <div className="form-group mb-3">
                     <label className="small">Seleccionar archivo</label>
-                    <CloudinaryApiHotel
-                      setPhotoUrl={setPhoto}
-                      setErrorMessage={setErrorMessage}
-                    />
-
-                    {!photo && (
-                      <p className="text-muted small mt-1 mb-0">Ningún archivo seleccionado</p>
-                    )}
-
+                    <CloudinaryApiHotel setPhotoUrl={setPhoto} setErrorMessage={setErrorMessage} />
                     {photo && (
                       <div className="mt-2 text-center">
-                        <img
-                          src={photo}
-                          alt="preview"
-                          style={{
-                            width: "60px",
-                            height: "60px",
-                            objectFit: "cover",
-                            borderRadius: "8px",
-                          }}
-                        />
+                        <img src={photo} alt="preview" style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "8px" }} />
                       </div>
                     )}
                   </div>
 
                   <div className="form-group mb-2">
                     <label className="small">Estado</label>
-                    <select
-                      className="form-control form-control-sm"
-                      value={condition}
-                      onChange={e => setCondition(e.target.value)}
-                    >
+                    <select className="form-control form-control-sm" value={condition} onChange={e => setCondition(e.target.value)}>
                       <option value="PENDIENTE">PENDIENTE</option>
                       <option value="EN PROCESO">EN PROCESO</option>
                       <option value="FINALIZADA">FINALIZADA</option>
@@ -214,17 +187,11 @@ const MaintenanceTask = () => {
 
                   <div className="d-flex justify-content-between mt-2">
                     <button type="button" className="btn btn-sm" style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }} onClick={handleCreateOrUpdate}>
-                      <FontAwesomeIcon icon={faSave} className="me-2" />
-                      {editingId ? "Actualizar" : "Crear"}
+                      <FontAwesomeIcon icon={faSave} className="me-2" />{editingId ? "Actualizar" : "Crear"}
                     </button>
                     {editingId && (
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={cancelEdit}
-                      >
-                        <FontAwesomeIcon icon={faTimes} className="me-2" />
-                        Cancelar
+                      <button type="button" className="btn btn-sm btn-outline-secondary" onClick={cancelEdit}>
+                        <FontAwesomeIcon icon={faTimes} className="me-2" />Cancelar
                       </button>
                     )}
                   </div>
@@ -248,71 +215,32 @@ const MaintenanceTask = () => {
                 </tr>
               </thead>
               <tbody>
-                {Array.isArray(store.maintenanceTasks) &&
-                  store.maintenanceTasks.map(task => {
-                    const isReportedByHousekeeper = task.housekeeper_id !== null;
-
-                    return (
-                      <tr
-                        key={task.id}
-                        className={isReportedByHousekeeper ? "table-info" : ""}
-                      >
-                        <td>
-                          {isReportedByHousekeeper
-                            ? task.housekeeper?.nombre || "Camarera"
-                            : task.maintenance?.nombre || "Técnico"}
-                          {isReportedByHousekeeper && <span className="ms-1">🧹</span>}
-                        </td>
-                        <td>{task.nombre}</td>
-                        <td>
-                          <span className={`badge ${task.condition === 'PENDIENTE' ? 'bg-danger' :
-                              task.condition === 'EN PROCESO' ? 'bg-warning text-dark' :
-                                'bg-success'
-                            }`}>
-                            {task.condition}
-                          </span>
-                        </td>
-
-                        <td>
-                          {store.branches.find(branch => branch.id === task.room?.branch_id)?.nombre || "-"}
-                        </td>
-                        <td>{task.room_nombre || task.room?.nombre}</td>
-                        <td>
-                          {task.photo_url ? (
-                            <img
-                              src={task.photo_url}
-                              alt="Incidencia"
-                              style={{
-                                width: "60px",
-                                height: "60px",
-                                objectFit: "cover",
-                                borderRadius: "8px"
-                              }}
-                            />
-                          ) : (
-                            <span className="text-muted">Sin foto</span>
-                          )}
-                        </td>
-                        <td>
-                          <button
-                            className="btn btn-sm me-2"
-                            style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
-                            onClick={() => editMaintenanceTask(task)}
-                          >
-                            <FontAwesomeIcon icon={faPen} className="me-1" />
-                          </button>
-                          <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() => handleDelete(task.id)}
-                          >
-                            <FontAwesomeIcon icon={faTrash} className="me-1" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                {store.maintenanceTasks.map(task => {
+                  const isReportedByHousekeeper = task.housekeeper_id !== null;
+                  return (
+                    <tr key={task.id} className={isReportedByHousekeeper ? "table-info" : ""}>
+                      <td>{isReportedByHousekeeper ? task.housekeeper?.nombre || "Camarera" : task.maintenance?.nombre || "Técnico"}</td>
+                      <td>{task.nombre}</td>
+                      <td>
+                        <span className={`badge ${task.condition === 'PENDIENTE' ? 'bg-danger' : task.condition === 'EN PROCESO' ? 'bg-warning text-dark' : 'bg-success'}`}>
+                          {task.condition}
+                        </span>
+                      </td>
+                      <td>{store.branches.find(b => b.id === task.room?.branch_id)?.nombre || "-"}</td>
+                      <td>{task.room_nombre || task.room?.nombre || "Zona común"}</td>
+                      <td>{task.photo_url ? <img src={task.photo_url} alt="Incidencia" style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "8px" }} /> : <span className="text-muted">Sin foto</span>}</td>
+                      <td>
+                        <button className="btn btn-sm me-2" style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }} onClick={() => editMaintenanceTask(task)}>
+                          <FontAwesomeIcon icon={faPen} className="me-1" />
+                        </button>
+                        <button className="btn btn-sm btn-danger" onClick={() => handleDelete(task.id)}>
+                          <FontAwesomeIcon icon={faTrash} className="me-1" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
-
             </table>
           </div>
         </div>

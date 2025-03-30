@@ -11,6 +11,7 @@ from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, creat
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime, timedelta, timezone
 from api.utils import generate_sitemap, APIException
+from sqlalchemy import or_
 import jwt
 import os
 import openai
@@ -808,8 +809,12 @@ def get_maintenancetasks_by_hotel():
     room_ids = [r.id for r in rooms]
 
     # Obtenemos todas las tareas de mantenimiento de las habitaciones del hotel
+
     tasks = MaintenanceTask.query.filter(
-        MaintenanceTask.room_id.in_(room_ids)
+        or_(
+            MaintenanceTask.room_id.in_(room_ids),
+            MaintenanceTask.room_id == None  # incluir tareas sin habitación
+        )
     ).all()
 
     return jsonify([t.serialize() for t in tasks]), 200
@@ -820,7 +825,7 @@ def get_maintenancetasks_by_hotel():
 
 @api.route('/maintenancetask_by_hotel', methods=['POST'])
 @jwt_required()
-def create_maintenancetask_by_hotel():
+def create_maintenance_task_by_hotel():
     email = get_jwt_identity()
     hotel = Hoteles.query.filter_by(email=email).first()
     if not hotel:
@@ -828,34 +833,35 @@ def create_maintenancetask_by_hotel():
 
     data = request.get_json()
 
-    # Validaciones cruzadas
-    room = Room.query.get(data.get("room_id"))
-    maintenance = Maintenance.query.get(data.get("maintenance_id"))
-    housekeeper = HouseKeeper.query.get(data.get("housekeeper_id")) if data.get("housekeeper_id") else None
-    category = Category.query.get(data.get("category_id")) if data.get("category_id") else None
+    # Validación básica
+    if 'nombre' not in data or 'condition' not in data or 'maintenance_id' not in data:
+        return jsonify({"msg": "Faltan campos obligatorios"}), 400
 
-    if not room or room.branch.hotel_id != hotel.id:
-        return jsonify({"msg": "Habitación no pertenece al hotel"}), 401
+    room_id = data.get('room_id')  # puede ser None si es zona común
 
-    if not maintenance or maintenance.hotel_id != hotel.id:
+    # Verificar si hay room_id
+    if room_id:
+        room = Room.query.get(room_id)
+        if not room or room.branch.hotel_id != hotel.id:
+            return jsonify({"msg": "Habitación no pertenece al hotel"}), 401
+
+    # Verificar técnico
+    technician = Maintenance.query.get(data['maintenance_id'])
+    if not technician or technician.hotel_id != hotel.id:
         return jsonify({"msg": "Técnico no pertenece al hotel"}), 401
 
-    if housekeeper and housekeeper.branches.hotel_id != hotel.id:
-        return jsonify({"msg": "Housekeeper no pertenece al hotel"}), 401
-
-    task = MaintenanceTask(
-        nombre=data["nombre"],
-        photo_url=data.get("photo_url", ""),
-        condition="PENDIENTE",
-        room_id=room.id,
-        maintenance_id=maintenance.id,
-        housekeeper_id=housekeeper.id if housekeeper else None,
-        category_id=category.id if category else None
+    new_task = MaintenanceTask(
+        nombre=data['nombre'],
+        photo_url=data.get('photo_url'),
+        condition=data['condition'],
+        room_id=room_id,  # puede ser None
+        maintenance_id=data['maintenance_id']
     )
 
-    db.session.add(task)
+    db.session.add(new_task)
     db.session.commit()
-    return jsonify(task.serialize()), 201
+    return jsonify(new_task.serialize()), 201
+
 
 #  Editar tarea de mantenimiento (solo si pertenece al hotel autenticado)
 @api.route('/maintenancetask_by_hotel/<int:id>', methods=['PUT'])
