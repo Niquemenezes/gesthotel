@@ -232,14 +232,20 @@ def create_maintenance():
     if not hotel:
         return jsonify({"msg": "Hotel no encontrado"}), 404
 
-    # Crea el técnico sin branch_id
+    branch_id = data.get("branch_id")
+    branch = Branches.query.get(branch_id)
+
+    if not branch or branch.hotel_id != hotel.id:
+        return jsonify({"msg": "Sucursal no válida o no pertenece al hotel"}), 401
+
     new_maintenance = Maintenance(
-        nombre=data["nombre"],
-        email=data["email"],
-        password=data["password"],
-        photo_url=data.get("photo_url"),
-        hotel_id=hotel.id  # ← lo pone automáticamente
-    )
+    nombre=data["nombre"],
+    email=data["email"],
+    password=data["password"],
+    photo_url=data.get("photo_url"),
+    hotel_id=hotel.id,
+    branch_id=branch.id
+)
 
     db.session.add(new_maintenance)
     db.session.commit()
@@ -260,11 +266,17 @@ def update_maintenance(id):
     if not maintenance or maintenance.hotel_id != hotel.id:
         return jsonify({"msg": "Técnico no encontrado o no autorizado"}), 404
 
+    branch_id = data.get("branch_id", maintenance.branch_id)
+    branch = Branches.query.get(branch_id)
+
+    if not branch or branch.hotel_id != hotel.id:
+        return jsonify({"msg": "Sucursal no válida o no pertenece al hotel"}), 401
+
     maintenance.nombre = data.get("nombre", maintenance.nombre)
     maintenance.email = data.get("email", maintenance.email)
     maintenance.password = data.get("password", maintenance.password)
-    maintenance.photo_url = data.get("photo_url", maintenance.photo_url)  
-
+    maintenance.photo_url = data.get("photo_url", maintenance.photo_url)
+    maintenance.branch_id = branch.id
 
     db.session.commit()
     return jsonify(maintenance.serialize()), 200
@@ -363,6 +375,8 @@ def update_housekeeper(id):
     hk.email = data.get("email", hk.email)
     hk.password = data.get("password", hk.password)
     hk.photo_url = data.get("photo_url", hk.photo_url)
+    hk.id_branche = new_branche_id  
+
 
 
     db.session.commit()

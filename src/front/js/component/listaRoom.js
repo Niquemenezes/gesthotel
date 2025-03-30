@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Context } from "../store/appContext";
-import PrivateLayout from "./privateLayout"; 
+import PrivateLayout from "./privateLayout";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPen, faTrash, faPlus, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 const ListaRoom = () => {
   const { store, actions } = useContext(Context);
@@ -12,7 +14,7 @@ const ListaRoom = () => {
 
   useEffect(() => {
     actions.getRooms();
-    actions.getBranches(); 
+    actions.getBranches();
   }, []);
 
   const resetForm = () => {
@@ -63,6 +65,7 @@ const ListaRoom = () => {
               setShowForm(true);
             }}
           >
+            <FontAwesomeIcon icon={faPlus} className="me-2" />
             Crear Habitación
           </button>
         </div>
@@ -86,22 +89,21 @@ const ListaRoom = () => {
                   style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
                   onClick={() => handleEdit(room)}
                 >
-                  Editar
+                  <FontAwesomeIcon icon={faPen} />
                 </button>
+
                 <button
-                  className="btn"
-                  style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
+                  className="btn btn-danger"
                   onClick={() => eliminarRoom(room.id)}
                   disabled={eliminando === room.id}
                 >
-                  {eliminando === room.id ? "Eliminando..." : "Eliminar"}
+                  {eliminando === room.id ? "Eliminando..." : <FontAwesomeIcon icon={faTrash} />}
                 </button>
               </div>
             </div>
           ))
         )}
 
-        {/* Formulario al final de la página */}
         {showForm && (
           <div className="card p-4 mt-5 mb-5">
             <h4 className="text-center mb-3">{editingId ? "Editar" : "Crear"} Habitación</h4>
@@ -133,13 +135,16 @@ const ListaRoom = () => {
                   className="btn"
                   style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }}
                 >
+                  <FontAwesomeIcon icon={faSave} className="me-2" />
                   {editingId ? "Actualizar" : "Crear"}
                 </button>
+
                 <button
                   type="button"
                   className="btn btn-secondary"
                   onClick={resetForm}
                 >
+                  <FontAwesomeIcon icon={faTimes} className="me-2" />
                   Cancelar
                 </button>
               </div>

@@ -417,19 +417,32 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 
 			updateHousekeeper: (id, data) => {
-				const store = getStore();
-				fetch(process.env.BACKEND_URL + `/api/housekeeper_by_hotel/${id}`, {
-					method: "PUT",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: "Bearer " + store.token
-					},
-					body: JSON.stringify(data)
+				const token = localStorage.getItem("token");
+			  
+				fetch(`${process.env.BACKEND_URL}/api/housekeeper_by_hotel/${id}`, {
+				  method: "PUT",
+				  headers: {
+					"Content-Type": "application/json",
+					Authorization: "Bearer " + token
+				  },
+				  body: JSON.stringify(data)
 				})
-					.then(res => res.json())
-					.then(() => getActions().getHousekeepers())
-					.catch(err => console.error("Error al actualizar housekeeper", err));
-			},
+				  .then(resp => {
+					if (!resp.ok) {
+					  throw new Error("Error al actualizar camarera");
+					}
+					return resp.json();
+				  })
+				  .then(result => {
+					console.log("Actualizado:", result);
+					getActions().getHousekeepers(); // ✅ refresca la lista
+				  })
+				  .catch(err => {
+					console.error("Error updateHousekeeper:", err);
+				  });
+			  },
+			  
+			  
 
 			deleteHousekeeper: (id) => {
 				const store = getStore();
