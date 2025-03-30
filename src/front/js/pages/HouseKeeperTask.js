@@ -3,7 +3,7 @@ import { Context } from "../store/appContext";
 import PrivateLayout from "../component/privateLayout";
 import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen, faTrash, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faSave, faTimes, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 const HouseKeeperTask = () => {
   const { store, actions } = useContext(Context);
@@ -14,10 +14,10 @@ const HouseKeeperTask = () => {
   const [photo, setPhoto] = useState('');
   const [assignmentDate, setAssignmentDate] = useState(new Date().toISOString().split('T')[0]);
   const [submissionDate, setSubmissionDate] = useState('');
-  const [idRoom, setIdRoom] = useState('');
+  const [selectedRooms, setSelectedRooms] = useState([]);
   const [idHousekeeper, setIdHousekeeper] = useState('');
+  const [editingTaskId, setEditingTaskId] = useState(null); // NUEVO
   const [errorMessage, setErrorMessage] = useState('');
-  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     actions.getHousekeepers();
@@ -33,48 +33,82 @@ const HouseKeeperTask = () => {
       })
     : [];
 
-  const handleHousekeeperChange = (idHK) => {
-    setIdHousekeeper(idHK);
-    setIdRoom('');
+  const getTaskConditionForRoom = (roomId) => {
+    const task = houseKeeperTasks.find(t =>
+      t.id_housekeeper === parseInt(idHousekeeper) && t.id_room === roomId
+    );
+    return task ? task.condition : null;
+  };
+
+  const getColorClassForCondition = (condition) => {
+    switch (condition) {
+      case 'PENDIENTE': return 'btn-danger';
+      case 'EN PROCESO': return 'btn-warning';
+      case 'FINALIZADA': return 'btn-success';
+      default: return 'btn-outline-secondary';
+    }
+  };
+
+  const toggleRoomSelection = (roomId) => {
+    const existing = getTaskConditionForRoom(roomId);
+    if (editingTaskId || !existing) {
+      setSelectedRooms(prev =>
+        prev.includes(roomId) ? prev.filter(id => id !== roomId) : [...prev, roomId]
+      );
+    }
   };
 
   const handleSubmit = async () => {
-    const data = {
-      nombre,
-      photo_url: photo,
-      condition,
-      assignment_date: assignmentDate,
-      submission_date: submissionDate,
-      id_room: idRoom,
-      id_housekeeper: idHousekeeper
-    };
+    if (!idHousekeeper || !nombre || selectedRooms.length === 0 || !assignmentDate || !submissionDate) {
+      alert("Por favor completa todos los campos y selecciona habitaciones.");
+      return;
+    }
 
-    if (editingId) {
-      await actions.updateHouseKeeperTask(editingId, data);
+    if (editingTaskId) {
+      // EDITAR tarea
+      const updatedTask = {
+        nombre,
+        photo_url: photo,
+        condition,
+        assignment_date: assignmentDate,
+        submission_date: submissionDate,
+        id_room: selectedRooms[0], // Una sola habitación para editar
+        id_housekeeper: idHousekeeper
+      };
+      await actions.updateHouseKeeperTask(editingTaskId, updatedTask);
     } else {
-      await actions.createHouseKeeperTask(data);
+      // CREAR nuevas tareas
+      const data = selectedRooms.map(roomId => ({
+        nombre,
+        photo_url: photo,
+        condition,
+        assignment_date: assignmentDate,
+        submission_date: submissionDate,
+        id_room: roomId,
+        id_housekeeper: idHousekeeper
+      }));
+      for (const tarea of data) {
+        await actions.createHouseKeeperTask(tarea);
+      }
     }
 
     await actions.getHouseKeeperTasks();
     resetForm();
   };
 
-  const editHouseKeeperTask = (id) => {
-    const task = houseKeeperTasks.find(t => t.id === id);
-    if (task) {
-      setEditingId(task.id);
-      setNombre(task.nombre);
-      setPhoto(task.photo_url);
-      setCondition(task.condition);
-      setAssignmentDate(task.assignment_date);
-      setSubmissionDate(task.submission_date);
-      setIdHousekeeper(task.id_housekeeper);
-      setIdRoom(task.id_room);
-    }
+  const handleEdit = (task) => {
+    setEditingTaskId(task.id);
+    setNombre(task.nombre);
+    setPhoto(task.photo_url || '');
+    setCondition(task.condition);
+    setAssignmentDate(task.assignment_date);
+    setSubmissionDate(task.submission_date);
+    setIdHousekeeper(task.id_housekeeper.toString());
+    setSelectedRooms([task.id_room]);
   };
 
-  const deleteHouseKeeperTask = async (id) => {
-    if (window.confirm("¿Eliminar esta tarea?")) {
+  const handleDelete = async (id) => {
+    if (window.confirm("¿Estás segura/o de eliminar esta tarea?")) {
       await actions.deleteHouseKeeperTask(id);
       await actions.getHouseKeeperTasks();
     }
@@ -86,86 +120,91 @@ const HouseKeeperTask = () => {
     setCondition('PENDIENTE');
     setAssignmentDate(new Date().toISOString().split('T')[0]);
     setSubmissionDate('');
-    setIdRoom('');
+    setSelectedRooms([]);
     setIdHousekeeper('');
-    setEditingId(null);
+    setEditingTaskId(null);
   };
 
   return (
     <PrivateLayout>
       <div className="container">
-        <h1 className="my-4 text-center">Gestión de Tareas de Camareras</h1>
+        <h1 className="my-4 text-center">Asignar Tareas de Limpieza</h1>
         <div className="row">
-          <div className="col-12 col-md-3 mb-4 d-flex justify-content-center">
-            <div className="card shadow-sm w-100">
-              <div className="card-body p-3">
-                <h5 className="card-title text-center mb-3">{editingId ? "Editar" : "Crear"} Tarea</h5>
-                <form>
-                  <div className="form-group mb-2">
-                    <label className="small">Camarera</label>
-                    <select className="form-control form-control-sm" value={idHousekeeper} onChange={(e) => handleHousekeeperChange(e.target.value)}>
-                      <option value="">Selecciona una camarera</option>
-                      {housekeepers.map(h => (
-                        <option key={h.id} value={h.id}>{h.nombre}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="form-group mb-2">
-                    <label className="small">Habitación</label>
-                    <select className="form-control form-control-sm" value={idRoom} onChange={(e) => setIdRoom(e.target.value)}>
-                      <option value="">Selecciona habitación</option>
-                      {filteredRooms.map(room => (
-                        <option key={room.id} value={room.id}>{room.nombre}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="form-group mb-2">
-                    <label className="small">Tarea</label>
-                    <input className="form-control form-control-sm" value={nombre} onChange={(e) => setNombre(e.target.value)} />
-                  </div>
-
-                  <div className="form-group mb-3">
-                    <label className="small">Foto</label>
-                    <CloudinaryApiHotel setPhotoUrl={setPhoto} setErrorMessage={setErrorMessage} />
-                    {photo && <img src={photo} alt="preview" className="img-fluid mt-2" style={{ width: 80, borderRadius: 10 }} />}
-                    {errorMessage && <p className="text-danger">{errorMessage}</p>}
-                  </div>
-
-                  <div className="form-group mb-2">
-                    <label className="small">Estado</label>
-                    <select className="form-control form-control-sm" value={condition} onChange={(e) => setCondition(e.target.value)}>
-                      <option value="PENDIENTE">PENDIENTE</option>
-                      <option value="EN PROCESO">EN PROCESO</option>
-                      <option value="FINALIZADA">FINALIZADA</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group mb-2">
-                    <label className="small">Entrega</label>
-                    <input type="date" className="form-control form-control-sm" value={submissionDate} onChange={(e) => setSubmissionDate(e.target.value)} />
-                  </div>
-
-                  <div className="d-flex justify-content-between mt-2">
-                    <button type="button" className="btn btn-sm" style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }} onClick={handleSubmit}>
-                      <FontAwesomeIcon icon={faSave} className="me-1" />
-                      {editingId ? "Actualizar" : "Crear"}
-                    </button>
-                    {editingId && (
-                      <button className="btn btn-sm btn-outline-secondary" onClick={resetForm}>
-                        <FontAwesomeIcon icon={faTimes} className="me-1" />
-                        Cancelar
-                      </button>
-                    )}
-                  </div>
-                </form>
+          <div className="col-12 col-md-3 mb-4">
+            <div className="card shadow-sm p-3">
+              <h5 className="text-center mb-3">{editingTaskId ? "Editar Tarea" : "Nueva Tarea"}</h5>
+              <div className="form-group mb-2">
+                <label>Camarera</label>
+                <select className="form-control" value={idHousekeeper} onChange={e => setIdHousekeeper(e.target.value)}>
+                  <option value="">Selecciona una camarera</option>
+                  {housekeepers.map(h => (
+                    <option key={h.id} value={h.id}>{h.nombre}</option>
+                  ))}
+                </select>
               </div>
+
+              <div className="form-group mb-2">
+                <label>Habitaciones</label>
+                {filteredRooms.length === 0 ? (
+                  <div className="text-muted">Selecciona una camarera</div>
+                ) : (
+                  <div className="d-flex flex-wrap gap-2">
+                    {filteredRooms.map(room => {
+                      const condition = getTaskConditionForRoom(room.id);
+                      const selected = selectedRooms.includes(room.id);
+                      const colorClass = condition
+                        ? getColorClassForCondition(condition)
+                        : selected
+                          ? 'btn-primary'
+                          : 'btn-outline-secondary';
+                      return (
+                        <button
+                          key={room.id}
+                          type="button"
+                          className={`btn btn-sm ${colorClass}`}
+                          onClick={() => toggleRoomSelection(room.id)}
+                          disabled={!!condition && !editingTaskId}
+                          title={condition ? `Ya tiene tarea (${condition})` : 'Seleccionar'}
+                        >
+                          {room.nombre}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group mb-2">
+                <label>Tipo de Tarea</label>
+                <input className="form-control" value={nombre} onChange={e => setNombre(e.target.value)} />
+              </div>
+
+              <div className="form-group mb-2">
+                <label>Foto</label>
+                <CloudinaryApiHotel setPhotoUrl={setPhoto} setErrorMessage={setErrorMessage} />
+                {photo && <img src={photo} alt="Preview" style={{ width: 60, marginTop: 10 }} />}
+              </div>
+
+              <div className="form-group mb-2">
+                <label>Entrega</label>
+                <input type="date" className="form-control" value={submissionDate} onChange={e => setSubmissionDate(e.target.value)} />
+              </div>
+
+              <div className="d-flex justify-content-between">
+                <button className="btn btn-success" onClick={handleSubmit}>
+                  <FontAwesomeIcon icon={faSave} className="me-1" /> {editingTaskId ? "Actualizar" : "Crear"}
+                </button>
+                <button className="btn btn-secondary" onClick={resetForm}>
+                  <FontAwesomeIcon icon={faTimes} className="me-1" /> Cancelar
+                </button>
+              </div>
+
+              {errorMessage && <p className="text-danger mt-2">{errorMessage}</p>}
             </div>
           </div>
 
           <div className="col-12 col-md-9">
-            <h4 className="mb-3">Tareas de Camareras</h4>
+            <h4 className="mb-3">Tareas Actuales</h4>
             <table className="table table-striped">
               <thead>
                 <tr>
@@ -175,25 +214,37 @@ const HouseKeeperTask = () => {
                   <th>Entrega</th>
                   <th>Habitación</th>
                   <th>Sucursal</th>
-                  <th>Imagen</th>
+                  <th>Foto</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {Array.isArray(houseKeeperTasks) && houseKeeperTasks.map(task => (
+                {houseKeeperTasks.map(task => (
                   <tr key={task.id}>
-                    <td>{housekeepers.find(h => h.id === task.id_housekeeper)?.nombre || <span className="text-muted">Camarera</span>}</td>
+                    <td>{housekeepers.find(h => h.id === task.id_housekeeper)?.nombre || 'Camarera'}</td>
                     <td>{task.nombre}</td>
-                    <td>{task.condition}</td>
+                    <td>
+                      <span className={`badge ${
+                        task.condition === 'PENDIENTE' ? 'bg-danger' :
+                        task.condition === 'EN PROCESO' ? 'bg-warning text-dark' :
+                        'bg-success'
+                      }`}>
+                        {task.condition}
+                      </span>
+                    </td>
                     <td>{task.submission_date}</td>
                     <td>{task.room_nombre}</td>
                     <td>{branches.find(b => b.id === task.room_branch_id)?.nombre || '-'}</td>
-                    <td>{task.photo_url ? <img src={task.photo_url} alt="" style={{ width: 50, height: 50 }} /> : "Sin foto"}</td>
                     <td>
-                      <button className="btn btn-sm btn-info me-2" onClick={() => editHouseKeeperTask(task.id)}>
+                      {task.photo_url
+                        ? <img src={task.photo_url} alt="" style={{ width: 40, height: 40, borderRadius: 4 }} />
+                        : 'Sin foto'}
+                    </td>
+                    <td>
+                      <button className="btn btn-sm btn-info me-1" onClick={() => handleEdit(task)}>
                         <FontAwesomeIcon icon={faPen} />
                       </button>
-                      <button className="btn btn-sm btn-danger" onClick={() => deleteHouseKeeperTask(task.id)}>
+                      <button className="btn btn-sm btn-danger" onClick={() => handleDelete(task.id)}>
                         <FontAwesomeIcon icon={faTrash} />
                       </button>
                     </td>

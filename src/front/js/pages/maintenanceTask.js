@@ -32,7 +32,7 @@ const MaintenanceTask = () => {
     setEditingId(null);
   };
 
-  const handleCreateOrUpdate = () => {
+  const handleCreateOrUpdate = async () => {
     if (!nombre || !idRoom || !idMaintenance) {
       alert('Por favor, completa todos los campos obligatorios');
       return;
@@ -46,13 +46,18 @@ const MaintenanceTask = () => {
       maintenance_id: idMaintenance,
     };
 
-    if (editingId) {
-      actions.updateMaintenanceTask(editingId, payload);
-    } else {
-      actions.createMaintenanceTask(payload);
-    }
+    try {
+      if (editingId) {
+        await actions.updateMaintenanceTask(editingId, payload);
+      } else {
+        await actions.createMaintenanceTask(payload);
+      }
 
-    resetForm();
+      await actions.getMaintenanceTasks(); // recarga tareas
+      resetForm();
+    } catch (err) {
+      console.error("Error al crear o actualizar tarea:", err);
+    }
   };
 
   const editMaintenanceTask = (task) => {
@@ -76,6 +81,31 @@ const MaintenanceTask = () => {
   const filteredRooms = Array.isArray(store.rooms)
     ? store.rooms.filter(room => room.branch_id === selectedMaintenance?.branch_id)
     : [];
+
+  const getTaskConditionForRoom = (roomId) => {
+    const task = store.maintenanceTasks.find(t =>
+      t.maintenance_id === parseInt(idMaintenance) && t.room_id === roomId
+    );
+    return task ? task.condition : null;
+  };
+
+  const getColorClassForCondition = (condition) => {
+    switch (condition) {
+      case 'PENDIENTE': return 'btn-danger';
+      case 'EN PROCESO': return 'btn-warning';
+      case 'FINALIZADA': return 'btn-success';
+      default: return 'btn-outline-secondary';
+    }
+  };
+
+  const toggleRoomSelection = (roomId) => {
+    const existing = getTaskConditionForRoom(roomId);
+    if (editingId || !existing) {
+      setIdRoom(prev =>
+        prev === roomId ? '' : roomId
+      );
+    }
+  };
 
   return (
     <PrivateLayout>
@@ -105,17 +135,32 @@ const MaintenanceTask = () => {
 
                   <div className="form-group mb-2">
                     <label className="small">Habitación</label>
-                    <select
-                      className="form-control form-control-sm"
-                      value={idRoom}
-                      onChange={e => setIdRoom(e.target.value)}
-                    >
-                      <option value="">Selecciona una habitación</option>
-                      {filteredRooms.map(room => (
-                        <option key={room.id} value={room.id}>{room.nombre}</option>
-                      ))}
-                    </select>
+                    <div className="d-flex flex-wrap gap-2">
+                      {filteredRooms.map(room => {
+                        const condition = getTaskConditionForRoom(room.id);
+                        const selected = idRoom == room.id;
+                        const colorClass = condition
+                          ? getColorClassForCondition(condition)
+                          : selected
+                            ? 'btn-primary'
+                            : 'btn-outline-secondary';
+
+                        return (
+                          <button
+                            key={room.id}
+                            type="button"
+                            className={`btn btn-sm ${colorClass}`}
+                            onClick={() => toggleRoomSelection(room.id)}
+                            disabled={!!condition && !editingId}
+                            title={condition ? `Ya tiene tarea (${condition})` : 'Seleccionar'}
+                          >
+                            {room.nombre}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
+
 
                   <div className="form-group mb-2">
                     <label className="small">Tarea</label>
@@ -219,7 +264,15 @@ const MaintenanceTask = () => {
                           {isReportedByHousekeeper && <span className="ms-1">🧹</span>}
                         </td>
                         <td>{task.nombre}</td>
-                        <td>{task.condition}</td>
+                        <td>
+                          <span className={`badge ${task.condition === 'PENDIENTE' ? 'bg-danger' :
+                              task.condition === 'EN PROCESO' ? 'bg-warning text-dark' :
+                                'bg-success'
+                            }`}>
+                            {task.condition}
+                          </span>
+                        </td>
+
                         <td>
                           {store.branches.find(branch => branch.id === task.room?.branch_id)?.nombre || "-"}
                         </td>
