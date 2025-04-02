@@ -1,12 +1,16 @@
 services:
   - type: web
     name: apihotel-backend
-    env: python
+
+    region: ohio
+    plan: free
+
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn src.app:app"
     envVars:
       - key: FLASK_ENV
         value: production
+
       - key: DATABASE_URL
         value: postgres://<usuario>:<contraseña>@<host>:5432/<nombre_base_datos>
       - key: OPENAI_API_KEY
@@ -14,13 +18,41 @@ services:
  
     plan: free
 
+      - key: FLASK_APP_KEY
+        value: any-key-works
+      - key: FLASK_APP
+        value: src/app.py
+      - key: FLASK_DEBUG
+        value: 0
+      - key: PYTHON_VERSION
+        value: 3.10.6
+      - key: DATABASE_URL
+        fromDatabase:
+          name: postgresql-trapezoidal-42170
+          property: connectionString
+
+
   - type: web
     name: apihotel-frontend
     env: node
+
+
+    region: ohio
+    plan: free
+
     buildCommand: "npm install && npm run build"
     startCommand: "npx serve -s build"
     staticPublishPath: ./build
     envVars:
       - key: REACT_APP_BACKEND_URL
         value: https://apihotel-backend.onrender.com
+
     plan: free
+
+
+databases:
+  - name: postgresql-trapezoidal-42170
+    region: ohio
+    plan: free
+    ipAllowList: []
+
