@@ -20,17 +20,20 @@ services:
           name: postgresql-trapezoidal-42170
           property: connectionString
 
+services:
   - type: web
     name: apihotel-frontend
     env: node
     region: ohio
     plan: free
     buildCommand: "npm install && npm run build"
-    startCommand: "npx serve -s build"
+    startCommand: "npx serve -s build -l 10000"
     envVars:
       - key: REACT_APP_BACKEND_URL
-        value: https://apihotel-backend.onrender.com
-
+        value: https://apihotel-backend.onrender.com  # URL pública del backend
+    branch: develop  # Asegúrate de usar la rama correcta
+    autoDeploy: true
+    
 databases:
   - name: postgresql-trapezoidal-42170
     region: ohio
