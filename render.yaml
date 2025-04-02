@@ -2,39 +2,42 @@ services:
   - type: web
     name: apihotel-backend
     env: python
-    region: ohio
+    region: us-east  # ✅ Región corregida
     plan: free
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn src.app:app"
+    healthCheckPath: /health  # ✅ Health check
     envVars:
       - key: FLASK_APP
         value: src/app.py
       - key: FLASK_DEBUG
         value: 0
-      - key: FLASK_APP_KEY
-        value: any key works
-      - key: PYTHON_VERSION
-        value: 3.10.6
+      - key: FLASK_APP_KEY  # ❗ Define esta variable en el dashboard de Render
+        sync: false  # Indica que el valor no está en el repo
       - key: DATABASE_URL
         fromDatabase:
           name: postgresql-trapezoidal-42170
           property: connectionString
-      - key: OPENAI_API_KEY
-        value: ${OPENAI_API_KEY} # si usas la API de OpenAI
+      - key: PYTHON_VERSION  # Opcional (mejor usar runtime.txt)
+        value: 3.10.6
+    branch: main  # ✅ Especifica la rama
+    autoDeploy: true  # ✅ Despliegue automático
 
   - type: web
     name: apihotel-frontend
     env: node
-    region: ohio
+    region: us-east
     plan: free
     buildCommand: "npm install && npm run build"
-    startCommand: "npx serve -s build"
+    startCommand: "npx serve -s build -l 10000"  # Puerto interno
     envVars:
       - key: REACT_APP_BACKEND_URL
-        value: https://apihotel-backend.onrender.com
+        value: http://apihotel-backend:10000  # ✅ URL interna
+    branch: main
+    autoDeploy: true
 
 databases:
   - name: postgresql-trapezoidal-42170
-    region: ohio
+    region: us-east
     plan: free
-    ipAllowList: [] # solo conexiones internas
+    ipAllowList: []
