@@ -31,10 +31,10 @@ services:
     plan: free
     buildCommand: "npm install && npm run build"
     startCommand: "npx serve -s build"
-    staticPublishPath: ./build
     envVars:
       - key: REACT_APP_BACKEND_URL
         value: https://apihotel-backend.onrender.com
+
 
 databases:
   - name: postgresql-trapezoidal-42170
