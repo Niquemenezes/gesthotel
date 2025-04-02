@@ -7,8 +7,7 @@ import { faSave, faTimes, faPen, faTrash } from "@fortawesome/free-solid-svg-ico
 
 const HouseKeeperTask = () => {
   const { store, actions } = useContext(Context);
-  const { housekeepers = [], rooms = [], houseKeeperTasks = [], branches = [] } = store;
-
+  const { housekeepers = [], rooms = [], housekeeperTasks = [], branches = [] } = store;
   const [condition, setCondition] = useState('PENDIENTE');
   const [nombre, setNombre] = useState('');
   const [photo, setPhoto] = useState('');
@@ -16,8 +15,9 @@ const HouseKeeperTask = () => {
   const [submissionDate, setSubmissionDate] = useState('');
   const [selectedRooms, setSelectedRooms] = useState([]);
   const [idHousekeeper, setIdHousekeeper] = useState('');
-  const [editingTaskId, setEditingTaskId] = useState(null); // NUEVO
+  const [editingTaskId, setEditingTaskId] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [esZonaComun, setEsZonaComun] = useState(false);
 
   useEffect(() => {
     actions.getHousekeepers();
@@ -26,19 +26,22 @@ const HouseKeeperTask = () => {
     actions.getHouseKeeperTasks();
   }, []);
 
+
+
   const filteredRooms = idHousekeeper
     ? rooms.filter(room => {
-        const hk = housekeepers.find(h => h.id == idHousekeeper);
-        return hk ? room.branch_id === hk.id_branche : false;
-      })
+      const hk = housekeepers.find(h => h.id == idHousekeeper);
+      return hk ? room.branch_id === hk.id_branche : false;
+    })
     : [];
 
   const getTaskConditionForRoom = (roomId) => {
-    const task = houseKeeperTasks.find(t =>
+    const task = housekeeperTasks.find(t =>
       t.id_housekeeper === parseInt(idHousekeeper) && t.id_room === roomId
     );
     return task ? task.condition : null;
   };
+
 
   const getColorClassForCondition = (condition) => {
     switch (condition) {
@@ -50,43 +53,57 @@ const HouseKeeperTask = () => {
   };
 
   const toggleRoomSelection = (roomId) => {
-    const existing = getTaskConditionForRoom(roomId);
-    if (editingTaskId || !existing) {
-      setSelectedRooms(prev =>
-        prev.includes(roomId) ? prev.filter(id => id !== roomId) : [...prev, roomId]
-      );
+    if (editingTaskId) {
+      setSelectedRooms([roomId]); // solo una habitación al editar
+    } else {
+      const existing = getTaskConditionForRoom(roomId);
+      if (!existing) {
+        setSelectedRooms(prev =>
+          prev.includes(roomId) ? prev.filter(id => id !== roomId) : [...prev, roomId]
+        );
+      }
     }
   };
 
+
   const handleSubmit = async () => {
-    if (!idHousekeeper || !nombre || selectedRooms.length === 0 || !assignmentDate || !submissionDate) {
-      alert("Por favor completa todos los campos y selecciona habitaciones.");
+    if (!idHousekeeper || !nombre || (!esZonaComun && selectedRooms.length === 0) || !assignmentDate || !submissionDate) {
+      alert("Por favor completa todos los campos requeridos.");
       return;
     }
 
     if (editingTaskId) {
-      // EDITAR tarea
       const updatedTask = {
         nombre,
         photo_url: photo,
         condition,
         assignment_date: assignmentDate,
         submission_date: submissionDate,
-        id_room: selectedRooms[0], // Una sola habitación para editar
+        id_room: esZonaComun ? null : selectedRooms[0],
         id_housekeeper: idHousekeeper
       };
       await actions.updateHouseKeeperTask(editingTaskId, updatedTask);
     } else {
-      // CREAR nuevas tareas
-      const data = selectedRooms.map(roomId => ({
-        nombre,
-        photo_url: photo,
-        condition,
-        assignment_date: assignmentDate,
-        submission_date: submissionDate,
-        id_room: roomId,
-        id_housekeeper: idHousekeeper
-      }));
+      const data = esZonaComun
+        ? [{
+          nombre,
+          photo_url: photo,
+          condition,
+          assignment_date: assignmentDate,
+          submission_date: submissionDate,
+          id_room: null,
+          id_housekeeper: idHousekeeper
+        }]
+        : selectedRooms.map(roomId => ({
+          nombre,
+          photo_url: photo,
+          condition,
+          assignment_date: assignmentDate,
+          submission_date: submissionDate,
+          id_room: roomId,
+          id_housekeeper: idHousekeeper
+        }));
+
       for (const tarea of data) {
         await actions.createHouseKeeperTask(tarea);
       }
@@ -104,7 +121,8 @@ const HouseKeeperTask = () => {
     setAssignmentDate(task.assignment_date);
     setSubmissionDate(task.submission_date);
     setIdHousekeeper(task.id_housekeeper.toString());
-    setSelectedRooms([task.id_room]);
+    setSelectedRooms(task.id_room ? [task.id_room] : []);
+    setEsZonaComun(task.id_room === null);
   };
 
   const handleDelete = async (id) => {
@@ -123,6 +141,7 @@ const HouseKeeperTask = () => {
     setSelectedRooms([]);
     setIdHousekeeper('');
     setEditingTaskId(null);
+    setEsZonaComun(false);
   };
 
   return (
@@ -143,36 +162,55 @@ const HouseKeeperTask = () => {
                 </select>
               </div>
 
-              <div className="form-group mb-2">
-                <label>Habitaciones</label>
-                {filteredRooms.length === 0 ? (
-                  <div className="text-muted">Selecciona una camarera</div>
-                ) : (
-                  <div className="d-flex flex-wrap gap-2">
-                    {filteredRooms.map(room => {
-                      const condition = getTaskConditionForRoom(room.id);
-                      const selected = selectedRooms.includes(room.id);
-                      const colorClass = condition
-                        ? getColorClassForCondition(condition)
-                        : selected
-                          ? 'btn-primary'
-                          : 'btn-outline-secondary';
-                      return (
-                        <button
-                          key={room.id}
-                          type="button"
-                          className={`btn btn-sm ${colorClass}`}
-                          onClick={() => toggleRoomSelection(room.id)}
-                          disabled={!!condition && !editingTaskId}
-                          title={condition ? `Ya tiene tarea (${condition})` : 'Seleccionar'}
-                        >
-                          {room.nombre}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+              <div className="form-check mb-2">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={esZonaComun}
+                  onChange={() => setEsZonaComun(!esZonaComun)}
+                  id="zonaComunCheck"
+                />
+                <label className="form-check-label" htmlFor="zonaComunCheck">
+                  Tarea fuera de una habitación (pasillos, baños, piscina...)
+                </label>
               </div>
+
+              {!esZonaComun && (
+                <div className="form-group mb-2">
+                  <label>Habitaciones</label>
+                  {filteredRooms.length === 0 ? (
+                    <div className="text-muted">Selecciona una camarera</div>
+                  ) : (
+                    <div className="d-flex flex-wrap gap-2">
+                      {filteredRooms.map(room => {
+                        const condition = getTaskConditionForRoom(room.id);
+                        const selected = selectedRooms.includes(room.id);
+                        const colorClass = condition
+                          ? getColorClassForCondition(condition)
+                          : selected
+                            ? 'btn-primary'
+                            : 'btn-outline-secondary';
+                        return (
+                          <button
+                            key={room.id}
+                            type="button"
+                            className={`btn btn-sm ${colorClass}`}
+                            onClick={() => toggleRoomSelection(room.id)}
+                            disabled={
+                              !!condition &&
+                              (!editingTaskId || selectedRooms[0] !== room.id)
+                            }
+
+                            title={condition ? `Ya tiene tarea (${condition})` : 'Seleccionar'}
+                          >
+                            {room.nombre}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="form-group mb-2">
                 <label>Tipo de Tarea</label>
@@ -219,22 +257,26 @@ const HouseKeeperTask = () => {
                 </tr>
               </thead>
               <tbody>
-                {houseKeeperTasks.map(task => (
+                {housekeeperTasks.map(task => (
                   <tr key={task.id}>
                     <td>{housekeepers.find(h => h.id === task.id_housekeeper)?.nombre || 'Camarera'}</td>
                     <td>{task.nombre}</td>
                     <td>
-                      <span className={`badge ${
-                        task.condition === 'PENDIENTE' ? 'bg-danger' :
+                      <span className={`badge ${task.condition === 'PENDIENTE' ? 'bg-danger' :
                         task.condition === 'EN PROCESO' ? 'bg-warning text-dark' :
-                        'bg-success'
-                      }`}>
+                          'bg-success'
+                        }`}>
                         {task.condition}
                       </span>
                     </td>
                     <td>{task.submission_date}</td>
-                    <td>{task.room_nombre}</td>
-                    <td>{branches.find(b => b.id === task.room_branch_id)?.nombre || '-'}</td>
+                    <td>{task.room_nombre || 'Zona común'}</td>
+                    <td>
+                      {task.room_branch_id
+                        ? branches.find(b => b.id === task.room_branch_id)?.nombre || '-'
+                        : branches.find(b => b.id === housekeepers.find(h => h.id === task.id_housekeeper)?.id_branche)?.nombre || '-'}
+                    </td>
+
                     <td>
                       {task.photo_url
                         ? <img src={task.photo_url} alt="" style={{ width: 40, height: 40, borderRadius: 4 }} />

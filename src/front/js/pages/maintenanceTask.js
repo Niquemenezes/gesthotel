@@ -16,6 +16,8 @@ const MaintenanceTask = () => {
   const [editingId, setEditingId] = useState(null);
   const [esZonaComun, setEsZonaComun] = useState(false);
 
+
+
   useEffect(() => {
     actions.getMaintenanceTasks();
     actions.getBranches();
@@ -46,14 +48,23 @@ const MaintenanceTask = () => {
           nombre,
           photo_url: photo,
           condition,
-          room_id: esZonaComun ? null : selectedRooms[0],
+          room_id: esZonaComun ? null : parseInt(selectedRooms[0]),
           maintenance_id: idMaintenance,
         };
+
+        console.log("Updating task with:", payload);
         await actions.updateMaintenanceTask(editingId, payload);
       } else {
         const tareas = esZonaComun
           ? [{ nombre, photo_url: photo, condition, room_id: null, maintenance_id: idMaintenance }]
-          : selectedRooms.map(roomId => ({ nombre, photo_url: photo, condition, room_id: roomId, maintenance_id: idMaintenance }));
+          : selectedRooms.map(roomId => ({
+            nombre,
+            photo_url: photo,
+            condition,
+            room_id: roomId,
+            maintenance_id: idMaintenance,
+          }));
+
 
         for (const tarea of tareas) {
           await actions.createMaintenanceTask(tarea);
@@ -74,6 +85,7 @@ const MaintenanceTask = () => {
     setIdMaintenance(task.maintenance_id || '');
     setEditingId(task.id);
     setEsZonaComun(task.room_id === null);
+   
   };
 
   const cancelEdit = () => resetForm();
@@ -90,7 +102,9 @@ const MaintenanceTask = () => {
     : [];
 
   const getTaskConditionForRoom = (roomId) => {
-    const task = store.maintenanceTasks.find(t => t.maintenance_id === parseInt(idMaintenance) && t.room_id === roomId);
+    const task = store.maintenanceTasks.find(
+      t => t.room_id === roomId && t.maintenance_id === parseInt(idMaintenance) && t.id !== editingId
+    );
     return task ? task.condition : null;
   };
 
@@ -109,7 +123,7 @@ const MaintenanceTask = () => {
       setSelectedRooms(prev =>
         prev.includes(roomId)
           ? prev.filter(id => id !== roomId)
-          : [...prev, roomId]
+          : [roomId]
       );
     }
   };
@@ -152,9 +166,16 @@ const MaintenanceTask = () => {
                             : selected ? 'btn-primary' : 'btn-outline-secondary';
 
                           return (
-                            <button key={room.id} type="button" className={`btn btn-sm ${colorClass}`} onClick={() => toggleRoomSelection(room.id)} disabled={!!condition && !editingId}>
+                            <button
+                              key={room.id}
+                              type="button"
+                              className={`btn btn-sm ${colorClass}`}
+                              onClick={() => toggleRoomSelection(room.id)}
+                              disabled={!!condition && !editingId}  // esto se mantiene igual porque ahora `condition` ignora la tarea editada
+                            >
                               {room.nombre}
                             </button>
+
                           );
                         })}
                       </div>
@@ -175,6 +196,7 @@ const MaintenanceTask = () => {
                       </div>
                     )}
                   </div>
+                  
 
                   <div className="form-group mb-2">
                     <label className="small">Estado</label>
@@ -210,6 +232,7 @@ const MaintenanceTask = () => {
                   <th>Estado</th>
                   <th>Sucursal</th>
                   <th>Habitación</th>
+                  <th>Fecha de creación</th>
                   <th>Foto</th>
                   <th>Acciones</th>
                 </tr>
@@ -226,8 +249,14 @@ const MaintenanceTask = () => {
                           {task.condition}
                         </span>
                       </td>
-                      <td>{store.branches.find(b => b.id === task.room?.branch_id)?.nombre || "-"}</td>
+                      <td>
+                        {task.room?.branch_id
+                          ? store.branches.find(b => b.id === task.room.branch_id)?.nombre || "-"
+                          : store.branches.find(b => b.id === task.maintenance?.branch_id)?.nombre || "-"}
+                      </td>
+
                       <td>{task.room_nombre || task.room?.nombre || "Zona común"}</td>
+                      <td>{task.created_at?.split("T")[0]}</td>
                       <td>{task.photo_url ? <img src={task.photo_url} alt="Incidencia" style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "8px" }} /> : <span className="text-muted">Sin foto</span>}</td>
                       <td>
                         <button className="btn btn-sm me-2" style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }} onClick={() => editMaintenanceTask(task)}>

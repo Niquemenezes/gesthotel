@@ -18,7 +18,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			hoteles: [],
 			housekeepers: [],
 			maintenances: [],
-			housekeepertasks: [],
+			housekeeperTasks: [],
 			maintenanceTasks: [],
 			branches: [],
 			categories: [],
@@ -26,8 +26,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			token: localStorage.getItem("token") || null,
 			hotel: JSON.parse(localStorage.getItem("hotel")) || null,
 		},
-
-
 		actions: {
 			// Use getActions to call a function within a fuction
 			exampleFunction: () => {
@@ -718,13 +716,13 @@ const getState = ({ getStore, getActions, setStore }) => {
 						return res.json();
 					})
 					.then(data => {
-						setStore({ houseKeeperTasks: data });
+						setStore({ housekeeperTasks: data }); 
 					})
 					.catch(error => {
 						console.error("Error en getHouseKeeperTasks:", error);
 					});
 			},
-
+			
 
 			createHouseKeeperTask: (data) => {
 				const store = getStore();
@@ -741,11 +739,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 						return res.json();
 					})
 					.then(newTask => {
-						const currentTasks = getStore().houseKeeperTasks || [];
+						const currentTasks = getStore().housekeeperTasks || [];
 						const updatedList = [...currentTasks, newTask];
-						setStore({ houseKeeperTasks: updatedList });
+						setStore({ housekeeperTasks: updatedList });
 					})
-
 					.catch(error => {
 						console.error("Error en createHouseKeeperTask:", error);
 					});
@@ -754,27 +751,28 @@ const getState = ({ getStore, getActions, setStore }) => {
 			updateHouseKeeperTask: (id, data) => {
 				const store = getStore();
 				fetch(`${process.env.BACKEND_URL}/api/housekeeper_tasks_by_hotel/${id}`, {
-					method: "PUT",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: "Bearer " + store.token
-					},
-					body: JSON.stringify(data)
+				  method: "PUT",
+				  headers: {
+					"Content-Type": "application/json",
+					Authorization: "Bearer " + store.token
+				  },
+				  body: JSON.stringify(data)
 				})
-					.then(res => {
-						if (!res.ok) throw new Error("Error al actualizar la tarea");
-						return res.json();
-					})
-					.then(updated => {
-						const newList = getStore().houseKeeperTasks.map(t =>
-							t.id === id ? updated : t
-						);
-						setStore({ houseKeeperTasks: newList });
-					})
-					.catch(error => {
-						console.error("Error en updateHouseKeeperTask:", error);
-					});
-			},
+				  .then(res => {
+					if (!res.ok) throw new Error("Error al actualizar la tarea");
+					return res.json();
+				  })
+				  .then(updated => {
+					const newList = store.housekeeperTasks.map(t =>
+					  t.id === id ? updated : t
+					);
+					setStore({ housekeeperTasks: newList });
+				  })
+				  .catch(error => {
+					console.error("Error en updateHouseKeeperTask:", error);
+				  });
+			  },
+			  
 
 			deleteHouseKeeperTask: (id) => {
 				const store = getStore();
@@ -786,13 +784,18 @@ const getState = ({ getStore, getActions, setStore }) => {
 				})
 					.then(res => {
 						if (!res.ok) throw new Error("Error al eliminar la tarea");
-						const filtered = getStore().houseKeeperTasks.filter(t => t.id !== id);
-						setStore({ houseKeeperTasks: filtered });
+						return res.json();
+					})
+					.then(() => {
+						const filtered = getStore().housekeeperTasks.filter(t => t.id !== id);
+						setStore({ housekeeperTasks: filtered });
 					})
 					.catch(error => {
 						console.error("Error en deleteHouseKeeperTask:", error);
 					});
 			},
+
+
 			getHotelDatos: async () => {
 				const store = getStore();
 
@@ -814,6 +817,24 @@ const getState = ({ getStore, getActions, setStore }) => {
 					throw error;
 				}
 			},
+
+			getHotelDatos: async () => {
+				try {
+				  const resp = await fetch(process.env.BACKEND_URL + "/api/datos_by_hotel", {
+					method: "GET",
+					headers: {
+					  "Authorization": "Bearer " + localStorage.getItem("token")
+					}
+				  });
+				  const data = await resp.json();
+				  if (resp.ok) return data;
+				  else throw new Error(data.message);
+				} catch (error) {
+				  console.error("Error cargando datos del dashboard:", error);
+				  return {};
+				}
+			  },
+			  
 
 
 			getMessage: async () => {

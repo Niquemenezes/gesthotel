@@ -1,4 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
+import datetime
+
 
 db = SQLAlchemy()
 
@@ -165,6 +167,7 @@ class HouseKeeper(db.Model):
     password = db.Column(db.String(80), nullable=False)
     photo_url = db.Column(db.String(300), nullable=True)
     id_branche = db.Column(db.Integer, db.ForeignKey('branches.id'), nullable=True)
+   
 
     branches = db.relationship('Branches')
 
@@ -179,7 +182,8 @@ class HouseKeeper(db.Model):
             "password": self.password,
             "photo_url": self.photo_url,
             "id_branche": self.id_branche,
-            "branch_nombre": self.branches.nombre if self.branches else None
+            "branch_nombre": self.branches.nombre if self.branches else None,
+           
         }
 
 class HouseKeeperTask(db.Model):
@@ -226,6 +230,8 @@ class MaintenanceTask(db.Model):
     maintenance_id = db.Column(db.Integer, db.ForeignKey('maintenance.id'), nullable=True)
     housekeeper_id = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=True)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
 
     room = db.relationship('Room', back_populates='maintenance_tasks')
     maintenance = db.relationship('Maintenance')
@@ -252,5 +258,7 @@ class MaintenanceTask(db.Model):
             "housekeeper_nombre": self.housekeeper.nombre if self.housekeeper else None,  
             "category": self.category.serialize() if self.category else None,
             "category_id": self.category_id,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+
         }
 
