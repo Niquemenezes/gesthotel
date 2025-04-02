@@ -14,9 +14,9 @@ services:
       - key: FLASK_DEBUG
         value: 0
       - key: FLASK_APP_KEY
-        sync: false  # 👉 Lo defines tú manualmente al desplegar
+        sync: false  # define en Render al desplegar
       - key: OPENAI_API_KEY
-        sync: false  # 👉 También se define manualmente
+        sync: false  # define en Render al desplegar
       - key: PYTHON_VERSION
         value: 3.10.6
       - key: DATABASE_URL
@@ -24,13 +24,13 @@ services:
           name: postgresql-trapezoidal-42170
           property: connectionString
 
-  - type: static
+  - type: web
     name: apihotel-frontend
-    staticPublishPath: ./build
-    buildCommand: "npm install && npm run build"
     env: node
     region: ohio
     plan: free
+    buildCommand: "npm install && npm run build"
+    startCommand: "npx serve -s build -l 3000"  # Requiere que tengas instalado `serve`
     branch: develop
     autoDeploy: true
     envVars:
