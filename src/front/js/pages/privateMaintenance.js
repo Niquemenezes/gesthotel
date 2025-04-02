@@ -66,11 +66,13 @@ const PrivateMaintenance = () => {
 
   const groupTasksByRoom = (tasks) => {
     return tasks.reduce((acc, task) => {
-      if (!acc[task.room_id]) acc[task.room_id] = [];
-      acc[task.room_id].push(task);
+      const key = task.room_id || "zona_comun";
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(task);
       return acc;
     }, {});
   };
+  
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -213,13 +215,14 @@ const PrivateMaintenance = () => {
           <div className="row">
             {Object.keys(groupedTasks).map(roomId => {
               const roomTasks = groupedTasks[roomId];
-              const roomName = roomTasks[0].room_nombre || `Habitación ${roomId}`;
+              const roomName = roomId === "zona_comun" ? "Zona común" : (roomTasks[0].room_nombre || `Habitación ${roomId}`);
+
 
               const todasFinalizadas = roomTasks.every(task => task.condition === 'FINALIZADA');
               const hayPendientes = roomTasks.some(task => task.condition === 'PENDIENTE');
 
               let iconEstado = todasFinalizadas ? '✅' : hayPendientes ? '🕒' : '❔';
-              const iconRoom = <i className="fas fa-bed me-2"></i>;
+              const iconRoom = roomId === "zona_comun" ? <i className="fas fa-tree me-2"></i> : <i className="fas fa-bed me-2"></i>;
 
               return (
                 <div key={roomId} className="col-md-6">
@@ -227,7 +230,8 @@ const PrivateMaintenance = () => {
                     className="btn custom-room-button text-start mb-3 w-100 py-2 fw-semibold"
                     onClick={() => handleRoomClick(roomId)}
                   >
-                    {iconRoom} {iconEstado} Habitación: {roomName}
+                    {iconRoom} {iconEstado} {roomId === "zona_comun" ? "Zona común" : `Habitación: ${roomName}`}
+
                   </button>
                 </div>
               );

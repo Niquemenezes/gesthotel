@@ -2,8 +2,18 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { faHome, faCodeBranch, faBed, faTools, faClipboardList, faWrench, faBars, faBroom } 
-from "@fortawesome/free-solid-svg-icons";
+import {
+  faHome,
+  faCodeBranch,
+  faBed,
+  faTools,
+  faClipboardList,
+  faWrench,
+  faBars,
+  faBroom,
+  faCalendarCheck,
+  faUserCog
+} from "@fortawesome/free-solid-svg-icons";
 import "../../styles/sidebar.css";
 
 const Sidebar = ({ collapsed, toggleCollapsed }) => {
@@ -13,11 +23,13 @@ const Sidebar = ({ collapsed, toggleCollapsed }) => {
     { icon: faHome, label: "Dashboard", to: "/privatehotel" },
     { icon: faCodeBranch, label: "Branches", to: "/listaBranches" },
     { icon: faBed, label: "Habitaciones", to: "/listaRoom" },
-    { icon: faBroom, label: "Camareras", to: "/houseKeeper" }, 
+    { icon: faBroom, label: "Camareras", to: "/houseKeeper" },
     { icon: faTools, label: "Técnicos", to: "/listaMaintenance" },
     { icon: faClipboardList, label: "Tareas Limpieza", to: "/HouseKeeperTask" },
     { icon: faWrench, label: "Tareas Mantenimiento", to: "/maintenanceTask" },
-   
+
+    { icon: faCalendarCheck, label: "Parte de Trabajo Camareras", to: "/houseKeeperWorkLog" },
+    { icon: faUserCog, label: "Parte de Trabajo Técnicos", to: "/maintenanceWorkLog" },
   ];
 
   return (
@@ -59,7 +71,7 @@ const Sidebar = ({ collapsed, toggleCollapsed }) => {
             <Link
               key={index}
               to={item.to}
-              className={`sidebar-link ${isActive ? "active" : ""} mb-3`} 
+              className={`sidebar-link ${isActive ? "active" : ""} mb-3`}
             >
               <div className="sidebar-link-content d-flex align-items-center">
                 <FontAwesomeIcon
