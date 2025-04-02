@@ -34,10 +34,3 @@ services:
     envVars:
       - key: REACT_APP_BACKEND_URL
         value: https://apihotel-backend.onrender.com
-
-
-databases:
-  - name: postgresql-trapezoidal-42170
-    region: ohio
-    plan: free
-    ipAllowList: []
