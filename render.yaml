@@ -20,7 +20,6 @@ services:
           name: postgresql-trapezoidal-42170
           property: connectionString
 
-services:
   - type: web
     name: apihotel-frontend
     env: node
@@ -33,7 +32,7 @@ services:
         value: https://apihotel-backend.onrender.com  # URL pública del backend
     branch: develop  # Asegúrate de usar la rama correcta
     autoDeploy: true
-    
+
 databases:
   - name: postgresql-trapezoidal-42170
     region: ohio
