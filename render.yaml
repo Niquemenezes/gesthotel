@@ -6,19 +6,15 @@ services:
     plan: free
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn src.app:app"
-    branch: develop
-    autoDeploy: true
     envVars:
       - key: FLASK_APP
         value: src/app.py
       - key: FLASK_DEBUG
         value: 0
       - key: FLASK_APP_KEY
-        sync: false  # define en Render al desplegar
+        sync: false  # Lo defines manualmente en el panel
       - key: OPENAI_API_KEY
-        sync: false  # define en Render al desplegar
-      - key: PYTHON_VERSION
-        value: 3.10.6
+        sync: false  # También lo defines manualmente
       - key: DATABASE_URL
         fromDatabase:
           name: postgresql-trapezoidal-42170
@@ -30,9 +26,7 @@ services:
     region: ohio
     plan: free
     buildCommand: "npm install && npm run build"
-    startCommand: "npx serve -s build -l 3000"  # Requiere que tengas instalado `serve`
-    branch: develop
-    autoDeploy: true
+    startCommand: "npx serve -s build"
     envVars:
       - key: REACT_APP_BACKEND_URL
         value: https://apihotel-backend.onrender.com
