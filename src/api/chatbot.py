@@ -1,21 +1,19 @@
 # src/api/chatbot.py
 from flask import Blueprint, request, jsonify
-from openai import OpenAI
 import os
+from openai import OpenAI
 from dotenv import load_dotenv
 
-load_dotenv()  # ← esto debe ir antes de client = OpenAI...
+load_dotenv()
 
 chatbot_api = Blueprint('chatbot_api', __name__)
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
+client = OpenAI()  # ← corregido aquí
 
 @chatbot_api.route('/chat', methods=['POST'])
 def chat():
-    print(" Petición recibida en /chat")
+    print("Petición recibida en /chat")
     data = request.get_json()
-    print(" Mensaje recibido:", data)
-    data = request.get_json()
+    print("Mensaje recibido:", data)
     user_message = data.get("message", "")
 
     if not user_message:
