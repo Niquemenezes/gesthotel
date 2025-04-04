@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 chatbot_api = Blueprint('chatbot_api', __name__)
-client = OpenAI()  # ← corregido aquí
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 @chatbot_api.route('/chat', methods=['POST'])
 def chat():
