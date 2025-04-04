@@ -11,6 +11,7 @@ import {
   faBars
 } from "@fortawesome/free-solid-svg-icons";
 import DarkModeToggle from "./dark";
+import "../../styles/navbar.css";
 
 export const Navbar = () => {
   const { store, actions } = useContext(Context);
@@ -59,7 +60,7 @@ export const Navbar = () => {
                 </Link>
                 <Link className="btn btn-outline-light btn-sm d-flex align-items-center" to="/loginHouseKeeper">
                   <FontAwesomeIcon icon={faBroom} className="me-1" />
-                  Housekeeper
+                  Camarera
                 </Link>
                 <Link className="btn btn-outline-light btn-sm d-flex align-items-center" to="/loginMaintenance">
                   <FontAwesomeIcon icon={faTools} className="me-1" />
