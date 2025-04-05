@@ -234,18 +234,33 @@ const getState = ({ getStore, getActions, setStore }) => {
 				const url = branchSeleccionado
 					? `${process.env.BACKEND_URL}/api/branches_by_hotel/${branchSeleccionado.id}`
 					: `${process.env.BACKEND_URL}/api/branches_by_hotel`;
-
+			
+				// Aseguramos que longitud y latitud sean válidas o null
+				const dataLimpia = {
+					...branchData,
+					latitud:
+						branchData.latitud === "" || isNaN(branchData.latitud)
+							? null
+							: parseFloat(branchData.latitud),
+					longitud:
+						branchData.longitud === "" || isNaN(branchData.longitud)
+							? null
+							: parseFloat(branchData.longitud),
+				};
+			
 				const res = await fetch(url, {
 					method,
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: "Bearer " + store.token,
 					},
-					body: JSON.stringify(branchData),
+					body: JSON.stringify(dataLimpia),
 				});
+			
 				if (!res.ok) throw new Error("Error al crear o actualizar branch");
 				return await res.json();
 			},
+			
 
 			deleteBranch: async (id) => {
 				const store = getStore();

@@ -89,8 +89,8 @@ class Branches(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
     direccion = db.Column(db.String(120), nullable=False)
-    longitud = db.Column(db.Float, nullable=False)
-    latitud = db.Column(db.Float, nullable=False)
+    longitud = db.Column(db.Float, nullable=True)
+    latitud = db.Column(db.Float, nullable=True)
     hotel_id = db.Column(db.Integer, db.ForeignKey('hoteles.id'), nullable=False)
 
     hotel = db.relationship("Hoteles")

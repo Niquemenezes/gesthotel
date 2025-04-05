@@ -151,17 +151,24 @@ def create_branch_by_hotel():
 
     data = request.get_json()
 
+    def parse_float_or_none(value):
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            return None
+
     nueva_branch = Branches(
-    nombre=data["nombre"],
-    direccion=data.get("direccion"),
-    latitud=data.get("latitud"),
-    longitud=data.get("longitud"),
-    hotel_id=hotel.id
-)
+        nombre=data["nombre"],
+        direccion=data.get("direccion"),
+        latitud=parse_float_or_none(data.get("latitud")),
+        longitud=parse_float_or_none(data.get("longitud")),
+        hotel_id=hotel.id
+    )
 
     db.session.add(nueva_branch)
     db.session.commit()
     return jsonify(nueva_branch.serialize()), 201
+
 
 @api.route('/branches_by_hotel/<int:id>', methods=['PUT'])
 @jwt_required()
