@@ -1,12 +1,12 @@
 import os
-from openai import ChatCompletion
+import openai
 from flask import Blueprint, request, jsonify
 from dotenv import load_dotenv
 
 load_dotenv()
 
 chatbot_api = Blueprint('chatbot_api', __name__)
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @chatbot_api.route('/chat', methods=['POST'])
 def chat():
@@ -17,8 +17,7 @@ def chat():
         return jsonify({"error": "No se proporcionó mensaje"}), 400
 
     try:
-        response = ChatCompletion.create(
-            api_key=OPENAI_API_KEY,
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Eres un experto en mantenimiento hotelero. Responde de forma clara y profesional."},
