@@ -8,7 +8,7 @@ load_dotenv()
 chatbot_api = Blueprint('chatbot_api', __name__)
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-@chatbot_api.route('/chat', methods=['POST'])
+@chatbot_api.route('/api/chat', methods=['POST'])
 def chat():
     data = request.get_json()
     user_message = data.get("message", "")
