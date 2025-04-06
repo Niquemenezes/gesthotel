@@ -59,7 +59,7 @@ export const Navbar = () => {
                 </Link>
                 <Link className="btn btn-outline-light btn-sm d-flex align-items-center" to="/loginHouseKeeper">
                   <FontAwesomeIcon icon={faBroom} className="me-1" />
-                  Housekeeper
+                  Camarera de Piso
                 </Link>
                 <Link className="btn btn-outline-light btn-sm d-flex align-items-center" to="/loginMaintenance">
                   <FontAwesomeIcon icon={faTools} className="me-1" />
