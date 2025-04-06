@@ -307,9 +307,9 @@ const PrivateHouseKeeper = () => {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
-      <div className="card shadow-lg p-4 w-100" style={{ maxWidth: '900px' }}>
-        <h2 className="text-center mb-4">Tareas de Camarera</h2>
+    <div className="main-container">
+      <div className="main-card">
+        <h2 className="main-title">Tareas de Camarera</h2>
 
         {!isRoomSelected && Object.keys(groupedTasks).length > 0 && (
           <>
@@ -330,13 +330,19 @@ const PrivateHouseKeeper = () => {
                   iconEstado = '❓';
                 }
 
+
                 const nombreTareas = tareas.map(t => t.nombre?.toLowerCase() || "");
                 // Zona común
                 const isZonaComun = !tareas[0].room_nombre;
                 const esSalida = nombreTareas.some(n => n.includes("salida"));
                 const esCambioSabanas = nombreTareas.some(n => n.includes("cambio de sábanas"));
                 const esCliente = nombreTareas.some(n => n.includes("cliente"));
-                const esZonaNoble = nombreTareas.some(n => n.includes("zona noble"));
+             
+
+                
+                const iconRoom = isZonaComun
+                  ? <i className="fas fa-tree me-2"></i>
+                  : <i className="fas fa-bed me-2"></i>;
 
 
                 // Ícono de prioridad: solo SALIDA
@@ -372,32 +378,35 @@ const PrivateHouseKeeper = () => {
                 return (
                   <div key={roomId} className="col-md-6">
                     <button
-                      className="btn custom-room-button text-start mb-3 w-100 py-2 fw-semibold"
+                      className="custom-room-button"
                       onClick={() => handleRoomClick(roomId)}
                     >
+
                       {roomLabel}
+
+                      <span>{iconRoom} {roomLabel}</span>
+                      <span>{iconEstado}</span>
+
                     </button>
                   </div>
                 );
               })}
 
-
-              {/* Botones de filtrado - Solo fuera de las habitaciones */}
               <div className="d-flex justify-content-center gap-3 mb-4">
                 <button
-                  className="btn btn-primary"
+                  className="action-button btn-primary"
                   onClick={() => handleFilterTasks('all')}
                 >
                   TODAS
                 </button>
                 <button
-                  className="btn btn-warning"
+                  className="action-button btn-warning"
                   onClick={() => handleFilterTasks('pending')}
                 >
                   PENDIENTES
                 </button>
                 <button
-                  className="btn btn-success"
+                  className="action-button btn-success"
                   onClick={() => handleFilterTasks('completed')}
                 >
                   FINALIZADAS
@@ -410,6 +419,7 @@ const PrivateHouseKeeper = () => {
         {isRoomSelected && (
           <div className="mt-4">
             {groupedTasks[selectedRoomId]?.map(task => (
+
               <div key={task.id} className="card mb-3 shadow-sm rounded-3">
                 <div className="card-body">
 
@@ -441,11 +451,19 @@ const PrivateHouseKeeper = () => {
 
                   <p><strong>Estado actual:</strong>
                     <span className={`badge ${task.condition === 'PENDIENTE' ? 'bg-warning' :
+
+              <div key={task.id} className="task-card">
+                <div className="task-card-body">
+                  <p><strong>Tarea asignada:</strong> {task.nombre}</p>
+                  <p><strong>Estado actual:</strong>
+                    <span className={`status-badge ${task.condition === 'PENDIENTE' ? 'bg-warning' :
+
                       task.condition === 'EN PROCESO' ? 'bg-info' : 'bg-success'
                       } ms-2`}>
                       {task.condition}
                     </span>
                   </p>
+
                   <div className="form-group mt-3">
                     <label htmlFor={`nota-${task.id}`}>Observaciones</label>
                     <textarea
@@ -500,6 +518,11 @@ const PrivateHouseKeeper = () => {
 
                   <div className="mb-3">
                     <label htmlFor="photo" className="form-label">Foto</label>
+
+
+                  <div className="mb-3">
+                    <label htmlFor="photo" className="form-label"><strong>Foto</strong></label>
+
                     <CloudinaryApiHotel
                       setPhotoUrl={(url) => handlePhotoUpload(task.id, url)}
                       setErrorMessage={(msg) => handlePhotoError(task.id, msg)}
@@ -523,7 +546,11 @@ const PrivateHouseKeeper = () => {
                     {['PENDIENTE', 'EN PROCESO', 'FINALIZADA'].map((status) => (
                       <button
                         key={status}
+
                         className={`btn ${status === 'PENDIENTE' ? 'btn-warning' :
+
+                        className={`action-button ${status === 'PENDIENTE' ? 'btn-warning' :
+
                           status === 'EN PROCESO' ? 'btn-info' : 'btn-success'
                           }`}
                         onClick={() => handleStatusChange(task.id, status)}
@@ -545,14 +572,23 @@ const PrivateHouseKeeper = () => {
             ))}
 
             <div className="mt-3">
+
               <button className="btn custom-room-button" onClick={toggleMaintenanceTasks}>
+
+              <button className="custom-room-button" onClick={toggleMaintenanceTasks}>
+
                 {showMaintenanceTasks ? 'Ocultar tareas de mantenimiento' : 'Mostrar tareas de mantenimiento'}
               </button>
             </div>
 
             {showMaintenanceTasks && (
+
               <div className="card shadow-lg mt-4">
                 <div className="card-body">
+
+              <div className="maintenance-section">
+                <div className="maintenance-form">
+
                   <h5 className="card-title">Tarea de Mantenimiento</h5>
                   <form>
                     <div className="form-group mb-3">
@@ -571,30 +607,52 @@ const PrivateHouseKeeper = () => {
                     </div>
                     <button
                       type="button"
+
                       className="btn btn-block"
                       style={{ backgroundColor: "#0dcaf0" }}
+
+                      className="action-button btn-info"
+
                       onClick={createMaintenanceTask}
                     >
                       Crear Tarea
                     </button>
 
+
                     <div className="mt-4">
+
+                    <div className="maintenance-list">
+
                       <h4 className="mb-3">Listado de Tareas de Mantenimiento</h4>
                       {maintenanceTasks.length > 0 ? (
                         <div className="list-group">
                           {maintenanceTasks.map(task => (
+
                             <div key={task.id} className="list-group-item d-flex justify-content-between align-items-center">
                               <span>{task.nombre}</span>
                               <span className={`badge ${task.condition === 'PENDIENTE' ? 'bg-primary' : 'bg-secondary'} ms-2`}>
+
+                            <div key={task.id} className="maintenance-item">
+                              <span>{task.nombre}</span>
+                              <span className={`status-badge ${task.condition === 'PENDIENTE' ? 'bg-danger' : 'bg-secondary'}`}>
+
                                 {task.condition}
                               </span>
                             </div>
                           ))}
+
                         </div>
                       ) : (
                         <div className="alert alert-info" role="alert">
                           No hay tareas de mantenimiento disponibles.
                         </div>
+
+                        </div>
+                      ) : (
+                        <div className="alert alert-info" role="alert">
+                          No hay tareas de mantenimiento disponibles.
+                        </div>
+
                       )}
                     </div>
                   </form>
@@ -603,7 +661,11 @@ const PrivateHouseKeeper = () => {
             )}
 
             <button
+
               className="btn custom-room-button w-100 mt-3 fw-semibold py-2"
+
+              className="custom-room-button w-100 mt-3"
+
               onClick={handleBackToRooms}
             >
               🔙 Volver a todas las habitaciones
@@ -612,8 +674,13 @@ const PrivateHouseKeeper = () => {
         )}
 
         <div className="d-flex justify-content-center mt-4">
+
           <button className="btn px-5 py-2" style={{ backgroundColor: "#0dcaf0" }} onClick={handleLogout}>
             <i className="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+
+          <button className="logout-button" onClick={handleLogout}>
+            <i className="fas fa-sign-out-alt"></i> Cerrar sesión
+
           </button>
         </div>
       </div>

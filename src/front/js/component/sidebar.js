@@ -37,12 +37,8 @@ const Sidebar = ({ collapsed, toggleCollapsed }) => {
       className={`sidebar ${collapsed ? "collapsed" : ""}`}
       style={{
         backgroundColor: "#2A3042",
-        minHeight: "100vh",
         width: collapsed ? "70px" : "250px",
         transition: "width 0.3s ease",
-        position: "fixed",
-        zIndex: 1000,
-        overflowY: "auto",
       }}
     >
       {/* Encabezado */}
