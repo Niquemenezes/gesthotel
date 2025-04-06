@@ -56,10 +56,22 @@ const HousekeeperWorkLog = () => {
 
   const getTaskStyle = (tarea) => {
     const t = tarea.toUpperCase();
-    if (t.includes("SALIDA")) return { className: "bg-danger text-white rounded-pill px-2", icon: faPlaneDeparture };
-    if (t.includes("CLIENTE")) return { className: "bg-warning text-dark rounded-pill px-2", icon: faUser };
+  
+    if (t.includes("SALIDA")) {
+      return { className: "bg-danger text-white rounded-pill px-2", icon: faPlaneDeparture };
+    }
+  
+    if (t.includes("CAMBIO DE SÁBANAS") || t.includes("SABANA")) {
+      return { className: "bg-primary text-white rounded-pill px-2", icon: "fas fa-bed" };
+    }
+  
+    if (t.includes("CLIENTE")) {
+      return { className: "bg-warning text-dark rounded-pill px-2", icon: faUser };
+    }
+     
     return { className: "bg-success text-white rounded-pill px-2", icon: faCircleInfo };
   };
+  
 
   const getConditionStyle = (condition) => {
     switch (condition) {
