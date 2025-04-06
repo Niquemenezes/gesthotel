@@ -23,18 +23,20 @@ const MaintenanceWorkLog = () => {
   const filteredTasks = store.maintenanceTasks.filter(task => {
     const tech = store.maintenances.find(m => m.id === task.maintenance_id);
     const room = store.rooms.find(r => r.id === task.room_id);
-
-    const matchesName = tech?.nombre?.toLowerCase().includes(search.toLowerCase()) || false;
+  
+    const createdBy = tech?.nombre || task.housekeeper?.nombre || task.finalizado_por || "";
+    const matchesName = createdBy.toLowerCase().includes(search.toLowerCase());
+  
     const matchesDate = dateFilter ? task.created_at?.startsWith(dateFilter) : true;
     const matchesBranch = branchFilter
       ? (room?.branch_id?.toString() === branchFilter || tech?.branch_id?.toString() === branchFilter)
       : true;
-
-    // ✅ Mostrar si tiene técnico o si está finalizada (aunque no tenga técnico)
+  
     const shouldShow = task.maintenance_id || task.condition === "FINALIZADA";
-
+  
     return shouldShow && matchesName && matchesDate && matchesBranch;
   });
+  
 
   const uniqueTechnicians = [...new Set(filteredTasks.map(task => task.maintenance_id))];
 
@@ -140,7 +142,10 @@ const MaintenanceWorkLog = () => {
 
                 return (
                   <tr key={task.id} className={task.housekeeper_id ? "table-info" : ""}>
-                    <td>{tech?.nombre || "No asignado"}</td>
+                    <td>
+                      {tech?.nombre || task.housekeeper?.nombre || task.finalizado_por || "No asignado"}
+                    </td>
+
                     <td>{task.nombre}</td>
                     <td>{task.created_at?.split("T")[0]}</td>
                     <td>{room?.nombre || "Zona común"}</td>
