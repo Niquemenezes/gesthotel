@@ -2,9 +2,12 @@
 # exit on error
 set -o errexit
 
+export FLASK_APP=src/app.py
+export FLASK_ENV=development
+export PYTHONPATH="$PYTHONPATH:./src"
+
 npm install
 npm run build
 
-pipenv install
-
-pipenv run upgrade
+pip install -r requirements.txt
+flask db upgrade
