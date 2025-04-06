@@ -6,7 +6,7 @@ services:
     name: apihotel
     env: python
     buildCommand: "./render_build.sh"
-    startCommand: "gunicorn wsgi --chdir ./src/"
+    startCommand: gunicorn src.app:app
     envVars:
       - key: BASENAME
         value: /

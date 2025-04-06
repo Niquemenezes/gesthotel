@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from flasgger import Swagger
 
 
+
 # Cargar variables de entorno
 load_dotenv()
 
