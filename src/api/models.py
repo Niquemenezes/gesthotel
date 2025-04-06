@@ -233,6 +233,8 @@ class MaintenanceTask(db.Model):
     housekeeper_id = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=True)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    finalizado_por = db.Column(db.String(120), nullable=True)
+
 
 
     room = db.relationship('Room', back_populates='maintenance_tasks')
@@ -261,6 +263,8 @@ class MaintenanceTask(db.Model):
             "category": self.category.serialize() if self.category else None,
             "category_id": self.category_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
+            "finalizado_por": self.finalizado_por,
+
 
         }
 

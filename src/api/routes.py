@@ -11,6 +11,7 @@ from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, creat
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime, timedelta, timezone
 from api.utils import generate_sitemap, APIException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
 import jwt
 import os
@@ -1591,6 +1592,10 @@ def update_maintenance_task(id):
             if new_condition not in ['PENDIENTE', 'EN PROCESO', 'FINALIZADA']:
                 return jsonify({"message": "Estado no válido. Valores permitidos: PENDIENTE, EN PROCESO, FINALIZADA"}), 400
             maintenance_task.condition = new_condition
+
+        # Si la tarea se marca como finalizada, registrar quién la finalizó
+        if new_condition == 'FINALIZADA':
+            maintenance_task.finalizado_por = data.get('finalizado_por') 
 
         # Campos opcionales (solo actualizar si vienen en el request)
         optional_fields = ['room_id', 'maintenance_id', 'housekeeper_id', 'category_id']

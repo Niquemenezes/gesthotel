@@ -105,7 +105,13 @@ const PrivateMaintenance = () => {
 
       const currentPhoto = taskPhotos[taskId] || tasks.find(t => t.id === taskId)?.photo_url || null;
 
-      const updatedTask = { condition: newCondition, photo_url: currentPhoto };
+      const updatedTask = {
+        condition: newCondition,
+        photo_url: currentPhoto,
+        finalizado_por: newCondition === "FINALIZADA" ? jwtDecode(token).sub : null
+      };
+      
+      
 
       setTasks(prevTasks =>
         prevTasks.map(task => task.id === taskId ? { ...task, ...updatedTask } : task)
