@@ -3,7 +3,7 @@ import { Context } from "../store/appContext";
 import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
 import PrivateLayout from "../component/privateLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen, faTrash, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faTrash, faSave, faTimes, faClock, faSpinner, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 const MaintenanceTask = () => {
   const { store, actions } = useContext(Context);
@@ -85,7 +85,7 @@ const MaintenanceTask = () => {
     setIdMaintenance(task.maintenance_id || '');
     setEditingId(task.id);
     setEsZonaComun(task.room_id === null);
-   
+
   };
 
   const cancelEdit = () => resetForm();
@@ -108,14 +108,19 @@ const MaintenanceTask = () => {
     return task ? task.condition : null;
   };
 
-  const getColorClassForCondition = (condition) => {
+  const getConditionStyle = (condition) => {
     switch (condition) {
-      case 'PENDIENTE': return 'btn-danger';
-      case 'EN PROCESO': return 'btn-warning';
-      case 'FINALIZADA': return 'btn-success';
-      default: return 'btn-outline-secondary';
+      case "PENDIENTE":
+        return { className: "badge bg-danger d-inline-flex align-items-center gap-1", icon: faClock };
+      case "EN PROCESO":
+        return { className: "badge bg-warning text-dark d-inline-flex align-items-center gap-1", icon: faSpinner };
+      case "FINALIZADA":
+        return { className: "badge bg-success d-inline-flex align-items-center gap-1", icon: faCheckCircle };
+      default:
+        return { className: "badge bg-secondary", icon: faClock };
     }
   };
+
 
   const toggleRoomSelection = (roomId) => {
     const existing = getTaskConditionForRoom(roomId);
@@ -196,7 +201,7 @@ const MaintenanceTask = () => {
                       </div>
                     )}
                   </div>
-                  
+
 
                   <div className="form-group mb-2">
                     <label className="small">Estado</label>
@@ -245,10 +250,17 @@ const MaintenanceTask = () => {
                       <td>{isReportedByHousekeeper ? task.housekeeper?.nombre || "Camarera" : task.maintenance?.nombre || "Técnico"}</td>
                       <td>{task.nombre}</td>
                       <td>
-                        <span className={`badge ${task.condition === 'PENDIENTE' ? 'bg-danger' : task.condition === 'EN PROCESO' ? 'bg-warning text-dark' : 'bg-success'}`}>
-                          {task.condition}
-                        </span>
+                        {(() => {
+                          const { className, icon } = getConditionStyle(task.condition);
+                          return (
+                            <span className={className}>
+                              <FontAwesomeIcon icon={icon} className="me-1" />
+                              {task.condition}
+                            </span>
+                          );
+                        })()}
                       </td>
+
                       <td>
                         {task.room?.branch_id
                           ? store.branches.find(b => b.id === task.room.branch_id)?.nombre || "-"

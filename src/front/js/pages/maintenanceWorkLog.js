@@ -2,6 +2,9 @@ import React, { useEffect, useState, useContext, useRef } from "react";
 import { Context } from "../store/appContext";
 import PrivateLayout from "../component/privateLayout";
 import html2pdf from "html2pdf.js";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClock, faSpinner, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+
 
 const MaintenanceWorkLog = () => {
   const { store, actions } = useContext(Context);
@@ -42,6 +45,20 @@ const MaintenanceWorkLog = () => {
     };
     html2pdf().set(opt).from(element).save();
   };
+
+  const getConditionStyle = (condition) => {
+    switch (condition) {
+      case "PENDIENTE":
+        return { className: "badge bg-danger d-inline-flex align-items-center gap-1", icon: faClock };
+      case "EN PROCESO":
+        return { className: "badge bg-warning text-dark d-inline-flex align-items-center gap-1", icon: faSpinner };
+      case "FINALIZADA":
+        return { className: "badge bg-success d-inline-flex align-items-center gap-1", icon: faCheckCircle };
+      default:
+        return { className: "badge bg-secondary", icon: faClock };
+    }
+  };
+
 
   return (
     <PrivateLayout>
@@ -124,15 +141,17 @@ const MaintenanceWorkLog = () => {
                     <td>{room?.nombre || "Zona común"}</td>
                     <td>{branch?.nombre || "-"}</td>
                     <td>
-                      <span className={`badge ${task.condition === "FINALIZADA"
-                        ? "bg-success"
-                        : task.condition === "EN PROCESO"
-                          ? "bg-warning text-dark"
-                          : "bg-danger"
-                      }`}>
-                        {task.condition}
-                      </span>
+                      {(() => {
+                        const { className, icon } = getConditionStyle(task.condition);
+                        return (
+                          <span className={className}>
+                            <FontAwesomeIcon icon={icon} className="me-1" />
+                            {task.condition}
+                          </span>
+                        );
+                      })()}
                     </td>
+                    <td>{task.nota_housekeeper || "-"}</td> 
                   </tr>
                 );
               })}

@@ -196,6 +196,7 @@ class HouseKeeperTask(db.Model):
     submission_date = db.Column(db.String(80), nullable=False)
     id_room = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)
     id_housekeeper = db.Column(db.Integer, db.ForeignKey('housekeeper.id'), nullable=True)
+    nota_housekeeper = db.Column(db.String(500))  # nuevo campo para observaciones
 
     room = db.relationship('Room', back_populates='housekeeper_tasks')
     housekeeper = db.relationship('HouseKeeper', backref='housekeepertask')
@@ -216,7 +217,8 @@ class HouseKeeperTask(db.Model):
             "room_branch_id": self.room.branch_id if self.room else None,
             "room_branch_nombre": self.room.branch.nombre if self.room and self.room.branch else None,
             "id_housekeeper": self.id_housekeeper,
-            "housekeeper_nombre": self.housekeeper.nombre if self.housekeeper else None
+            "housekeeper_nombre": self.housekeeper.nombre if self.housekeeper else None,
+            "nota_housekeeper": self.nota_housekeeper,
         }
 
 

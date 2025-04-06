@@ -633,23 +633,18 @@ def create_housekeeper_task_by_hotel():
     if not all(field in data for field in required_fields):
         return jsonify({"msg": "Faltan campos obligatorios"}), 400
 
-    # Verificamos que la camarera pertenezca al hotel autenticado (por medio de su sucursal)
     housekeeper = HouseKeeper.query.get(data["id_housekeeper"])
     if not housekeeper:
         return jsonify({"msg": "Camarera no encontrada"}), 404
 
-    # Verificamos que la sucursal de la camarera pertenezca al hotel
     if not housekeeper.branches or housekeeper.branches.hotel_id != hotel.id:
         return jsonify({"msg": "La camarera no pertenece al hotel"}), 401
 
-    # Verificamos si hay room_id
     room_id = data.get("id_room")
     if room_id:
         room = Room.query.get(room_id)
         if not room or room.branch.hotel_id != hotel.id:
             return jsonify({"msg": "Habitación no pertenece al hotel"}), 401
-    else:
-        room = None
 
     new_task = HouseKeeperTask(
         nombre=data["nombre"],
@@ -657,14 +652,16 @@ def create_housekeeper_task_by_hotel():
         condition=data["condition"],
         assignment_date=data["assignment_date"],
         submission_date=data["submission_date"],
-        id_room=room_id,  # puede ser None (zona común)
-        id_housekeeper=data["id_housekeeper"]
+        id_room=room_id,
+        id_housekeeper=data["id_housekeeper"],
+        nota_housekeeper=data.get("nota_housekeeper", "")
     )
 
     db.session.add(new_task)
     db.session.commit()
 
     return jsonify(new_task.serialize()), 201
+
 
 
 
@@ -763,6 +760,9 @@ def bulk_create_housekeeper_tasks():
         submission_date = task_data.get("submission_date")
         id_room = task_data.get("id_room")
         id_housekeeper = task_data.get("id_housekeeper")
+        nota_housekeeper = task_data.get("nota_housekeeper", "")
+
+        
 
         if not all([nombre, assignment_date, submission_date, id_room, id_housekeeper]):
             continue
@@ -784,7 +784,8 @@ def bulk_create_housekeeper_tasks():
             assignment_date=assignment_date,
             submission_date=submission_date,
             id_room=id_room,
-            id_housekeeper=id_housekeeper
+            id_housekeeper=id_housekeeper,
+            nota_housekeeper=nota_housekeeper
         )
         db.session.add(nueva_tarea)
         created_tasks.append(nueva_tarea)
@@ -814,6 +815,8 @@ def create_bulk_housekeeper_tasks():
     submission_date = data.get("submission_date")
     id_housekeeper = data.get("id_housekeeper")
     room_ids = data.get("room_ids", [])  # lista de habitaciones
+    nota_housekeeper = data.get("nota_housekeeper", "")
+
 
     housekeeper = HouseKeeper.query.get(id_housekeeper)
     if not housekeeper or housekeeper.branches.hotel_id != hotel.id:
@@ -830,7 +833,8 @@ def create_bulk_housekeeper_tasks():
                 assignment_date=assignment_date,
                 submission_date=submission_date,
                 id_housekeeper=id_housekeeper,
-                id_room=room_id
+                id_room=room_id,
+                nota_housekeeper=nota_housekeeper
             )
             db.session.add(new_task)
             created_tasks.append(new_task)
@@ -1384,7 +1388,7 @@ def update_housekeeper_task(id):
     
     data = request.get_json()
 
-    # Update fields
+    # Actualizar campos
     if 'nombre' in data:
         task.nombre = data['nombre']
     if 'photo_url' in data:
@@ -1409,8 +1413,13 @@ def update_housekeeper_task(id):
             return jsonify({"error": "Invalid housekeeper ID"}), 404
         task.id_housekeeper = data['id_housekeeper']
 
+    # Añade esta línea para que guarde las observaciones
+    if 'nota_housekeeper' in data:
+        task.nota_housekeeper = data['nota_housekeeper']
+
     db.session.commit()
     return jsonify(task.serialize()), 200
+
 
 # DELETE HouseKeeperTask
 @api.route('/housekeeper_task/<int:id>', methods=['DELETE'])
