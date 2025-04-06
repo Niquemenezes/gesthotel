@@ -56,22 +56,22 @@ const HousekeeperWorkLog = () => {
 
   const getTaskStyle = (tarea) => {
     const t = tarea.toUpperCase();
-  
+
     if (t.includes("SALIDA")) {
       return { className: "bg-danger text-white rounded-pill px-2", icon: faPlaneDeparture };
     }
-  
+
     if (t.includes("CAMBIO DE SÁBANAS") || t.includes("SABANA")) {
       return { className: "bg-primary text-white rounded-pill px-2", icon: "fas fa-bed" };
     }
-  
+
     if (t.includes("CLIENTE")) {
       return { className: "bg-warning text-dark rounded-pill px-2", icon: faUser };
     }
-     
+
     return { className: "bg-success text-white rounded-pill px-2", icon: faCircleInfo };
   };
-  
+
 
   const getConditionStyle = (condition) => {
     switch (condition) {
@@ -167,9 +167,14 @@ const HousekeeperWorkLog = () => {
                     <td>{hk?.nombre || "Desconocido"}</td>
                     <td>
                       <span className={`d-inline-flex align-items-center gap-2 ${getTaskStyle(task.nombre).className}`}>
-                        <FontAwesomeIcon icon={getTaskStyle(task.nombre).icon} />
+                        {typeof getTaskStyle(task.nombre).icon === "string" ? (
+                          <i className={`${getTaskStyle(task.nombre).icon}`}></i>
+                        ) : (
+                          <FontAwesomeIcon icon={getTaskStyle(task.nombre).icon} />
+                        )}
                         {task.nombre}
                       </span>
+
                     </td>
 
                     <td>{task.assignment_date?.split("T")[0]}</td>
@@ -188,7 +193,7 @@ const HousekeeperWorkLog = () => {
                       </span>
                     </td>
                     <td>
-                      {task.nota_housekeeper            
+                      {task.nota_housekeeper
                       }
                     </td>
 

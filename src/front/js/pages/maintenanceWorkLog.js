@@ -151,7 +151,7 @@ const MaintenanceWorkLog = () => {
                         );
                       })()}
                     </td>
-                    <td>{task.nota_housekeeper || "-"}</td> 
+                   
                   </tr>
                 );
               })}

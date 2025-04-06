@@ -107,20 +107,19 @@ const MaintenanceTask = () => {
     );
     return task ? task.condition : null;
   };
-
-  const getConditionStyle = (condition) => {
+  const getColorClassForCondition = (condition) => {
     switch (condition) {
       case "PENDIENTE":
-        return { className: "badge bg-danger d-inline-flex align-items-center gap-1", icon: faClock };
+        return "bg-danger text-white";
       case "EN PROCESO":
-        return { className: "badge bg-warning text-dark d-inline-flex align-items-center gap-1", icon: faSpinner };
+        return "bg-warning text-dark";
       case "FINALIZADA":
-        return { className: "badge bg-success d-inline-flex align-items-center gap-1", icon: faCheckCircle };
+        return "bg-success text-white";
       default:
-        return { className: "badge bg-secondary", icon: faClock };
+        return "bg-secondary text-white";
     }
   };
-
+  
 
   const toggleRoomSelection = (roomId) => {
     const existing = getTaskConditionForRoom(roomId);
@@ -251,12 +250,11 @@ const MaintenanceTask = () => {
                       <td>{task.nombre}</td>
                       <td>
                         {(() => {
-                          const { className, icon } = getConditionStyle(task.condition);
                           return (
-                            <span className={className}>
-                              <FontAwesomeIcon icon={icon} className="me-1" />
-                              {task.condition}
-                            </span>
+                            <span className={`badge ${getColorClassForCondition(task.condition)}`}>
+                            {task.condition}
+                          </span>
+                          
                           );
                         })()}
                       </td>
