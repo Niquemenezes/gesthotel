@@ -44,36 +44,50 @@ const Chatbot = () => {
 
   const sendMessage = async (msg = message) => {
     if (!msg.trim()) return;
-
+  
     setConversation((prev) => [...prev, { role: "user", content: msg }]);
     setLoading(true);
     setError(null);
-
+  
+    const url = `${process.env.REACT_APP_BACKEND_URL.replace(/\/$/, '')}/chatbot/chat`;
+    console.log("🧠 Enviando a:", url);
+  
     try {
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/chat`, {
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: msg }),
       });
-
-      const data = await res.json();
-
+  
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonError) {
+        throw new Error("La respuesta del servidor no es JSON válido.");
+      }
+  
       if (res.ok && data.reply) {
         setConversation((prev) => [...prev, { role: "assistant", content: data.reply }]);
         speak(data.reply);
       } else {
-        const fallback = "Error al procesar la respuesta del asistente.";
+        const fallback = data.error || "Error al procesar la respuesta del asistente.";
         setConversation((prev) => [...prev, { role: "assistant", content: fallback }]);
         speak(fallback);
-        if (data.error) setError(data.error);
+        setError(fallback);
       }
+  
     } catch (err) {
-      setError("Error de conexión con el servidor.");
+      console.error("❌ Error real:", err);
+      const fallback = err.message || "Error de conexión con el servidor.";
+      setConversation((prev) => [...prev, { role: "assistant", content: fallback }]);
+      speak(fallback);
+      setError(fallback);
     } finally {
       setMessage("");
       setLoading(false);
     }
   };
+  
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") sendMessage();
