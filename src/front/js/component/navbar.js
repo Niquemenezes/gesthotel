@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,55 +16,51 @@ import "../../styles/navbar.css";
 export const Navbar = () => {
   const { store, actions } = useContext(Context);
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {
     actions.logout();
     navigate("/loginHotel");
   };
 
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
     <nav className="navbar navbar-expand-lg shadow-sm" style={{ backgroundColor: "#0dcaf0" }}>
       <div className="container-fluid">
-        {/* Logo o título a la izquierda */}
         <span className="navbar-brand fw-bold text-white">APIHotel</span>
 
-        {/* Botón hamburguesa para colapsar */}
         <button
           className="navbar-toggler"
           type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
+          onClick={toggleMenu}
           aria-label="Toggle navigation"
         >
           <FontAwesomeIcon icon={faBars} style={{ color: "white" }} />
         </button>
 
-        {/* Links colapsables */}
-        <div className="collapse navbar-collapse" id="navbarSupportedContent">
+        <div className={`collapse navbar-collapse ${isOpen ? "show" : ""}`}>
           <div className="ms-auto d-flex flex-column flex-lg-row align-items-end align-items-lg-center gap-2 mt-3 mt-lg-0">
-            {/* Alineación derecha gracias a ms-auto (margin-start auto) */}
             <DarkModeToggle />
 
-            <Link className="btn btn-outline-light btn-sm d-flex align-items-center" to="/">
+            <Link className="btn btn-outline-light btn-sm d-flex align-items-center" to="/" onClick={() => setIsOpen(false)}>
               <FontAwesomeIcon icon={faHouse} className="me-1" />
               Inicio
             </Link>
 
             {!store.token && (
               <>
-                <Link className="btn btn-outline-light btn-sm d-flex align-items-center" to="/loginHotel">
+                <Link className="btn btn-outline-light btn-sm d-flex align-items-center" to="/loginHotel" onClick={() => setIsOpen(false)}>
                   <FontAwesomeIcon icon={faHotel} className="me-1" />
                   Hotel
                 </Link>
-                <Link className="btn btn-outline-light btn-sm d-flex align-items-center" to="/loginHouseKeeper">
+                <Link className="btn btn-outline-light btn-sm d-flex align-items-center" to="/loginHouseKeeper" onClick={() => setIsOpen(false)}>
                   <FontAwesomeIcon icon={faBroom} className="me-1" />
-
                   Camarera de Piso
-
                 </Link>
-                <Link className="btn btn-outline-light btn-sm d-flex align-items-center" to="/loginMaintenance">
+                <Link className="btn btn-outline-light btn-sm d-flex align-items-center" to="/loginMaintenance" onClick={() => setIsOpen(false)}>
                   <FontAwesomeIcon icon={faTools} className="me-1" />
                   Mantenimiento
                 </Link>
@@ -72,7 +68,7 @@ export const Navbar = () => {
             )}
 
             {store.token && (
-              <button className="btn btn-light btn-sm d-flex align-items-center" onClick={handleLogout}>
+              <button className="btn btn-light btn-sm d-flex align-items-center" onClick={() => { handleLogout(); setIsOpen(false); }}>
                 <FontAwesomeIcon icon={faRightFromBracket} className="me-2" />
                 Logout
               </button>

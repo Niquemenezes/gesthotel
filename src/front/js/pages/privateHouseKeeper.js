@@ -356,12 +356,19 @@ const PrivateHouseKeeper = () => {
               );
             })}
 
-            <div className="d-flex justify-content-center gap-3 mt-4">
-              <button className="action-button btn-primary" onClick={() => handleFilterTasks('all')}>TODAS</button>
-              <button className="action-button btn-danger" onClick={() => handleFilterTasks('pending')}>PENDIENTES</button>
-              <button className="action-button btn-success" onClick={() => handleFilterTasks('completed')}>FINALIZADAS</button>
+            <div className="d-grid gap-2 d-md-flex justify-content-center mt-4">
+              <button className="btn btn-primary" onClick={() => handleFilterTasks('all')}>
+                TODAS
+              </button>
+              <button className="btn btn-danger" onClick={() => handleFilterTasks('pending')}>
+                PENDIENTES
+              </button>
+              <button className="btn btn-success" onClick={() => handleFilterTasks('completed')}>
+                FINALIZADAS
+              </button>
             </div>
-          </div>
+
+            </div>
         )}
 
 

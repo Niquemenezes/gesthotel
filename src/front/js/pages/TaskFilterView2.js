@@ -36,8 +36,8 @@ const TaskFilterView2 = () => {
                 <p><strong>Nombre:</strong> {task.nombre}</p>
                 <p><strong>Estado:</strong> 
                   <span className={`badge ${
-                    task.condition === 'PENDIENTE' ? 'bg-warning' : 
-                    task.condition === 'EN PROCESO' ? 'bg-info' : 'bg-success'
+                    task.condition === 'PENDIENTE' ? 'bg-danger' : 
+                    task.condition === 'EN PROCESO' ? 'bg-warning' : 'bg-success'
                   } ms-2`}>
                     {task.condition}
                   </span>

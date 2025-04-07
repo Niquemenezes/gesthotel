@@ -29,11 +29,13 @@ const HouseKeeperTask = () => {
   }, []);
 
   const filteredRooms = idHousekeeper
-    ? rooms.filter(room => {
+  ? rooms.filter(room => {
       const hk = housekeepers.find(h => h.id == idHousekeeper);
-      return hk ? room.branch_id === hk.id_branche : false;
+      const yaAsignada = housekeeperTasks.some(t => t.id_room === room.id && t.id_housekeeper !== parseInt(idHousekeeper));
+      return hk ? room.branch_id === hk.id_branche && !yaAsignada : false;
     })
-    : [];
+  : [];
+
 
   const getTaskConditionForRoom = (roomId) => {
     const task = housekeeperTasks.find(t =>
