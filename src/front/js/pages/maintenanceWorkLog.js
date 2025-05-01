@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";  // Aquí se importa useContext
 import { Context } from "../store/appContext";
 import PrivateLayout from "../component/privateLayout";
 import html2pdf from "html2pdf.js";
@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock, faSpinner, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 const MaintenanceWorkLog = () => {
-  const { store, actions } = useContext(Context);
+  const { store, actions } = useContext(Context);  // Ahora useContext está funcionando correctamente
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [branchFilter, setBranchFilter] = useState("");
@@ -23,20 +23,19 @@ const MaintenanceWorkLog = () => {
   const filteredTasks = store.maintenanceTasks.filter(task => {
     const tech = store.maintenances.find(m => m.id === task.maintenance_id);
     const room = store.rooms.find(r => r.id === task.room_id);
-  
+
     const createdBy = tech?.nombre || task.housekeeper?.nombre || task.finalizado_por || "";
     const matchesName = createdBy.toLowerCase().includes(search.toLowerCase());
-  
+
     const matchesDate = dateFilter ? task.created_at?.startsWith(dateFilter) : true;
     const matchesBranch = branchFilter
       ? (room?.branch_id?.toString() === branchFilter || tech?.branch_id?.toString() === branchFilter)
       : true;
-  
+
     const shouldShow = task.maintenance_id || task.condition === "FINALIZADA";
-  
+
     return shouldShow && matchesName && matchesDate && matchesBranch;
   });
-  
 
   const uniqueTechnicians = [...new Set(filteredTasks.map(task => task.maintenance_id))];
 
@@ -63,6 +62,16 @@ const MaintenanceWorkLog = () => {
       default:
         return { className: "badge bg-secondary", icon: faClock };
     }
+  };
+
+  // Función para calcular el tiempo transcurrido
+  const calculateTimeSpent = (startTime, endTime) => {
+    const start = new Date(`1970-01-01T${startTime}Z`);
+    const end = endTime ? new Date(`1970-01-01T${endTime}Z`) : new Date(); // Usa la hora actual si no hay hora de finalización
+    const diffMs = end - start;
+    const diffHrs = Math.floor(diffMs / 1000 / 60 / 60);
+    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    return `${diffHrs}h ${diffMins}m`;
   };
 
   return (
@@ -95,7 +104,7 @@ const MaintenanceWorkLog = () => {
               onChange={e => setBranchFilter(e.target.value)}
             >
               <option value="">Filtrar por sucursal</option>
-              {store.branches.map(branch => (
+              {Array.isArray(store.branches) && store.branches.map(branch => (
                 <option key={branch.id} value={branch.id}>{branch.nombre}</option>
               ))}
             </select>
@@ -128,6 +137,9 @@ const MaintenanceWorkLog = () => {
                 <th>Habitación</th>
                 <th>Sucursal</th>
                 <th>Estado</th>
+                <th>Hora de Inicio</th>
+                <th>Hora de Finalización</th>
+                <th>Tiempo Transcurrido</th>
               </tr>
             </thead>
             <tbody>
@@ -142,10 +154,7 @@ const MaintenanceWorkLog = () => {
 
                 return (
                   <tr key={task.id} className={task.housekeeper_id ? "table-info" : ""}>
-                    <td>
-                      {tech?.nombre || task.housekeeper?.nombre || task.finalizado_por || "No asignado"}
-                    </td>
-
+                    <td>{tech?.nombre || task.housekeeper?.nombre || task.finalizado_por || "No asignado"}</td>
                     <td>{task.nombre}</td>
                     <td>{task.created_at?.split("T")[0]}</td>
                     <td>{room?.nombre || "Zona común"}</td>
@@ -166,6 +175,12 @@ const MaintenanceWorkLog = () => {
                         </div>
                       )}
                     </td>
+
+                    <td>{task.start_time || 'No iniciada'}</td>
+                    <td>{task.end_time || 'No finalizada'}</td>
+                    <td>{task.start_time && task.end_time
+                      ? calculateTimeSpent(task.start_time, task.end_time)
+                      : 'No disponible'}</td>
                   </tr>
                 );
               })}

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Context } from "../store/appContext";
-import PrivateLayout from "./privateLayout";
+import PrivateLayout from '../component/privateLayout';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash, faPlus, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 

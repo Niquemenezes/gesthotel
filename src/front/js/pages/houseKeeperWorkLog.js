@@ -85,6 +85,30 @@ const HousekeeperWorkLog = () => {
         return { className: "badge bg-secondary", icon: faCircleInfo };
     }
   };
+  // Agrega esta función justo antes del return:
+  const calculateTimeSpent = (startTime, endTime) => {
+    if (!startTime || !endTime) return "-";
+
+    const [startH, startM, startS = "00"] = startTime.split(":");
+    const [endH, endM, endS = "00"] = endTime.split(":");
+
+    const start = new Date(0, 0, 0, parseInt(startH), parseInt(startM), parseInt(startS));
+    const end = new Date(0, 0, 0, parseInt(endH), parseInt(endM), parseInt(endS));
+
+    let diffMs = end - start;
+
+    // Si la diferencia es negativa (ej: 23:50 → 00:10), sumar 24h
+    if (diffMs < 0) {
+      diffMs += 24 * 60 * 60 * 1000;
+    }
+
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+    return `${hours}h ${minutes}m ${seconds}s`;
+  };
+
 
 
 
@@ -152,6 +176,9 @@ const HousekeeperWorkLog = () => {
                 <th>Habitación</th>
                 <th>Sucursal</th>
                 <th>Estado</th>
+                <th>Inicio</th>
+                <th>Finalización</th>
+                <th>Tiempo</th>
                 <th>Observación</th>
               </tr>
             </thead>
@@ -192,11 +219,10 @@ const HousekeeperWorkLog = () => {
                         {task.condition}
                       </span>
                     </td>
-                    <td>
-                      {task.nota_housekeeper
-                      }
-                    </td>
-
+                    <td>{task.start_time ? new Date(task.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}</td>
+                    <td>{task.end_time ? new Date(task.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}</td>
+                    <td>{calculateTimeSpent(task.start_time, task.end_time)}</td>
+                    <td>{task.nota_housekeeper}</td>
                   </tr>
                 );
               })}

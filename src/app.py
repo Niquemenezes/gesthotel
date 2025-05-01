@@ -1,100 +1,83 @@
 import os
 from flask import Flask, jsonify, send_from_directory
 from flask_migrate import Migrate
-from api.utils import APIException, generate_sitemap
-from api.models import db
-from api.routes import api
-from api.admin import setup_admin
-from api.commands import setup_commands
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-from dotenv import load_dotenv
 from flasgger import Swagger
+from dotenv import load_dotenv
 
-
-
-# Cargar variables de entorno
+# 1. Carga .env
 load_dotenv()
 
-# Configuración
+# 2. Entorno y rutas
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
-static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../public/')
-db_url = os.getenv("DATABASE_URL")
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, '../public')
+DB_URL     = os.getenv("DATABASE_URL")
 
-# Inicializar app Flask
-app = Flask(__name__)
-app.url_map.strict_slashes = False
-swagger = Swagger(app)
+# 3. Crea app
+app = Flask(__name__, static_folder=STATIC_DIR, static_url_path="")
+Swagger(app)
 
-# CORS para permitir acceso desde React
+# 4. JWT
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "clave_defecto")
+JWTManager(app)
 
-CORS(app, resources={r"/*": {
-    "origins": [
-        "https://apihotel-82ne.onrender.com",
-        "https://scaling-system-9vx6v756jqr3r6q-3000.app.github.dev"
-    ]
-}}, supports_credentials=True)
+# 5. CORS — UNA SOLA VEZ, para /api/* y /auth/*, desde tu React en localhost:3000
+CORS(app,
+    origins=["http://localhost:3000"],
+    supports_credentials=True,
+    resources={r"/api/*": {"origins": "*"}, r"/auth/*": {"origins": "*"}},
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "Cache-Control"])
 
 
-
-
-# JWT
-jwt = JWTManager(app)
-
-# Configuración base de datos
-if db_url:
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
+# 6. Base de datos
+from api.models import db
+if DB_URL:
+    app.config["SQLALCHEMY_DATABASE_URI"] = DB_URL.replace("postgres://", "postgresql://")
 else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
-
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Inicializar base de datos y migraciones
-MIGRATE = Migrate(app, db, compare_type=True)
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////tmp/test.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
+Migrate(app, db, compare_type=True)
 
-# Admin y comandos
+# 7. Admin, comandos y blueprints
+from api.admin     import setup_admin
+from api.commands  import setup_commands
+from api.routes    import api as api_bp
+from api.chatbot   import chatbot_api
+from api.login     import login_api
+
 setup_admin(app)
 setup_commands(app)
 
-# Rutas API principales
-app.register_blueprint(api, url_prefix='/api')
-
-# Registrar la ruta del chatbot
-# src/app.py
-
-from api.chatbot import chatbot_api
+app.register_blueprint(api_bp,      url_prefix="/api")
 app.register_blueprint(chatbot_api, url_prefix="/chatbot")
+app.register_blueprint(login_api,   url_prefix="/auth")
 
-
-# Manejo de errores
+# 8. Errores y SPA
+from api.utils import APIException, generate_sitemap
 @app.errorhandler(APIException)
-def handle_invalid_usage(error):
-    return jsonify(error.to_dict()), error.status_code
+def handle_api_error(e):
+    return jsonify(e.to_dict()), e.status_code
 
-# Sitemap
-@app.route('/')
+@app.route("/")
 def sitemap():
-    if ENV == "development":
+    if ENV=="development":
         return generate_sitemap(app)
-    return send_from_directory(static_file_dir, 'index.html')
+    return send_from_directory(STATIC_DIR, "index.html")
 
-# Archivos estáticos (SPA frontend)
-@app.route('/<path:path>', methods=['GET', 'POST'])
-def serve_any_other_file(path):
-    file_path = os.path.join(static_file_dir, path)
-    if not os.path.isfile(file_path):
-        path = 'index.html'
-    response = send_from_directory(static_file_dir, path)
-    response.cache_control.max_age = 0
-    return response
+@app.route("/<path:path>", methods=["GET","POST"])
+def serve_spa(path):
+    target = path if os.path.isfile(os.path.join(STATIC_DIR,path)) else "index.html"
+    resp = send_from_directory(STATIC_DIR, target)
+    resp.cache_control.max_age = 0
+    return resp
 
-# Ruta simple de prueba
 @app.route("/home")
-def home():
-    return "API funcionando correctamente"
+def home(): return "API funcionando correctamente"
 
-# Ejecutar app
-if __name__ == '__main__':
-    PORT = int(os.environ.get('PORT', 3001))
-    app.run(host='0.0.0.0', port=PORT, debug=True)
+if __name__=='__main__':
+    port = int(os.getenv("PORT", 3001))
+    app.run(host="0.0.0.0", port=port, debug=(ENV=="development"))

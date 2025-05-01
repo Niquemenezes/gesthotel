@@ -105,13 +105,18 @@ const PrivateMaintenance = () => {
 
       const currentPhoto = taskPhotos[taskId] || tasks.find(t => t.id === taskId)?.photo_url || null;
 
+      const now = new Date().toISOString();
+
       const updatedTask = {
         condition: newCondition,
         photo_url: currentPhoto,
-        finalizado_por: newCondition === "FINALIZADA" ? jwtDecode(token).sub : null
+        finalizado_por: newCondition === "FINALIZADA" ? jwtDecode(token).sub : null,
+        ...(newCondition === "EN PROCESO" && { start_time: now }),
+        ...(newCondition === "FINALIZADA" && { end_time: now })
       };
-      
-      
+
+
+
 
       setTasks(prevTasks =>
         prevTasks.map(task => task.id === taskId ? { ...task, ...updatedTask } : task)
@@ -211,6 +216,19 @@ const PrivateMaintenance = () => {
     });
   };
 
+  const calcularTiempoTranscurrido = (start, end) => {
+    if (!start || !end) return "-";
+    const inicio = new Date(start);
+    const fin = new Date(end);
+    const diffMs = fin - inicio;
+    const horas = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const segundos = Math.floor((diffMs % (1000 * 60)) / 1000);
+    return `${horas}h ${minutos}m ${segundos}s`;
+  };
+
+
+
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
       <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
@@ -278,6 +296,15 @@ const PrivateMaintenance = () => {
                         {task.condition}
                       </span>
                     </p>
+                    {(task.start_time || task.end_time) && (
+                      <div className="bg-light p-2 rounded mt-3">
+                        <p className="mb-1"><strong>🕐 Hora de inicio:</strong> {task.start_time ? new Date(task.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "-"}</p>
+                        <p className="mb-1"><strong>✅ Hora de finalización:</strong> {task.end_time ? new Date(task.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "-"}</p>
+                        <p className="mb-0"><strong>⏱️ Tiempo total:</strong> {calcularTiempoTranscurrido(task.start_time, task.end_time)}</p>
+                      </div>
+                    )}
+
+
 
                     <div className="mb-3">
                       <label className="form-label">Foto</label>
@@ -343,7 +370,7 @@ const PrivateMaintenance = () => {
         <div className="card mt-4 p-3">
           <h5 className="text-center">Filtrar tareas</h5>
           <div className="d-flex justify-content-around">
-            <button className="btn btn" style={{ background: "#0dcaf0", color:"white" }} onClick={() => handleFilterTasks('all')}>
+            <button className="btn btn" style={{ background: "#0dcaf0", color: "white" }} onClick={() => handleFilterTasks('all')}>
               Todas
             </button>
             <button className="btn btn-danger" onClick={() => handleFilterTasks('PENDIENTE')}>

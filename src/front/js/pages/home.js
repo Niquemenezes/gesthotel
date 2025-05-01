@@ -192,76 +192,35 @@ export const Home = () => {
 
 
             {/* --- Equipo de Desarrollo --- */}
-            <section className="py-5">
-                <div className="container">
-                    <div className="text-center mb-5">
-                        <h2 className="fw-bold">Nuestro Equipo</h2>
-                        <p className="text-muted">Conoce a los desarrolladores del proyecto</p>
-                    </div>
-                    <div className="row g-4">
-                        {[
-                            {
-                                name: "Milton",
-
-                                photo: "https://res.cloudinary.com/dnftnyi5g/image/upload/v1743179716/milton_sy2lcp.jpg",
-                                social: {
-                                    github: "https://github.com/allisonjuliana",
-                                    linkedin: "#"
-                                }
-                            },
-                            {
-                                name: "Monique",
-
-                                photo: "https://res.cloudinary.com/dnftnyi5g/image/upload/v1743157250/Imagen_de_WhatsApp_2025-03-28_a_las_11.14.35_a8d7dc6e_thlbqe.jpg",
-                                social: {
-                                    github: "https://github.com/Niquemenezes",
-                                    linkedin: "https://www.linkedin.com/in/monique-menezes-459589190/"
-                                }
-                            },
-                            {
-                                name: "Antonio",
-
-                                photo: "https://res.cloudinary.com/dnftnyi5g/image/upload/v1743179716/antonio_vlpj6o.jpg",
-                                social: {
-                                    github: "https://github.com/tony42cadiz",
-                                    linkedin: "#"
-                                }
-                            }
-                        ].map((dev, index) => (
-                            <div key={index} className="col-md-4">
-                                <div className="card h-100 border-0 shadow-sm p-4 hover-scale">
-                                    <img
-                                        src={dev.photo}
-                                        alt={dev.name}
-                                        className="rounded-circle mx-auto mb-4"
-                                        style={{
-                                            width: "150px",
-                                            height: "150px",
-                                            objectFit: "cover"
-                                        }}
-                                    />
-                                    <h3 className="h5 fw-bold text-center">{dev.name}</h3>
-                                    <p className="text-muted text-center mb-3">{dev.role}</p>
-                                    <p className="text-center">{dev.bio}</p>
-                                    <div className="d-flex justify-content-center gap-3 mt-3">
-                                        {Object.entries(dev.social).map(([platform, link]) => (
-                                            <a
-                                                key={platform}
-                                                href={link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-decoration-none text-dark"
-                                            >
-                                                <i className={`fab fa-${platform} fs-4`}></i>
-                                            </a>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+           {/* --- Equipo de Desarrollo --- */}
+<section className="py-5">
+    <div className="container">
+        <div className="text-center mb-5">
+            <h2 className="fw-bold">Desarrollado por:</h2>
+            <p className="text-muted">Monique Menezes</p>
+            <div className="d-flex justify-content-center gap-3 mt-3">
+                <a
+                    href="https://github.com/Niquemenezes"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-decoration-none text-dark"
+                    aria-label="GitHub de Monique Menezes"
+                >
+                    <i className="fab fa-github fs-4"></i>
+                </a>
+                <a
+                    href="https://www.linkedin.com/in/monique-menezes-459589190/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-decoration-none text-dark"
+                    aria-label="LinkedIn de Monique Menezes"
+                >
+                    <i className="fab fa-linkedin fs-4"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
 
             {/* --- CTA Final --- */}
             <section className="py-5 text-white"

@@ -1,15 +1,21 @@
 import os
 from flask import Blueprint, request, jsonify
-from openai import OpenAI
 from dotenv import load_dotenv
 
-load_dotenv()
-
 chatbot_api = Blueprint('chatbot_api', __name__)
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @chatbot_api.route('/chat', methods=['POST'])  
 def chat():
+    from openai import OpenAI
+    load_dotenv()
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        print("❌ No se encontró OPENAI_API_KEY.")
+        return jsonify({"error": "Clave API no encontrada"}), 500
+
+    client = OpenAI(api_key=api_key)
+
     data = request.get_json()
     user_message = data.get("message", "")
 
@@ -26,12 +32,11 @@ def chat():
         )
         reply = response.choices[0].message.content
 
-        print(" Pregunta recibida:", user_message)
-        print(" Mantenito responde:", reply)
+        print("🟡 Pregunta recibida:", user_message)
+        print("🟢 Mantenito responde:", reply)
 
         return jsonify({"reply": reply.strip()}), 200
 
     except Exception as e:
-     print("❌ Error con OpenAI:", repr(e))
-     return jsonify({"error": str(e)}), 500
-
+        print("❌ Error con OpenAI:", repr(e))
+        return jsonify({"error": str(e)}), 500

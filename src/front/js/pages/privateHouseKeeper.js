@@ -270,16 +270,27 @@ const PrivateHouseKeeper = () => {
         return;
       }
 
+      const task = tasks.find(t => t.id === taskId);
+      const updateData = {
+        condition: newStatus,
+        nota_housekeeper: task?.nota_housekeeper || "",
+      };
+
+      const now = new Date().toISOString();
+
+      if (newStatus === "EN PROCESO") {
+        updateData.start_time = now;
+      } else if (newStatus === "FINALIZADA") {
+        updateData.end_time = now;
+      }
+
       const response = await fetch(`${backendUrl}api/housekeeper_task/${taskId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          condition: newStatus,
-          nota_housekeeper: tasks.find(t => t.id === taskId)?.nota_housekeeper || ""
-        })
+        body: JSON.stringify(updateData)
       });
 
       if (!response.ok) throw new Error('Error al actualizar');
@@ -287,14 +298,13 @@ const PrivateHouseKeeper = () => {
       const updatedTask = await response.json();
       setTasks(prevTasks =>
         prevTasks.map(task =>
-          task.id === taskId ? { ...task, condition: newStatus } : task
+          task.id === taskId ? updatedTask : task
         )
       );
 
       if (newStatus === 'FINALIZADA') {
         setTimeout(handleBackToRooms, 500);
       }
-
     } catch (error) {
       console.error('Error:', error);
       alert('Hubo un problema al actualizar el estado de la tarea');
@@ -302,9 +312,22 @@ const PrivateHouseKeeper = () => {
   };
 
 
+
   const toggleMaintenanceTasks = () => {
     setShowMaintenanceTasks(prev => !prev);
   };
+
+  const calcularTiempoTranscurrido = (start, end) => {
+    if (!start || !end) return "-";
+    const inicio = new Date(start);
+    const fin = new Date(end);
+    const diffMs = fin - inicio;
+    const horas = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const segundos = Math.floor((diffMs % (1000 * 60)) / 1000);
+    return `${horas}h ${minutos}m ${segundos}s`;
+  };
+
 
   return (
     <div className="main-container">
@@ -368,7 +391,7 @@ const PrivateHouseKeeper = () => {
               </button>
             </div>
 
-            </div>
+          </div>
         )}
 
 
@@ -382,6 +405,7 @@ const PrivateHouseKeeper = () => {
                   <p><strong>Tarea:</strong> {task.nombre}</p>
                   <p><strong>Estado:</strong> <span className={`badge ${task.condition === 'PENDIENTE' ? 'bg-warning' : task.condition === 'EN PROCESO' ? 'bg-info' : 'bg-success'}`}>{task.condition}</span></p>
 
+                  {/* Observaciones */}
                   <div className="form-group">
                     <label>Observaciones</label>
                     <textarea
@@ -430,7 +454,7 @@ const PrivateHouseKeeper = () => {
                     />
                   </div>
 
-
+                  {/* Foto */}
                   <div className="my-3">
                     <label><strong>Foto</strong></label>
                     <CloudinaryApiHotel setPhotoUrl={url => handlePhotoUpload(task.id, url)} setErrorMessage={msg => handlePhotoError(task.id, msg)} />
@@ -439,6 +463,14 @@ const PrivateHouseKeeper = () => {
                     )}
                   </div>
 
+                  {/* Horas */}
+                  <div className="mt-3">
+                    <p><strong>Inicio:</strong> {task.start_time ? new Date(task.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}</p>
+                    <p><strong>Finalización:</strong> {task.end_time ? new Date(task.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}</p>
+                    <p><strong>Tiempo transcurrido:</strong> {calcularTiempoTranscurrido(task.start_time, task.end_time)}</p>
+                  </div>
+
+                  {/* Botones de estado */}
                   <div className="d-flex justify-content-between">
                     {['PENDIENTE', 'EN PROCESO', 'FINALIZADA'].map(status => (
                       <button
@@ -459,49 +491,54 @@ const PrivateHouseKeeper = () => {
               <button className="btn btn-secondary" onClick={handleBackToRooms}>🔙 Volver</button>
             </div>
 
-            <div className="mt-4">
-              <button className="btn btn-outline-info" onClick={toggleMaintenanceTasks}>
-                {showMaintenanceTasks ? 'Ocultar tareas de mantenimiento' : 'Mostrar tareas de mantenimiento'}
-              </button>
 
-              {showMaintenanceTasks && (
-                <div className="card mt-3">
-                  <div className="card-body">
-                    <h5>Crear nueva incidencia</h5>
-                    <input type="text" className="form-control mb-2" placeholder="Nombre de la tarea" value={nombre} onChange={e => setNombre(e.target.value)} />
-                    <CloudinaryApiHotel setPhotoUrl={setMaintenancePhoto} setErrorMessage={() => { }} />
-                    {maintenancePhoto && <img src={maintenancePhoto} className="img-thumbnail mt-2" style={{ width: 80, height: 80 }} alt="Foto incidencia" />}
-                    <button className="btn btn-info mt-3" onClick={createMaintenanceTask}>Crear Tarea</button>
-
-                    <div className="mt-4">
-                      <h6>Tareas pendientes</h6>
-                      {maintenanceTasks.length > 0 ? (
-                        <ul className="list-group">
-                          {maintenanceTasks.map(task => (
-                            <li key={task.id} className="list-group-item d-flex justify-content-between align-items-center">
-                              {task.nombre}
-                              <span className="badge bg-danger">{task.condition}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p>No hay tareas de mantenimiento</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
         )}
 
-        <div className="text-center mt-5">
-          <button className="btn btn-outline-dark" onClick={handleLogout}>
-            <i className="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+
+        <div className="mt-4">
+          <button className="btn btn-outline-info" onClick={toggleMaintenanceTasks}>
+            {showMaintenanceTasks ? 'Ocultar tareas de mantenimiento' : 'Mostrar tareas de mantenimiento'}
           </button>
+
+          {showMaintenanceTasks && (
+            <div className="card mt-3">
+              <div className="card-body">
+                <h5>Crear nueva incidencia</h5>
+                <input type="text" className="form-control mb-2" placeholder="Nombre de la tarea" value={nombre} onChange={e => setNombre(e.target.value)} />
+                <CloudinaryApiHotel setPhotoUrl={setMaintenancePhoto} setErrorMessage={() => { }} />
+                {maintenancePhoto && <img src={maintenancePhoto} className="img-thumbnail mt-2" style={{ width: 80, height: 80 }} alt="Foto incidencia" />}
+                <button className="btn btn-info mt-3" onClick={createMaintenanceTask}>Crear Tarea</button>
+
+                <div className="mt-4">
+                  <h6>Tareas pendientes</h6>
+                  {maintenanceTasks.length > 0 ? (
+                    <ul className="list-group">
+                      {maintenanceTasks.map(task => (
+                        <li key={task.id} className="list-group-item d-flex justify-content-between align-items-center">
+                          {task.nombre}
+                          <span className="badge bg-danger">{task.condition}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No hay tareas de mantenimiento</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+
+      <div className="text-center mt-5">
+        <button className="btn btn-outline-dark" onClick={handleLogout}>
+          <i className="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+        </button>
+      </div>
     </div>
+
   );
 };
 

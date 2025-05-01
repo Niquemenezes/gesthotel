@@ -26,8 +26,8 @@ const TaskFilterView = () => {
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
       <div className="card shadow-lg p-4" style={{ maxWidth: '800px', width: '100%' }}>
         <h2 className="text-center mb-4" style={{ color: "#0dcaf0" }}>
-          {view === 'all' ? 'Todas las tareas' : 
-           view === 'PENDIENTE' ? 'Tareas Pendientes' : 'Tareas Finalizadas'}
+          {view === 'all' ? 'Todas las tareas' :
+            view === 'PENDIENTE' ? 'Tareas Pendientes' : 'Tareas Finalizadas'}
         </h2>
 
         <div className="mt-4">
@@ -35,21 +35,20 @@ const TaskFilterView = () => {
             <div key={task.id} className="card mb-3 shadow-sm">
               <div className="card-body">
                 <p><strong>Nombre:</strong> {task.nombre}</p>
-                <p><strong>Estado:</strong> 
-                  <span className={`badge ${
-                    task.condition === 'PENDIENTE' ? 'bg-danger' :
-                    task.condition === 'EN PROCESO' ? 'bg-warning' : 'bg-success'
-                  } ms-2`}>
+                <p><strong>Estado:</strong>
+                  <span className={`badge ${task.condition === 'PENDIENTE' ? 'bg-danger' :
+                      task.condition === 'EN PROCESO' ? 'bg-warning' : 'bg-success'
+                    } ms-2`}>
                     {task.condition}
                   </span>
                 </p>
                 <p><strong>Habitación:</strong> {task.room_nombre || `Habitación ${task.room_id}`}</p>
-                
+
                 {(task.photo || task.photo_url) && (
                   <div className="mt-2">
                     <p><strong>Foto:</strong></p>
-                    <img 
-                      src={task.photo || task.photo_url} 
+                    <img
+                      src={task.photo || task.photo_url}
                       alt={`Tarea ${task.nombre}`}
                       className="img-thumbnail"
                       style={{ maxWidth: '200px' }}
@@ -62,8 +61,8 @@ const TaskFilterView = () => {
         </div>
 
         <div className="d-flex justify-content-center">
-          <button 
-            className="btn btn mt-3 px-5 py-2" style={{ background: "#0dcaf0" }} 
+          <button
+            className="btn btn mt-3 px-5 py-2" style={{ background: "#0dcaf0" }}
             onClick={() => navigate('/privateMaintenance')}
           >
             Volver a la vista principal

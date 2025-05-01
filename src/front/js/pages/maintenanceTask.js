@@ -3,7 +3,7 @@ import { Context } from "../store/appContext";
 import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
 import PrivateLayout from "../component/privateLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen, faTrash, faSave, faTimes, faClock, faSpinner, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faSave, faTimes, faPen, faTrash, faClock, faSpinner, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 const MaintenanceTask = () => {
   const { store, actions } = useContext(Context);
@@ -15,8 +15,6 @@ const MaintenanceTask = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [esZonaComun, setEsZonaComun] = useState(false);
-
-
 
   useEffect(() => {
     actions.getMaintenanceTasks();
@@ -52,7 +50,6 @@ const MaintenanceTask = () => {
           maintenance_id: idMaintenance,
         };
 
-        console.log("Updating task with:", payload);
         await actions.updateMaintenanceTask(editingId, payload);
       } else {
         const tareas = esZonaComun
@@ -64,7 +61,6 @@ const MaintenanceTask = () => {
             room_id: roomId,
             maintenance_id: idMaintenance,
           }));
-
 
         for (const tarea of tareas) {
           await actions.createMaintenanceTask(tarea);
@@ -85,7 +81,6 @@ const MaintenanceTask = () => {
     setIdMaintenance(task.maintenance_id || '');
     setEditingId(task.id);
     setEsZonaComun(task.room_id === null);
-
   };
 
   const cancelEdit = () => resetForm();
@@ -107,6 +102,7 @@ const MaintenanceTask = () => {
     );
     return task ? task.condition : null;
   };
+
   const getColorClassForCondition = (condition) => {
     switch (condition) {
       case "PENDIENTE":
@@ -119,7 +115,16 @@ const MaintenanceTask = () => {
         return "bg-secondary text-white";
     }
   };
-  
+
+  // Calcular el tiempo transcurrido entre la hora de inicio y finalización
+  const calculateTimeSpent = (startTime, endTime) => {
+    const start = new Date(`1970-01-01T${startTime}Z`);
+    const end = new Date(`1970-01-01T${endTime}Z`);
+    const diffMs = end - start;
+    const diffHrs = Math.floor(diffMs / 1000 / 60 / 60);
+    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    return `${diffHrs}h ${diffMins}m`;
+  };
 
   const toggleRoomSelection = (roomId) => {
     const existing = getTaskConditionForRoom(roomId);
@@ -129,6 +134,19 @@ const MaintenanceTask = () => {
           ? prev.filter(id => id !== roomId)
           : [roomId]
       );
+    }
+  };
+
+  const getConditionStyle = (condition) => {
+    switch (condition) {
+      case "PENDIENTE":
+        return { className: "badge bg-danger d-inline-flex align-items-center gap-1", icon: faClock };
+      case "EN PROCESO":
+        return { className: "badge bg-warning text-dark d-inline-flex align-items-center gap-1", icon: faSpinner };
+      case "FINALIZADA":
+        return { className: "badge bg-success d-inline-flex align-items-center gap-1", icon: faCheckCircle };
+      default:
+        return { className: "badge bg-secondary", icon: faCircleInfo };
     }
   };
 
@@ -179,7 +197,6 @@ const MaintenanceTask = () => {
                             >
                               {room.nombre}
                             </button>
-
                           );
                         })}
                       </div>
@@ -200,7 +217,6 @@ const MaintenanceTask = () => {
                       </div>
                     )}
                   </div>
-
 
                   <div className="form-group mb-2">
                     <label className="small">Estado</label>
@@ -238,6 +254,9 @@ const MaintenanceTask = () => {
                   <th>Habitación</th>
                   <th>Fecha de creación</th>
                   <th>Foto</th>
+                  <th>Hora de Inicio</th> {/* Nueva columna */}
+                  <th>Hora de Finalización</th> {/* Nueva columna */}
+                  <th>Tiempo Transcurrido</th> {/* Nueva columna */}
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -249,25 +268,25 @@ const MaintenanceTask = () => {
                       <td>{isReportedByHousekeeper ? task.housekeeper?.nombre || "Camarera" : task.maintenance?.nombre || "Técnico"}</td>
                       <td>{task.nombre}</td>
                       <td>
-                        {(() => {
-                          return (
-                            <span className={`badge ${getColorClassForCondition(task.condition)}`}>
-                            {task.condition}
-                          </span>
-                          
-                          );
-                        })()}
+                        <span className={`badge ${getColorClassForCondition(task.condition)}`}>
+                          <FontAwesomeIcon icon={getConditionStyle(task.condition).icon} />
+                          {task.condition}
+                        </span>
                       </td>
-
-                      <td>
-                        {task.room?.branch_id
-                          ? store.branches.find(b => b.id === task.room.branch_id)?.nombre || "-"
-                          : store.branches.find(b => b.id === task.maintenance?.branch_id)?.nombre || "-"}
-                      </td>
-
+                      <td>{task.room?.branch_id
+                        ? store.branches.find(b => b.id === task.room.branch_id)?.nombre || "-"
+                        : store.branches.find(b => b.id === task.maintenance?.branch_id)?.nombre || "-"}</td>
                       <td>{task.room_nombre || task.room?.nombre || "Zona común"}</td>
-                      <td>{task.created_at?.split("T")[0]}</td>
+                      <td>{task.created_at ? new Date(task.created_at).toLocaleDateString() : 'Sin fecha'}</td>
                       <td>{task.photo_url ? <img src={task.photo_url} alt="Incidencia" style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "8px" }} /> : <span className="text-muted">Sin foto</span>}</td>
+
+                      {/* Mostrar hora de inicio y finalización */}
+                      <td>{task.start_time || 'No iniciada'}</td>
+                      <td>{task.end_time || 'No finalizada'}</td>
+                      <td>{task.start_time && task.end_time
+                        ? calculateTimeSpent(task.start_time, task.end_time)
+                        : 'No disponible'}</td>
+
                       <td>
                         <button className="btn btn-sm me-2" style={{ backgroundColor: "#0dcaf0", border: "none", color: "white" }} onClick={() => editMaintenanceTask(task)}>
                           <FontAwesomeIcon icon={faPen} className="me-1" />

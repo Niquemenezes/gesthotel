@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Context } from "../store/appContext";
 import CloudinaryApiHotel from "../component/cloudinaryApiHotel";
-import PrivateLayout from "../component/privateLayout";
+import PrivateLayout from '../component/privateLayout';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash, faPlus, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 
